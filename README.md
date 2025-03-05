@@ -25,6 +25,19 @@ pip install -r requirements.txt
 ```
 
 ### Frontend
+#### Installing node.js
+Need to install node firstly and probably need to restart the terminal or VS code or just restart the computer after installing if the npm does not work:
+
+**Windows**
+```powershell
+winget install OpenJS.NodeJS
+```
+**MacOS**
+```bash
+brew install node
+```
+#### Running the frontend:
+
 ```bash
 cd frontend
 npm install
