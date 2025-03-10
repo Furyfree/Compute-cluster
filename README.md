@@ -44,6 +44,10 @@ npm install
 npm run dev
 ```
 
+## Deployment
+
+Deployment and testing will be done with docker so that the code works on all computers with no dependency issues
+
 ## Features
 
 - SSO login for secure authentication
