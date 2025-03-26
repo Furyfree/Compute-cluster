@@ -24,6 +24,16 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+To start the backend run:
+```python
+uvicorn src.main:app
+```
+
+We have 2 pages to check:
+http://127.0.0.1:8000/docs
+http://127.0.0.1:8000
+
+
 ### Frontend
 #### Installing node.js
 Need to install node firstly and probably need to restart the terminal or VS code or just restart the computer after installing if the npm does not work:
