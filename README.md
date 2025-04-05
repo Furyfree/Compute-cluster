@@ -11,17 +11,20 @@ This project provides a platform where students can access virtual machines and 
 - Backend: Python (FastAPI)
 - Frontend: React.js with Next.js
 - Infrastructure: Proxmox and Kubernetes
-- Database: PostgreSQL
+- Database: PostgreSQL, in docker. 
 - Authentication: DTU SSO
 
 ## Getting Started
-
+Requirements - 
+Docker desktop MUST be installed for database to work. 
 ### Backend
 ```bash
 cd backend
+docker-compose up -d
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
 ```
 
 To start the backend run:
