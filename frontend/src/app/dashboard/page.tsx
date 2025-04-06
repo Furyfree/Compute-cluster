@@ -49,20 +49,21 @@ export default function Dashboard() {
       });
   }, []);
 
+  const fetchUsers = async () => {
+    const res = await fetch('http://127.0.0.1:8000/admin/users/', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      setUsers(data);
+    } else {
+      console.error('Unexpected user data:', data);
+    }
+  };
+
   useEffect(() => {
     if (user?.is_admin) {
-      fetch('http://127.0.0.1:8000/admin/users/', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log('Fetched users:', data);
-          if (Array.isArray(data)) {
-            setUsers(data);
-          } else {
-            console.error('Unexpected user data:', data);
-          }
-        });
+      fetchUsers();
     }
   }, [user]);
 
@@ -75,7 +76,7 @@ export default function Dashboard() {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-  
+
     const res = await fetch('http://127.0.0.1:8000/admin/users/', {
       method: 'POST',
       headers: {
@@ -84,19 +85,18 @@ export default function Dashboard() {
       },
       body: JSON.stringify(newUser),
     });
-  
+
     const data = await res.json();
-  
+
     if (!res.ok) {
       alert(data.detail || 'Failed to create user');
       return;
     }
-  
+
     alert(`✅ Created ${data.email}`);
-    setUsers((prev) => [...prev, data]);
+    await fetchUsers();
     setNewUser({ name: '', email: '', password: '' });
   };
-  
 
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this user?')) return;
@@ -123,7 +123,11 @@ export default function Dashboard() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(editingUser),
+      body: JSON.stringify({
+        name: editingUser.name,
+        email: editingUser.email,
+        is_admin: editingUser.is_admin,
+      }),
     });
 
     const updated = await res.json();
