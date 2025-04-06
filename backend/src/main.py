@@ -63,7 +63,6 @@ class UserCreate(BaseModel):
     email: str
     password: str #hasshed_password
 @app.post("/users/")
-@app.post("/users/")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     hashed_pw = hash_password(user.password)
     new_user = models.User(
@@ -116,3 +115,85 @@ def read_current_user(current_user: models.User = Depends(get_current_user)):
         "is_admin": current_user.is_admin,
         "name": current_user.name
     }
+class UserUpdate(BaseModel):
+    name: str
+    email: str
+    is_admin: bool
+@app.post("/admin/users/")
+def admin_create_user(
+    user: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    existing = db.query(models.User).filter(models.User.email == user.email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    new_user = models.User(
+        name=user.name,
+        email=user.email,
+        hashed_password=hash_password(user.password),
+        is_admin=False  # default
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {"id": new_user.id, "email": new_user.email}
+@app.get("/admin/users/")
+def get_all_users(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    return db.query(models.User).all()
+
+@app.put("/admin/users/{user_id}")
+def update_user(
+    user_id: int,
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.name = user_update.name
+    user.email = user_update.email
+    user.is_admin = user_update.is_admin
+
+    db.commit()
+    db.refresh(user)
+
+    return user
+
+@app.delete("/admin/users/{user_id}")
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    if current_user.id == user_id:
+        raise HTTPException(status_code=400, detail="You cannot delete yourself.")
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.delete(user)
+    db.commit()
+
+    return {"message": f"User {user.email} deleted"}
