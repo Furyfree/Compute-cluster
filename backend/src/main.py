@@ -16,7 +16,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # ✅ both!
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,14 +37,14 @@ def create_admin_user():
         admin_user = models.User(
             name="Admin",
             email=admin_email,
-            hashed_password=hash_password("admin123"),  # change later in prod
+            hashed_password=hash_password("admin123"),  # change later in PROD
             is_admin=True
         )
         db.add(admin_user)
         db.commit()
-        print("✅ Admin user created")
+        print(" Admin user created")
     else:
-        print("ℹ️ Admin user already exists")
+        print(" Admin user already exists")
 create_admin_user()
 
 # Dependency
