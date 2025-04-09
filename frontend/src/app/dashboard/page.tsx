@@ -143,7 +143,7 @@ export default function Dashboard() {
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
       <h1>Welcome, {user.name}!</h1>
       <p>Email: {user.email}</p>
-      <p>Admin: {user.is_admin ? '✅ Yes' : '❌ No'}</p>
+      <p>Admin: {user.is_admin ? ' Yes' : ' No'}</p>
 
       <button onClick={handleLogout} style={{ marginTop: '1rem' }}>
         Logout
