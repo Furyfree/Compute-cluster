@@ -204,6 +204,18 @@ docker ps
 docker-compose logs
 ```
 
+To update and rebuild the server with the latest code from the git repository, simply run:
+```bash
+rebuild_server
+```
+
+This command will:
+1. Fetch the latest changes from the git repository
+2. Reset the branch to the latest commit on the main branch
+3. Run the `rebuild.sh` script to rebuild and restart all Docker containers
+
+The command is available anywhere in the LXC container as it has been added to the system's PATH.
+
 ## Features
 
 - LDAP login for secure authentication
