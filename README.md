@@ -41,6 +41,27 @@ Once running, you can access:
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
 
+To access these services running in Docker containers on the app-server LXC container in Proxmox, use SSH tunneling:
+
+```bash
+ssh -L 3000:10.51.33.232:3000 -L 8000:10.51.33.232:8000 -L 8006:10.51.33.138:8006 node0
+```
+
+This will forward the ports from the remote server to your local machine, allowing you to access the services using the same local URLs.
+
+You can also add this to your `~/.ssh/config` file for easier tunneling:
+
+```
+Host node0-tunnel
+    HostName 10.51.33.138
+    User root
+    LocalForward 3000 10.51.33.232:3000
+    LocalForward 8000 10.51.33.232:8000
+    LocalForward 8006 10.51.33.138:8006
+```
+
+Then you can simply use `ssh node0-tunnel` to establish all the port forwards at once.
+
 To stop all containers:
 
 ```bash
@@ -113,6 +134,8 @@ npm run dev
 The frontend will be available at:
 - http://localhost:3000
 
+Note: If you're accessing services running on the app-server LXC container in Proxmox, remember to set up SSH tunneling as described in the Docker section above.
+
 ## Deployment
 
 The project is containerized using Docker to ensure consistent deployment across environments:
@@ -123,6 +146,63 @@ The project is containerized using Docker to ensure consistent deployment across
 - Environment variables handle service connections
 
 For production deployment, additional environment variables may need to be configured.
+
+### Accessing the Application on Proxmox
+
+To access the web applications running in Docker containers on the "app-server" LXC in Proxmox:
+
+1. Make sure you are connected to the DTU network or VPN
+2. The services are available at the following URLs:
+   - Frontend: https://compute.dtu.dk
+   - Backend API: https://compute-api.dtu.dk
+   - API Documentation: https://compute-api.dtu.dk/docs
+
+For SSH access to the app-server LXC container:
+```bash
+ssh root@10.51.33.232
+```
+
+Alternatively, you can add the following to your `~/.ssh/config` file for easier access to all nodes:
+```
+Host node0
+    HostName 10.51.33.138
+    User root
+
+Host node1
+    HostName 10.51.33.137
+    User root
+
+Host node2
+    HostName 10.51.33.143
+    User root
+
+Host node3
+    HostName 10.51.33.139
+    User root
+
+Host node4
+    HostName 10.51.33.135
+    User root
+
+Host app-server
+    HostName 10.51.33.232
+    User root
+
+Host node0-tunnel
+    HostName 10.51.33.138
+    User root
+    LocalForward 3000 10.51.33.232:3000
+    LocalForward 8000 10.51.33.232:8000
+    LocalForward 8006 10.51.33.138:8006
+```
+
+This allows you to simply use `ssh app-server` or `ssh node0` to connect to the respective servers, and `ssh node0-tunnel` to establish all port forwards at once.
+
+Once connected, you can check the status of the Docker containers:
+```bash
+docker ps
+docker-compose logs
+```
 
 ## Features
 
