@@ -1,6 +1,8 @@
 #!/bin/bash
 # Script to update and rebuild the compute cluster on the server
 
+cd /opt/Compute-cluster || exit 1
+
 echo "Updating code from git repository..."
 # Fetch the latest changes
 git fetch
