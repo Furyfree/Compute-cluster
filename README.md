@@ -41,7 +41,7 @@ Once running, you can access:
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
 
-To access these services running in Docker containers on the app-server LXC container in Proxmox, use SSH tunneling:
+To access these services running in Docker containers on the app-server LXC container in Proxmox, use SSH tunneling (Be aware that this requires that you are not running anything locally on your machine using port 3000, 8000, or 8006):
 
 ```bash
 ssh -L 3000:10.51.33.232:3000 -L 8000:10.51.33.232:8000 -L 8006:10.51.33.138:8006 node0
