@@ -16,7 +16,7 @@ def start_virtual_machine(node: str, vm_id: int):
     """Start a virtual machine on the specified node"""
     return proxmox_service.start_vm(node, vm_id)
 
-@router.post("/vms/{node}/{vm_id}/stop")
+@router.post("/vms/{node}/{vm_id}/stop", summary="Stop VM")
 def stop_virtual_machine(node: str, vm_id: int):
     """Stop a virtual machine on the specified node"""
     return proxmox_service.stop_vm(node, vm_id)
