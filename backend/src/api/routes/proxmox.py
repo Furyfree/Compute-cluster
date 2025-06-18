@@ -11,6 +11,10 @@ def get_vms():
     """Get a list of all virtual machines across all nodes"""
     return proxmox_service.list_vms()
 
+@router.get("/vms/ip", dependencies=[Depends(get_current_user)], summary="Get IP for VM")
+def get_virtual_machine_ip(node: str, vm_id: int):
+    return proxmox_service.get_vm_ip(node, vm_id)
+
 @router.post("/vms/{node}/{vm_id}/start", dependencies=[Depends(get_current_user)], summary="Start VM")
 def start_virtual_machine(node: str, vm_id: int):
     """Start a virtual machine on the specified node"""
@@ -32,6 +36,10 @@ def restart_virtual_machine(node: str, vm_id: int):
 def list_all_containers():
     """Get a list of all LXC containers across all nodes"""
     return proxmox_service.list_lxc()
+
+@router.get("/containers/ip", dependencies=[Depends(get_current_user)], summary="Get IP for Container")
+def get_lxc_ip(node: str, container_id: int):
+    return proxmox_service.get_lxc_ip(node, container_id)
 
 @router.post("/containers/{node}/{container_id}/start", dependencies=[Depends(get_current_user)], summary="Start Container")
 def start_lxc_container(node: str, container_id: int):

@@ -46,11 +46,17 @@ def stop_vm(node, vmid):
 def reboot_vm(node, vmid):
     return proxmox.nodes(node).qemu(vmid).status.reboot.post()
 
-def start_lxc(node, vmid):
-    return proxmox.nodes(node).lxc(vmid).status.start.post()
+def get_vm_ip(node, vmid):
+    return None
 
-def stop_lxc(node, vmid):
-    return proxmox.nodes(node).lxc(vmid).status.stop.post()
+def start_lxc(node, containerid):
+    return proxmox.nodes(node).lxc(containerid).status.start.post()
 
-def reboot_lxc(node, vmid):
-    return proxmox.nodes(node).lxc(vmid).status.reboot.post()
+def stop_lxc(node, containerid):
+    return proxmox.nodes(node).lxc(containerid).status.stop.post()
+
+def reboot_lxc(node, containerid):
+    return proxmox.nodes(node).lxc(containerid).status.reboot.post()
+
+def get_lxc_ip(node, containerid):
+    return None
