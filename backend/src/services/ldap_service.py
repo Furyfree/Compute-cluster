@@ -1,35 +1,20 @@
-from ldap3 import Server, Connection, ALL, SUBTREE
+from ldap3 import SUBTREE
 from ldap3.core.exceptions import LDAPBindError
 from dotenv import load_dotenv
 from src.util.env import get_required_env
-from contextlib import contextmanager
+from src.util.security import hash_password
+from src.util.ldap_connection import get_admin_connection, get_user_connection
 
 load_dotenv()
 
-LDAP_HOST = get_required_env("LDAP_HOST")
 LDAP_BASE_DN = get_required_env("LDAP_BASE_DN")
-LDAP_ADMIN_DN = get_required_env("LDAP_ADMIN_DN")
-LDAP_ADMIN_PASSWORD = get_required_env("LDAP_ADMIN_PASSWORD")
 GROUP_GID_MAPPING = {
     "test": "501"
 }
 
-server = Server(LDAP_HOST, get_info=ALL)
-
-@contextmanager
-def get_connection():
-    """Context manager for LDAP connections"""
-    conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
-    try:
-        yield conn
-    finally:
-        if conn.bound:
-            conn.unbind()
-
-
 def create_user(username: str, first_name: str, last_name: str, password: str, group: str):
     """Create a new user in LDAP"""
-    with get_connection() as conn:
+    with get_admin_connection() as conn:
         full_name = f"{first_name} {last_name}"
         dn = f"cn={full_name},{LDAP_BASE_DN}"
         uid_number = get_next_uid()
@@ -44,7 +29,7 @@ def create_user(username: str, first_name: str, last_name: str, password: str, g
             "uidNumber": str(uid_number),
             "gidNumber": gid,
             "homeDirectory": f"/home/users/{username}",
-            "userPassword": password,
+            "userPassword":  f"{{BCRYPT}}{hash_password(password)}",
         }
 
         conn.add(dn, attributes=entry)
@@ -52,7 +37,7 @@ def create_user(username: str, first_name: str, last_name: str, password: str, g
 
 def delete_user(username: str):
     """Delete user from LDAP"""
-    with get_connection() as conn:
+    with get_admin_connection() as conn:
         conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
         if conn.entries:
             user_dn = conn.entries[0].entry_dn
@@ -61,7 +46,7 @@ def delete_user(username: str):
 
 def get_next_uid():
     """Find next available UID"""
-    with get_connection() as conn:
+    with get_admin_connection() as conn:
         conn.search(
             search_base=LDAP_BASE_DN,
             search_filter="(objectClass=posixAccount)",
@@ -76,22 +61,21 @@ def authenticate_user(username: str, password: str) -> bool:
     if not username or not password:
         return False
 
-    with get_connection() as conn:
+    with get_admin_connection() as conn:
         conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
         if not conn.entries:
             return False
-
         user_dn = conn.entries[0].entry_dn
 
     try:
-        Connection(server, user=user_dn, password=password, auto_bind=True)
-        return True
+        with get_user_connection(user_dn, password):
+            return True
     except LDAPBindError:
         return False
 
 def list_users():
     """List all users in LDAP"""
-    with get_connection() as conn:
+    with get_admin_connection() as conn:
         conn.search(
             search_base=LDAP_BASE_DN,
             search_filter="(objectClass=inetOrgPerson)",
@@ -110,8 +94,7 @@ def list_users():
 
 def get_user_info(username: str):
     """Get detailed info for a specific LDAP user"""
-    with get_connection() as conn:
-        # Find user by uid first
+    with get_admin_connection() as conn:
         conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
 
         if not conn.entries:
