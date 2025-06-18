@@ -1,0 +1,35 @@
+Host node0
+    HostName 10.51.33.138
+    User root
+
+Host node1
+    HostName 10.51.33.137
+    User root
+
+Host node2
+    HostName 10.51.33.143
+    User root
+
+Host node3
+    HostName 10.51.33.139
+    User root
+
+Host node4
+    HostName 10.51.33.135
+    User root
+
+Host app-server
+    HostName 10.51.32.242
+    User app-server
+
+Host ldap-server
+    HostName 10.51.33.17
+    User ldap
+
+Host node0-tunnel
+    HostName 10.51.33.138
+    User root
+    LocalForward 3000 10.51.32.242:3000
+    LocalForward 8000 10.51.32.242:8000
+    LocalForward 8006 10.51.33.138:8006
+    LocalForward 8080 10.51.33.17:80
