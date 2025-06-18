@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, Form
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 from src.api.services import ldap_service
 from src.api.services.ldap_service import create_user
 from typing import Literal
@@ -7,30 +7,35 @@ from typing import Literal
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+# Request Models
+class CreateUserRequest(BaseModel):
+    first_name: str = Field(examples=["John"])
+    last_name: str = Field(examples=["Doe"])
+    username: str = Field(examples=["johndoe"])
+    password: str = Field(examples=["SecurePass123"])
+    group: Literal["user", "admin", "rootadmin"] = Field(examples=["user"])
+
 
 class LoginRequest(BaseModel):
     username: str
     password: str
 
-@router.post("/ldap/create")
-def create_ldap_user(
-    first_name: str = Form(example="John"),
-    last_name: str = Form(example="Doe"),
-    username: str = Form(example="johndoe"),
-    password: str = Form(example="SecurePass123"),
-    group: Literal["user", "admin", "rootadmin"] = Form(example="user")
-):
+# Endpoints
+@router.post("/ldap/create", summary="Create LDAP User")
+def create_ldap_user(user_data: CreateUserRequest):
+    """Create a new user in LDAP system"""
     ldap_result = create_user(
-        uid=username,
-        first_name=first_name,
-        last_name=last_name,
-        password=password,
-        group=group
+        uid=user_data.username,
+        first_name=user_data.first_name,
+        last_name=user_data.last_name,
+        password=user_data.password,
+        group=user_data.group
     )
 
     return {
+        "success": True,
         "ldap_result": ldap_result,
-        "message": f"User {username} created in both LDAP"
+        "message": f"User {user_data.username} created successfully"
     }
 
 @router.delete("/ldap/users/{username}")
