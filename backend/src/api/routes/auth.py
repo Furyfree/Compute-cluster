@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from src.services import ldap_service
 from src.services.ldap_service import create_user
 from src.util.jwt import create_access_token, decode_access_token
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import timedelta
 from typing import Literal
 
@@ -55,14 +55,13 @@ def delete_user(username: str):
 
 
 @router.post("/login")
-def login_user(data: LoginRequest):
-    """Authenticate LDAP user and create JWT token"""
-    if not ldap_service.authenticate_user(data.username, data.password):
+def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
+    """LDAP login - works with both Swagger and direct API calls"""
+    if not ldap_service.authenticate_user(form_data.username, form_data.password):
         raise HTTPException(status_code=401, detail="Invalid LDAP credentials")
 
-    # Create JWT token for LDAP user
     token, expires_at = create_access_token(
-        {"sub": data.username, "auth_type": "ldap"},
+        {"sub": form_data.username, "auth_type": "ldap"},
         expires_delta=timedelta(minutes=30)
     )
 
@@ -86,7 +85,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
     return user_info
 
-@router.get("/users")
+@router.get("/users", dependencies=[Depends(get_current_user)])
 def get_all_users():
     """List all LDAP users"""
     return ldap_service.list_users()

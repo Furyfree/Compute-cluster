@@ -84,7 +84,7 @@ def authenticate_user(username: str, password: str) -> bool:
 
 
 def list_users():
-    conn = Connection(server, auto_bind=True)
+    conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
     conn.search(
         search_base=LDAP_BASE_DN,
         search_filter="(objectClass=inetOrgPerson)",
