@@ -1,19 +1,19 @@
-import os
 from ldap3 import Server, Connection, ALL, SUBTREE, MODIFY_DELETE, MODIFY_REPLACE
 from ldap3.core.exceptions import LDAPBindError
 from dotenv import load_dotenv
+from src.util.env import get_required_env
 
 load_dotenv()
 
-LDAP_HOST = os.getenv("LDAP_HOST")
-LDAP_BASE_DN = os.getenv("LDAP_BASE_DN")
-LDAP_ADMIN_DN = os.getenv("LDAP_ADMIN_DN")
-LDAP_ADMIN_PASSWORD = os.getenv("LDAP_ADMIN_PASSWORD")
+LDAP_HOST = get_required_env("LDAP_HOST")
+LDAP_BASE_DN = get_required_env("LDAP_BASE_DN")
+LDAP_ADMIN_DN = get_required_env("LDAP_ADMIN_DN")
+LDAP_ADMIN_PASSWORD = get_required_env("LDAP_ADMIN_PASSWORD")
 
 server = Server(LDAP_HOST, get_info=ALL)
 
 def create_user(uid: str, first_name: str, last_name: str, password: str, group: str):
-    dn = f"uid={uid},{LDAP_BASE_DN}"  # Brug uid i stedet for cn
+    dn = f"uid={uid},{LDAP_BASE_DN}"
     uid_number = get_next_uid()
     conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
 

@@ -1,14 +1,11 @@
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
-import os
+from src.util.env import get_required_env
 
 load_dotenv()
 
-raw_key = os.getenv("SECRET_KEY")
-if raw_key is None:
-    raise ValueError("SECRET_KEY is not set in environment variables")
-SECRET_KEY: str = raw_key
+SECRET_KEY = get_required_env("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
