@@ -17,3 +17,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=404, detail="LDAP user not found")
 
     return user_info
+
+def get_admin_user(current_user = Depends(get_current_user)):
+    """Require admin or rootadmin permissions"""
+    if not current_user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+def get_root_admin_user(current_user = Depends(get_current_user)):
+    """Require rootadmin permissions only"""
+    if "rootadmin" not in current_user.get("groups", []):
+        raise HTTPException(status_code=403, detail="Root admin access required")
+    return current_user
