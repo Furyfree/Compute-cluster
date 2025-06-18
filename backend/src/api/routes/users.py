@@ -5,7 +5,7 @@ from src.database import models
 from src.util.security import hash_password
 from src.api.deps import get_db, get_current_user
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["Users"])
 
 class UserCreate(BaseModel):
     name: str
