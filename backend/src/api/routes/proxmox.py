@@ -16,9 +16,10 @@ def start_virtual_machine(node: str, vm_id: int):
     """Start a virtual machine on the specified node"""
     return proxmox_service.start_vm(node, vm_id)
 
-@router.post("/vms/{node}/{vmid}/stop")
-def stop_vm(node: str, vmid: int):
-    return proxmox_service.stop_vm(node, vmid)
+@router.post("/vms/{node}/{vm_id}/stop")
+def stop_virtual_machine(node: str, vm_id: int):
+    """Stop a virtual machine on the specified node"""
+    return proxmox_service.stop_vm(node, vm_id)
 
 @router.post("/vms/{node}/{vm_id}/restart", summary="Restart VM")
 def restart_virtual_machine(node: str, vm_id: int):
