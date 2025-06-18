@@ -2,7 +2,6 @@ from ldap3 import SUBTREE
 from ldap3.core.exceptions import LDAPBindError
 from dotenv import load_dotenv
 from src.util.env import get_required_env
-from src.util.security import hash_password
 from src.util.ldap_connection import get_admin_connection, get_user_connection
 
 load_dotenv()
@@ -29,7 +28,7 @@ def create_user(username: str, first_name: str, last_name: str, password: str, g
             "uidNumber": str(uid_number),
             "gidNumber": gid,
             "homeDirectory": f"/home/users/{username}",
-            "userPassword":  f"{{BCRYPT}}{hash_password(password)}",
+            "userPassword":  password,
         }
 
         conn.add(dn, attributes=entry)
