@@ -2,15 +2,14 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from src.services import ldap_service
 from src.services.ldap_service import create_user
-from src.util.jwt import create_access_token, decode_access_token
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from src.util.jwt import create_access_token
+from src.api.auth_deps import get_current_user
+from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from typing import Literal
 
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 # Request Models
 class CreateUserRequest(BaseModel):
@@ -26,7 +25,7 @@ class LoginRequest(BaseModel):
     password: str
 
 # Endpoints
-@router.post("/ldap/create", summary="Create LDAP User")
+@router.post("/ldap/create", dependencies=[Depends(get_current_user)], summary="Create LDAP User")
 def create_ldap_user(user_data: CreateUserRequest):
     """Create a new user in LDAP system"""
     ldap_result = create_user(
@@ -43,7 +42,7 @@ def create_ldap_user(user_data: CreateUserRequest):
         "message": f"User {user_data.username} created successfully"
     }
 
-@router.delete("/ldap/users/{username}")
+@router.delete("/ldap/users/{username}", dependencies=[Depends(get_current_user)])
 def delete_user(username: str):
     """Delete LDAP user"""
     ldap_result = ldap_service.delete_user(username)
@@ -56,7 +55,7 @@ def delete_user(username: str):
 
 @router.post("/login")
 def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
-    """LDAP login - works with both Swagger and direct API calls"""
+    """LDAP login"""
     if not ldap_service.authenticate_user(form_data.username, form_data.password):
         raise HTTPException(status_code=401, detail="Invalid LDAP credentials")
 
@@ -71,19 +70,6 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
         "expires_at": expires_at.isoformat(),
         "auth_type": "ldap"
     }
-
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    """Get current authenticated user from JWT token"""
-    payload = decode_access_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    username = payload["sub"]
-    user_info = ldap_service.get_user_info(username)
-    if not user_info:
-        raise HTTPException(status_code=404, detail="LDAP user not found")
-
-    return user_info
 
 @router.get("/users", dependencies=[Depends(get_current_user)])
 def get_all_users():
