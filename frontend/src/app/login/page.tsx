@@ -43,7 +43,7 @@ const LoginPage: React.FC = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("expires_at");
         alert("Session expired. Please log in again.");
-        router.push("/login");
+        router.push("/auth/login");
       }, msUntilExpiry);
 
       router.push("/dashboard");
