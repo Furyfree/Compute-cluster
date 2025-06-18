@@ -1,12 +1,12 @@
 from proxmoxer import ProxmoxAPI
-import os
+from src.util.env import get_required_env
 
 proxmox = ProxmoxAPI(
-    os.getenv("PROXMOX_HOST"),
+    get_required_env("PROXMOX_HOST"),
     port=8006,
     user="root@pam",
     token_name="guac-api",
-    token_value=os.getenv("PROXMOX_TOKEN"),
+    token_value=get_required_env("PROXMOX_TOKEN"),
     verify_ssl=False
 )
 
