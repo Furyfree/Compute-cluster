@@ -1,13 +1,12 @@
-from fastapi import APIRouter, Depends
-from src.api.auth_deps import get_current_user
+from fastapi import APIRouter
 
-router = APIRouter(prefix="/server", tags=["Server"])
+router = APIRouter(tags=["Server"])
 
 # Basic route
-@router.get("/", dependencies=[Depends(get_current_user)])
+@router.get("/")
 async def root():
     return {"message": "Hello World", "status": "Backend is running"}
 
-@router.get("/health", dependencies=[Depends(get_current_user)])
+@router.get("/health")
 def health():
     return {"status": "ok"}
