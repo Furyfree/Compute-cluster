@@ -2,9 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import users, auth, admin, server, proxmox, ldap
 from src.database import models, database
-from src.api.deps import get_db, get_current_user
 
-app = FastAPI()
+app = FastAPI(
+    title="Compute Cluster API",
+    description="API for managing VMs and containers",
+    version="1.0.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,10 +38,6 @@ def on_startup():
     else:
         print("Admin already exists")
     db.close()
-
-@app.get("/health")
-def health():
-    return {"message": "SERVER IS UP AND RUNNING"}
 
 app.include_router(users.router)
 app.include_router(auth.router)
