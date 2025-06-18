@@ -24,3 +24,7 @@ python-multipart==0.0.20
 
 # Environment variables
 python-dotenv==1.0.1
+
+# Proxmox API client
+proxmoxer==2.2.0
+requests==2.32.3

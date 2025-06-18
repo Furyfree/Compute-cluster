@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.api.routes import users, auth, admin
+from src.api.routes import users, auth, admin, server, proxmox, ldap
 from src.database import models, database
 from src.api.deps import get_db, get_current_user
 
@@ -43,3 +43,6 @@ def health():
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(server.router)
+app.include_router(proxmox.router)
+app.include_router(ldap.router)
