@@ -39,7 +39,7 @@ def create_user(uid: str, first_name: str, last_name: str, password: str, group:
     return conn.result
 
 def delete_user(username: str):
-    """Slet bruger fra LDAP"""
+    """Delete user from LDAP"""
     user_dn = f"uid={username},{LDAP_BASE_DN}"
     conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
 
@@ -63,7 +63,7 @@ def delete_user(username: str):
     return conn.result
 
 def get_next_uid():
-    """Find næste ledige uidNumber"""
+    """Find next available UID"""
     conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
     conn.search(
         search_base=LDAP_BASE_DN,
@@ -100,3 +100,41 @@ def list_users():
         }
         for entry in conn.entries
     ]
+
+def get_user_info(username: str):
+    """Get detailed info for a specific LDAP user"""
+    conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
+    user_dn = f"uid={username},{LDAP_BASE_DN}"
+
+    # Search for the specific user
+    conn.search(
+        search_base=user_dn,
+        search_filter="(objectClass=inetOrgPerson)",
+        search_scope=SUBTREE,
+        attributes=["cn", "uid", "givenName", "sn", "mail"]
+    )
+
+    if not conn.entries:
+        return None
+
+    user_entry = conn.entries[0]
+
+    # Get user groups
+    conn.search(
+        search_base=f"ou=groups,{LDAP_BASE_DN}",
+        search_filter=f"(member={user_dn})",
+        search_scope=SUBTREE,
+        attributes=["cn"]
+    )
+
+    groups = [entry.cn.value for entry in conn.entries]
+
+    return {
+        "username": user_entry.uid.value,
+        "name": user_entry.cn.value,
+        "first_name": user_entry.givenName.value if hasattr(user_entry, 'givenName') else "",
+        "last_name": user_entry.sn.value if hasattr(user_entry, 'sn') else "",
+        "email": user_entry.mail.value if hasattr(user_entry, 'mail') else "",
+        "groups": groups,
+        "is_admin": "admin" in groups or "rootadmin" in groups
+    }

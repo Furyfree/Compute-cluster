@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.api.routes import users, auth, admin, server, proxmox, ldap
+from src.api.routes import auth, server, proxmox
 
 app = FastAPI(
     title="Compute Cluster API",
@@ -16,9 +16,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(users.router)
 app.include_router(auth.router)
-app.include_router(admin.router)
 app.include_router(server.router)
 app.include_router(proxmox.router)
-app.include_router(ldap.router)

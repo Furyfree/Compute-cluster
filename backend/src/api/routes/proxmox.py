@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from src.api.services import proxmox_service
+from src.services import proxmox_service
 
 router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 
