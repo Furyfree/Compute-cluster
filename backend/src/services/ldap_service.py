@@ -1,5 +1,6 @@
 import os
 from ldap3 import Server, Connection, ALL, SUBTREE, MODIFY_DELETE, MODIFY_REPLACE
+from ldap3.core.exceptions import LDAPBindError
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -75,13 +76,16 @@ def get_next_uid():
     return used_uids[-1] + 1 if used_uids else 1000
 
 def authenticate_user(username: str, password: str) -> bool:
-    user_dn = f"uid={username},{LDAP_BASE_DN}"  # Brug uid i stedet for cn
-    try:
-        conn = Connection(server, user=user_dn, password=password, auto_bind=True)
-        return True
-    except Exception:
+    """Authenticate user against LDAP"""
+    if not username or not password:
         return False
 
+    user_dn = f"uid={username},{LDAP_BASE_DN}"
+    try:
+        Connection(server, user=user_dn, password=password, auto_bind=True)
+        return True
+    except LDAPBindError:
+        return False
 
 def list_users():
     conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
