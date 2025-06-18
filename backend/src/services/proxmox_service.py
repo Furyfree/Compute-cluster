@@ -54,39 +54,3 @@ def stop_lxc(node, vmid):
 
 def reboot_lxc(node, vmid):
     return proxmox.nodes(node).lxc(vmid).status.reboot.post()
-
-def create_proxmox_user(username: str, group: str):
-    """Opret bruger i Proxmox og tilføj til korrekt gruppe"""
-    role_mapping = {
-        "user": "PVEVMUser",
-        "admin": "PVEAdmin",
-        "rootadmin": "Administrator"
-    }
-
-    user_id = f"{username}@ldap"
-
-    try:
-        # Opret bruger
-        proxmox.access.users.post(userid=user_id, enable=1)
-
-        # Tilføj rolle
-        proxmox.access.acl.put(
-            path="/",
-            users=user_id,
-            roles=role_mapping.get(group, "PVEVMUser")
-        )
-
-        return {"success": True, "user_id": user_id}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-def delete_proxmox_user(username: str):
-    """Slet bruger fra Proxmox"""
-    user_id = f"{username}@ldap"
-
-    try:
-        # Slet bruger (dette fjerner også alle ACL entries)
-        proxmox.access.users(user_id).delete()
-        return {"success": True, "deleted_user": user_id}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
