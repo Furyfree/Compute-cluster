@@ -14,11 +14,11 @@ class LoginRequest(BaseModel):
 
 @router.post("/ldap/create")
 def create_ldap_user(
-    first_name: str = Form(description="User's first name"),
-    last_name: str = Form(description="User's last name"),
-    username: str = Form(description="Unique username for login"),
-    password: str = Form(description="User password"),
-    group: Literal["user", "admin", "rootadmin"] = Form(description="User access level")
+    first_name: str = Form(example="John"),
+    last_name: str = Form(example="Doe"),
+    username: str = Form(example="johndoe"),
+    password: str = Form(example="SecurePass123"),
+    group: Literal["user", "admin", "rootadmin"] = Form(example="user")
 ):
     ldap_result = create_user(
         uid=username,
