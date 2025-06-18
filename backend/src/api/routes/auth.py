@@ -17,7 +17,7 @@ class CreateUserRequest(BaseModel):
     last_name: str = Field(examples=["Doe"])
     username: str = Field(examples=["johndoe"])
     password: str = Field(examples=["SecurePass123"])
-    group: Literal["user", "admin", "rootadmin"] = Field(examples=["user"])
+    group: Literal["test"] = Field(examples=["test"])
 
 
 class LoginRequest(BaseModel):
@@ -29,7 +29,7 @@ class LoginRequest(BaseModel):
 def create_ldap_user(user_data: CreateUserRequest):
     """Create a new user in LDAP system"""
     ldap_result = create_user(
-        uid=user_data.username,
+        username=user_data.username,
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         password=user_data.password,

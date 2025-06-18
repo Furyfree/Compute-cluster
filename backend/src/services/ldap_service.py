@@ -1,7 +1,8 @@
-from ldap3 import Server, Connection, ALL, SUBTREE, MODIFY_DELETE, MODIFY_REPLACE
+from ldap3 import Server, Connection, ALL, SUBTREE
 from ldap3.core.exceptions import LDAPBindError
 from dotenv import load_dotenv
 from src.util.env import get_required_env
+from contextlib import contextmanager
 
 load_dotenv()
 
@@ -9,78 +10,79 @@ LDAP_HOST = get_required_env("LDAP_HOST")
 LDAP_BASE_DN = get_required_env("LDAP_BASE_DN")
 LDAP_ADMIN_DN = get_required_env("LDAP_ADMIN_DN")
 LDAP_ADMIN_PASSWORD = get_required_env("LDAP_ADMIN_PASSWORD")
+GROUP_GID_MAPPING = {
+    "test": "501"
+}
 
 server = Server(LDAP_HOST, get_info=ALL)
 
-def create_user(uid: str, first_name: str, last_name: str, password: str, group: str):
-    dn = f"uid={uid},{LDAP_BASE_DN}"
-    uid_number = get_next_uid()
+@contextmanager
+def get_connection():
+    """Context manager for LDAP connections"""
     conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
+    try:
+        yield conn
+    finally:
+        if conn.bound:
+            conn.unbind()
 
-    entry = {
-        "objectClass": ["inetOrgPerson", "posixAccount", "top"],
-        "cn": f"{first_name} {last_name}",
-        "sn": last_name,
-        "givenName": first_name,
-        "uid": uid,
-        "uidNumber": str(uid_number),
-        "gidNumber": "500",  # standard users group
-        "homeDirectory": f"/home/users/{uid}",
-        "userPassword": password,
-    }
 
-    conn.add(dn, attributes=entry)
+def create_user(username: str, first_name: str, last_name: str, password: str, group: str):
+    """Create a new user in LDAP"""
+    with get_connection() as conn:
+        full_name = f"{first_name} {last_name}"
+        dn = f"cn={full_name},{LDAP_BASE_DN}"
+        uid_number = get_next_uid()
+        gid = GROUP_GID_MAPPING.get(group, "500")
 
-    # Tilføj til gruppe
-    group_dn = f"cn={group},ou=groups,{LDAP_BASE_DN}"
-    conn.modify(group_dn, {
-        "member": [(MODIFY_REPLACE, [dn])]
-    })
+        entry = {
+            "objectClass": ["inetOrgPerson", "posixAccount", "top"],
+            "cn": full_name,
+            "sn": last_name,
+            "givenName": first_name,
+            "uid": username,
+            "uidNumber": str(uid_number),
+            "gidNumber": gid,
+            "homeDirectory": f"/home/users/{username}",
+            "userPassword": password,
+        }
 
-    return conn.result
+        conn.add(dn, attributes=entry)
+        return conn.result
 
 def delete_user(username: str):
     """Delete user from LDAP"""
-    user_dn = f"uid={username},{LDAP_BASE_DN}"
-    conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
-
-    # Fjern fra alle grupper først
-    conn.search(
-        search_base=f"ou=groups,{LDAP_BASE_DN}",
-        search_filter="(objectClass=groupOfNames)",
-        search_scope=SUBTREE,
-        attributes=["member"]
-    )
-
-    for entry in conn.entries:
-        if user_dn in entry.member.values:
-            group_dn = entry.entry_dn
-            conn.modify(group_dn, {
-                "member": [(MODIFY_DELETE, [user_dn])]
-            })
-
-    # Slet bruger
-    conn.delete(user_dn)
-    return conn.result
+    with get_connection() as conn:
+        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
+        if conn.entries:
+            user_dn = conn.entries[0].entry_dn
+            conn.delete(user_dn)
+        return conn.result
 
 def get_next_uid():
     """Find next available UID"""
-    conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
-    conn.search(
-        search_base=LDAP_BASE_DN,
-        search_filter="(objectClass=posixAccount)",
-        search_scope=SUBTREE,
-        attributes=["uidNumber"]
-    )
-    used_uids = sorted([int(entry.uidNumber.value) for entry in conn.entries])
-    return used_uids[-1] + 1 if used_uids else 1000
+    with get_connection() as conn:
+        conn.search(
+            search_base=LDAP_BASE_DN,
+            search_filter="(objectClass=posixAccount)",
+            search_scope=SUBTREE,
+            attributes=["uidNumber"]
+        )
+        used_uids = sorted([int(entry.uidNumber.value) for entry in conn.entries])
+        return used_uids[-1] + 1 if used_uids else 1000
 
 def authenticate_user(username: str, password: str) -> bool:
     """Authenticate user against LDAP"""
     if not username or not password:
         return False
 
-    user_dn = f"uid={username},{LDAP_BASE_DN}"
+    with get_connection() as conn:
+        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
+        if not conn.entries:
+            return False
+
+        user_dn = conn.entries[0].entry_dn
+
     try:
         Connection(server, user=user_dn, password=password, auto_bind=True)
         return True
@@ -88,57 +90,43 @@ def authenticate_user(username: str, password: str) -> bool:
         return False
 
 def list_users():
-    conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
-    conn.search(
-        search_base=LDAP_BASE_DN,
-        search_filter="(objectClass=inetOrgPerson)",
-        search_scope=SUBTREE,
-        attributes=["cn", "uid", "givenName", "sn"]
-    )
-    return [
-        {
-            "cn": entry.cn.value,
-            "uid": entry.uid.value,
-            "first_name": entry.givenName.value,
-            "last_name": entry.sn.value,
-        }
-        for entry in conn.entries
-    ]
+    """List all users in LDAP"""
+    with get_connection() as conn:
+        conn.search(
+            search_base=LDAP_BASE_DN,
+            search_filter="(objectClass=inetOrgPerson)",
+            search_scope=SUBTREE,
+            attributes=[]
+        )
+        return [
+            {
+                "cn": entry.cn.value if hasattr(entry, "cn") else "",
+                "uid": entry.uid.value if hasattr(entry, "uid") else "",
+                "first_name": entry.givenName.value if hasattr(entry, "givenName") else "",
+                "last_name": entry.sn.value if hasattr(entry, "sn") else "",
+            }
+            for entry in conn.entries
+        ]
 
 def get_user_info(username: str):
     """Get detailed info for a specific LDAP user"""
-    conn = Connection(server, user=LDAP_ADMIN_DN, password=LDAP_ADMIN_PASSWORD, auto_bind=True)
-    user_dn = f"uid={username},{LDAP_BASE_DN}"
+    with get_connection() as conn:
+        # Find user by uid first
+        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
 
-    # Search for the specific user
-    conn.search(
-        search_base=user_dn,
-        search_filter="(objectClass=inetOrgPerson)",
-        search_scope=SUBTREE,
-        attributes=["cn", "uid", "givenName", "sn", "mail"]
-    )
+        if not conn.entries:
+            return None
 
-    if not conn.entries:
-        return None
+        user_entry = conn.entries[0]
 
-    user_entry = conn.entries[0]
-
-    # Get user groups
-    conn.search(
-        search_base=f"ou=groups,{LDAP_BASE_DN}",
-        search_filter=f"(member={user_dn})",
-        search_scope=SUBTREE,
-        attributes=["cn"]
-    )
-
-    groups = [entry.cn.value for entry in conn.entries]
-
-    return {
-        "username": user_entry.uid.value,
-        "name": user_entry.cn.value,
-        "first_name": user_entry.givenName.value if hasattr(user_entry, 'givenName') else "",
-        "last_name": user_entry.sn.value if hasattr(user_entry, 'sn') else "",
-        "email": user_entry.mail.value if hasattr(user_entry, 'mail') else "",
-        "groups": groups,
-        "is_admin": "admin" in groups or "rootadmin" in groups
-    }
+        return {
+            "username": user_entry.uid.value if hasattr(user_entry, "uid") else "",
+            "name": user_entry.cn.value if hasattr(user_entry, "cn") else "",
+            "first_name": user_entry.givenName.value if hasattr(user_entry, "givenName") else "",
+            "last_name": user_entry.sn.value if hasattr(user_entry, "sn") else "",
+            "email": user_entry.mail.value if hasattr(user_entry, "mail") else "",
+            "home_directory": user_entry.homeDirectory.value if hasattr(user_entry, "homeDirectory") else "",
+            "uid_number": user_entry.uidNumber.value if hasattr(user_entry, "uidNumber") else "",
+            "gid_number": user_entry.gidNumber.value if hasattr(user_entry, "gidNumber") else "",
+            "is_admin": user_entry.gidNumber.value == "501" if hasattr(user_entry, "gidNumber") else False
+        }
