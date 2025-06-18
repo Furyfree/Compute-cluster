@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from src.api.services import ldap_service
 from src.api.services.ldap_service import create_user
+from src.util.auth import create_access_token
+from datetime import timedelta
 from typing import Literal
 
 
@@ -40,7 +42,7 @@ def create_ldap_user(user_data: CreateUserRequest):
 
 @router.delete("/ldap/users/{username}")
 def delete_user(username: str):
-    # Slet fra LDAP
+    """Delete LDAP user"""
     ldap_result = ldap_service.delete_user(username)
 
     return {
@@ -51,11 +53,25 @@ def delete_user(username: str):
 
 @router.post("/login")
 def login_user(data: LoginRequest):
-    if ldap_service.authenticate_user(data.username, data.password):
-        return {"message": "Login successful"}
-    raise HTTPException(status_code=401, detail="Invalid credentials")
+    """Authenticate LDAP user and create JWT token"""
+    if not ldap_service.authenticate_user(data.username, data.password):
+        raise HTTPException(status_code=401, detail="Invalid LDAP credentials")
+
+    # Create JWT token for LDAP user
+    token, expires_at = create_access_token(
+        {"sub": data.username, "auth_type": "ldap"},
+        expires_delta=timedelta(minutes=30)
+    )
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "expires_at": expires_at.isoformat(),
+        "auth_type": "ldap"
+    }
 
 
 @router.get("/users")
 def get_all_users():
+    """List all LDAP users"""
     return ldap_service.list_users()

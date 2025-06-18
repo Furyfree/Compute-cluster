@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import users, auth, admin, server, proxmox, ldap
-from src.database import models, database
 
 app = FastAPI(
     title="Compute Cluster API",
@@ -16,28 +15,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-models.Base.metadata.create_all(bind=database.engine)
-
-@app.on_event("startup")
-def on_startup():
-    from src.util.security import hash_password
-    db = database.SessionLocal()
-    admin_email = "admin@example.com"
-    existing = db.query(models.User).filter(models.User.email == admin_email).first()
-    if not existing:
-        admin = models.User(
-            name="Admin",
-            email=admin_email,
-            hashed_password=hash_password("admin123"),
-            is_admin=True
-        )
-        db.add(admin)
-        db.commit()
-        print("Admin created")
-    else:
-        print("Admin already exists")
-    db.close()
 
 app.include_router(users.router)
 app.include_router(auth.router)
