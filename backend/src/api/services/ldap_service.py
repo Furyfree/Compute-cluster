@@ -1,5 +1,5 @@
 import os
-from ldap3 import Server, Connection, ALL, SUBTREE, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE
+from ldap3 import Server, Connection, ALL, SUBTREE, MODIFY_DELETE, MODIFY_REPLACE
 from dotenv import load_dotenv
 
 load_dotenv()
