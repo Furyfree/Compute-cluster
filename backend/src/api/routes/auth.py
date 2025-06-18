@@ -71,6 +71,11 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
         "auth_type": "ldap"
     }
 
+@router.get("/me")
+def get_current_user_endpoint(current_user = Depends(get_current_user)):
+    """Get current user information"""
+    return current_user
+
 @router.get("/users", dependencies=[Depends(get_current_user)])
 def get_all_users():
     """List all LDAP users"""

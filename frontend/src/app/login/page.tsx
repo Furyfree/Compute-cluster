@@ -71,7 +71,7 @@ const LoginPage: React.FC = () => {
         <h2>Login</h2>
         <label htmlFor="username">Username</label>
         <input
-          type="username"
+          type="text"
           id="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
