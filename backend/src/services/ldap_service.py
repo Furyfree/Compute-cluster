@@ -37,7 +37,7 @@ def create_user(username: str, first_name: str, last_name: str, password: str, g
 def delete_user(username: str):
     """Delete user from LDAP"""
     with get_admin_connection() as conn:
-        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
+        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=["cn"])
         if not conn.entries:
             return {"success": False, "description": f"User {username} not found"}
 
@@ -81,7 +81,7 @@ def list_users():
             search_base=LDAP_BASE_DN,
             search_filter="(objectClass=inetOrgPerson)",
             search_scope=SUBTREE,
-            attributes=[]
+            attributes=["cn", "uid", "givenName", "sn", "mail"]  # Specifik attributter
         )
         return [
             {
