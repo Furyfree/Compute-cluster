@@ -22,13 +22,7 @@ def sync_ldap_changes(realm_name: str = "ldap", dry_run: bool = False, scope: st
 
 def full_ldap_sync(realm_name: str = "ldap"):
     """One-time full sync to catch any missed changes"""
-    return proxmox.access.domains(realm_name).sync.post(
-        scope="both",
-        dry_run=False,
-        enable_new=True,
-        full=True,
-        purge=True
-    )
+    return proxmox.access.domains(realm_name).sync.post()
 
 def list_vms():
     all_vms = []
