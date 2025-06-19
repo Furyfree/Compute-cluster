@@ -63,7 +63,7 @@ def authenticate_user(username: str, password: str) -> bool:
         return False
 
     with get_admin_connection() as conn:
-        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
+        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=["cn"])
         if not conn.entries:
             return False
         user_dn = conn.entries[0].entry_dn
@@ -96,7 +96,16 @@ def list_users():
 def get_user_info(username: str):
     """Get detailed info for a specific LDAP user"""
     with get_admin_connection() as conn:
-        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
+        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=
+                                  ["uid",
+                                  "cn",
+                                  "givenName",
+                                  "sn",
+                                  "mail",
+                                  "homeDirectory",
+                                  "uidNumber",
+                                  "gidNumber"]
+                                    )
 
         if not conn.entries:
             return None
