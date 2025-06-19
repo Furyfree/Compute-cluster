@@ -38,9 +38,11 @@ def delete_user(username: str):
     """Delete user from LDAP"""
     with get_admin_connection() as conn:
         conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=[])
-        if conn.entries:
-            user_dn = conn.entries[0].entry_dn
-            conn.delete(user_dn)
+        if not conn.entries:
+            return {"success": False, "description": f"User {username} not found"}
+
+        user_dn = conn.entries[0].entry_dn
+        conn.delete(user_dn)
         return conn.result
 
 def get_next_uid():
@@ -112,3 +114,15 @@ def get_user_info(username: str):
             "gid_number": user_entry.gidNumber.value if hasattr(user_entry, "gidNumber") else "",
             "is_admin": user_entry.gidNumber.value == "501" if hasattr(user_entry, "gidNumber") else False
         }
+
+def change_password():
+    return
+
+def change_username():
+    return
+
+def change_email():
+    return
+
+def change_group():
+    return
