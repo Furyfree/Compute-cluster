@@ -6,16 +6,22 @@ router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 
 # LDAP Sync
 @router.post("/ldap/sync", dependencies=[Depends(get_current_user)], summary="Sync LDAP Changes")
-def sync_ldap_to_proxmox(realm_name: str = "ldap"):
+def sync_ldap_to_proxmox(realm_name: str = "LDAP"):
     """Sync LDAP users and groups to Proxmox (incremental)"""
-    result = proxmox_service.sync_ldap_changes(realm_name)
-    return {"message": "LDAP sync completed", "result": result}
+    try:
+        result = proxmox_service.sync_ldap_changes(realm_name)
+        return {"message": "LDAP sync completed", "result": result}
+    except Exception as e:
+        return {"error": str(e), "type": type(e).__name__}
 
 @router.post("/ldap/sync/full", dependencies=[Depends(get_current_user)], summary="Full LDAP Sync")
-def full_sync_ldap_to_proxmox(realm_name: str = "ldap"):
+def full_sync_ldap_to_proxmox(realm_name: str = "LDAP"):
     """Full sync of LDAP users and groups to Proxmox (catches missed changes)"""
-    result = proxmox_service.full_ldap_sync(realm_name)
-    return {"message": "Full LDAP sync completed", "result": result}
+    try:
+        result = proxmox_service.full_ldap_sync(realm_name)
+        return {"message": "Full LDAP sync completed", "result": result}
+    except Exception as e:
+        return {"error": str(e), "type": type(e).__name__}
 
 @router.get("/ldap/realms", dependencies=[Depends(get_current_user)], summary="List Authentication Realms")
 def list_authentication_realms():

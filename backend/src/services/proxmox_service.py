@@ -10,19 +10,23 @@ proxmox = ProxmoxAPI(
     verify_ssl=False
 )
 
-def sync_ldap_changes(realm_name: str = "ldap", dry_run: bool = False, scope: str = "both"):
+def sync_ldap_changes(realm_name: str = "LDAP", dry_run: bool = False, scope: str = "both"):
     """Sync LDAP users and groups to Proxmox"""
-    return proxmox.access.domains(realm_name).sync.post(
-        scope=scope,
-        dry_run=dry_run,
-        enable_new=True,
-        full=False,
-        purge=True
-    )
+    try:
+        print(f"Syncing LDAP realm: {realm_name}")
+        return proxmox.access.domains(realm_name).sync.post(scope=scope)
+    except Exception as e:
+        print(f"LDAP sync error: {e}")
+        raise
 
-def full_ldap_sync(realm_name: str = "ldap"):
+def full_ldap_sync(realm_name: str = "LDAP"):
     """One-time full sync to catch any missed changes"""
-    return proxmox.access.domains(realm_name).sync.post()
+    try:
+        print(f"Full syncing LDAP realm: {realm_name}")
+        return proxmox.access.domains(realm_name).sync.post(scope="both")
+    except Exception as e:
+        print(f"Full LDAP sync error: {e}")
+        raise
 
 def list_realms():
     """List all authentication realms"""
