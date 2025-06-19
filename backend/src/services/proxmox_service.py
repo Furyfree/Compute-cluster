@@ -24,6 +24,10 @@ def full_ldap_sync(realm_name: str = "ldap"):
     """One-time full sync to catch any missed changes"""
     return proxmox.access.domains(realm_name).sync.post()
 
+def list_realms():
+    """List all authentication realms"""
+    return proxmox.access.domains.get()
+
 def list_vms():
     all_vms = []
     for node in proxmox.nodes.get():

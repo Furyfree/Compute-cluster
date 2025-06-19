@@ -17,6 +17,12 @@ def full_sync_ldap_to_proxmox(realm_name: str = "ldap"):
     result = proxmox_service.full_ldap_sync(realm_name)
     return {"message": "Full LDAP sync completed", "result": result}
 
+@router.get("/ldap/realms", dependencies=[Depends(get_current_user)], summary="List Authentication Realms")
+def list_authentication_realms():
+    """List all authentication realms to find the correct LDAP realm name"""
+    result = proxmox_service.list_realms()
+    return {"realms": result}
+
 # VM
 @router.get("/vms", dependencies=[Depends(get_current_user)], summary="List all VMs")
 def get_vms():
