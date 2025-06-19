@@ -17,20 +17,10 @@ const SignupPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // Check if user is authenticated (for admin user creation)
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        throw new Error(
-          "You must be logged in as an admin to create users. Please log in first.",
-        );
-      }
-
       const res = await fetch("http://127.0.0.1:8000/users/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           first_name: firstName,
@@ -43,9 +33,6 @@ const SignupPage: React.FC = () => {
 
       if (!res.ok) {
         const errorData = await res.json();
-        if (res.status === 401) {
-          throw new Error("Authentication failed. Please log in again.");
-        }
         throw new Error(errorData.detail || "User creation failed");
       }
 
@@ -60,18 +47,11 @@ const SignupPage: React.FC = () => {
       setUsername("");
       setPassword("");
 
-      // Redirect to dashboard
-      router.push("/dashboard");
+      // Redirect to login page so they can sign in with their new account
+      router.push("/login");
     } catch (err: any) {
       console.error("Signup error:", err);
       setError(err.message || "User creation failed");
-
-      // If authentication error, redirect to login
-      if (err.message.includes("log in")) {
-        setTimeout(() => {
-          router.push("/login");
-        }, 2000);
-      }
     } finally {
       setLoading(false);
     }
@@ -83,7 +63,7 @@ const SignupPage: React.FC = () => {
         <div className="bg-white shadow-lg rounded-lg px-8 py-12">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-light text-gray-900 mb-2">Sign up</h1>
-            <p className="text-gray-600 text-sm">Sign up to continue</p>
+            <p className="text-gray-600 text-sm">Create your account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
