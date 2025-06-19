@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 // next.config.js
 const nextConfig = {
+  devIndicators: false,
   async headers() {
     return [
       {
@@ -16,7 +17,9 @@ const nextConfig = {
               font-src 'self' https://fonts.gstatic.com;
               script-src 'self' 'unsafe-inline' 'unsafe-eval';
               img-src 'self' data:;
-            `.replace(/\s{2,}/g, ' ').trim(),
+            `
+              .replace(/\s{2,}/g, " ")
+              .trim(),
           },
         ],
       },
@@ -25,6 +28,5 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
 
 export default nextConfig;
