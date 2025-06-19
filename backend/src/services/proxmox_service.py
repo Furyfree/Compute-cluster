@@ -10,6 +10,9 @@ proxmox = ProxmoxAPI(
     verify_ssl=False
 )
 
+def sync_ldap_changes():
+    return
+
 def list_vms():
     all_vms = []
     for node in proxmox.nodes.get():
