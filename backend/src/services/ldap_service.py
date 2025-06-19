@@ -3,6 +3,7 @@ from ldap3.core.exceptions import LDAPBindError
 from dotenv import load_dotenv
 from src.util.env import get_required_env
 from src.util.ldap_connection import get_admin_connection, get_user_connection
+from src.util.ldap_sync_decorator import sync_ldap_after
 
 load_dotenv()
 
@@ -11,6 +12,7 @@ GROUP_GID_MAPPING = {
     "test": "501"
 }
 
+@sync_ldap_after
 def create_user(username: str, first_name: str, last_name: str, password: str, group: str):
     """Create a new user in LDAP"""
     with get_admin_connection() as conn:
@@ -34,6 +36,7 @@ def create_user(username: str, first_name: str, last_name: str, password: str, g
         conn.add(dn, attributes=entry)
         return conn.result
 
+@sync_ldap_after
 def delete_user(username: str):
     """Delete user from LDAP"""
     with get_admin_connection() as conn:
@@ -124,14 +127,18 @@ def get_user_info(username: str):
             "is_admin": user_entry.gidNumber.value == "501" if hasattr(user_entry, "gidNumber") else False
         }
 
+@sync_ldap_after
 def change_password():
     return
 
+@sync_ldap_after
 def change_username():
     return
 
+@sync_ldap_after
 def change_email():
     return
 
+@sync_ldap_after
 def change_group():
     return
