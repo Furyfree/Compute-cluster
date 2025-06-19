@@ -14,8 +14,11 @@ def sync_ldap_to_proxmox(realm_name: str = "ldap"):
 @router.post("/ldap/sync/full", dependencies=[Depends(get_current_user)], summary="Full LDAP Sync")
 def full_sync_ldap_to_proxmox(realm_name: str = "ldap"):
     """Full sync of LDAP users and groups to Proxmox (catches missed changes)"""
-    result = proxmox_service.full_ldap_sync(realm_name)
-    return {"message": "Full LDAP sync completed", "result": result}
+    try:
+        result = proxmox_service.full_ldap_sync(realm_name)
+        return {"message": "Full LDAP sync completed", "result": result}
+    except Exception as e:
+        return {"error": str(e), "type": type(e).__name__}
 
 # VM
 @router.get("/vms", dependencies=[Depends(get_current_user)], summary="List all VMs")
