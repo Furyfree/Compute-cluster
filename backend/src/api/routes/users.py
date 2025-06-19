@@ -33,7 +33,7 @@ def get_all_users():
     """List all users"""
     return ldap_service.list_users()
 
-@router.post("/create", dependencies=[Depends(get_current_user)], summary="Create User")
+@router.post("/create", summary="Create User")
 def create_user(user_data: CreateUserRequest):
     """Create a new user"""
     ldap_result = ldap_service.create_user(
