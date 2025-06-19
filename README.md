@@ -145,22 +145,14 @@ The `rebuild_server` command is available system-wide via symlink.
 
 Check container status:
 ```bash
-docker compose ps
-docker compose logs
+docker ps
 ```
 
 Check individual service logs:
 ```bash
-docker compose logs backend
-docker compose logs frontend
-docker compose logs db
-```
-
-Check specific service status:
-```bash
-docker compose ps backend
-docker compose ps frontend
-docker compose ps db
+docker logs compute-cluster-backend
+docker logs compute-cluster-frontend
+docker logs compute-cluster-db
 ```
 
 ## Database Schema
