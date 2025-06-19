@@ -57,7 +57,7 @@ def delete_user(username: str):
 
     return {
         "ldap_result": ldap_result,
-        "message": f"User {username} deleted from both LDAP"
+        "message": f"User {username} deleted from LDAP"
     }
 
 @router.patch("/{username}/password", dependencies=[Depends(get_current_user)])
