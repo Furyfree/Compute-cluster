@@ -46,12 +46,14 @@ services:
       - ./database/init:/docker-entrypoint-initdb.d
 
   guacd:
-    image: guacamole/guacd:1.5.4
+    image: guacamole/guacd:1.5.5
+    ports:
+      - "4822:4822"
     container_name: compute-cluster-guacd
     restart: unless-stopped
 
   guacamole:
-    image: guacamole/guacamole:1.5.4
+    image: guacamole/guacamole:1.5.5
     container_name: compute-cluster-guacamole
     ports:
       - "8001:8080"
