@@ -33,9 +33,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mydb
+      POSTGRESQL_USER: postgres
+      POSTGRESQL_PASSWORD: postgres
+      POSTGRESQL_DB: mydb
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -59,11 +59,11 @@ services:
       GUACD_HOSTNAME: guacd
       GUACD_PORT: 4822
 
-      POSTGRES_DATABASE: mydb
-      POSTGRES_HOSTNAME: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRESQL_DATABASE: mydb
+      POSTGRESQL_HOSTNAME: db
+      POSTGRESQL_PORT: 5432
+      POSTGRESQL_USER: postgres
+      POSTGRESQL_PASSWORD: postgres
 
       LDAP_HOSTNAME: 10.51.33.17
       LDAP_PORT: 389
