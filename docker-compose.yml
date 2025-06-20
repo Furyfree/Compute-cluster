@@ -47,8 +47,6 @@ services:
 
   guacd:
     image: guacamole/guacd:1.5.5
-    ports:
-      - "4822:4822"
     container_name: compute-cluster-guacd
     restart: unless-stopped
 
@@ -61,11 +59,11 @@ services:
       GUACD_HOSTNAME: guacd
       GUACD_PORT: 4822
 
-      POSTGRES_DATABASE: mydb
-      POSTGRES_HOSTNAME: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRESQL_DATABASE: mydb
+      POSTGRESQL_HOSTNAME: db
+      POSTGRESQL_PORT: 5432
+      POSTGRESQL_USER: postgres
+      POSTGRESQL_PASSWORD: postgres
 
       LDAP_HOSTNAME: 10.51.33.17
       LDAP_PORT: 389
