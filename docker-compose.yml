@@ -1,5 +1,6 @@
 services:
   backend:
+    profiles: ["full", "app"]
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -16,6 +17,7 @@ services:
     restart: unless-stopped
 
   frontend:
+    profiles: ["full", "app"]
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -27,6 +29,7 @@ services:
     restart: unless-stopped
 
   db:
+    profiles: ["full", "guacamole"]
     image: postgres:16
     container_name: compute-cluster-db
     restart: always
@@ -46,11 +49,13 @@ services:
       - ./database/init:/docker-entrypoint-initdb.d
 
   guacd:
+    profiles: ["full", "guacamole"]
     image: guacamole/guacd:1.5.5
     container_name: compute-cluster-guacd
     restart: unless-stopped
 
   guacamole:
+    profiles: ["full", "guacamole"]
     image: guacamole/guacamole:1.5.5
     container_name: compute-cluster-guacamole
     ports:
