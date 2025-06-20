@@ -22,32 +22,34 @@ INSERT INTO guacamole_entity (name, type) VALUES ('guacadmin', 'USER');
 INSERT INTO guacamole_user (entity_id, password_hash, password_salt, password_date)
 SELECT
     entity_id,
-    x'CA458A7D494E3BE824F5E1E175A1556C0F8EEF2C2D7DF3633BEC4A29C4411960',  -- 'guacadmin'
-    x'FE24ADC5E11E2B25288D1704ABE67A79E342ECC26064CE69C5B3177795A82264',
-    NOW()
-FROM guacamole_entity WHERE name = 'guacadmin';
+    decode('CA458A7D494E3BE824F5E1E175A1556C0F8EEF2C2D7DF3633BEC4A29C4411960', 'hex'),  -- 'guacadmin'
+    decode('FE24ADC5E11E2B25288D1704ABE67A79E342ECC26064CE69C5B3177795A82264', 'hex'),
+    CURRENT_TIMESTAMP
+FROM guacamole_entity WHERE name = 'guacadmin' AND guacamole_entity.type = 'USER';
 
 -- Grant this user all system permissions
 INSERT INTO guacamole_system_permission (entity_id, permission)
-SELECT entity_id, permission
+SELECT entity_id, permission::guacamole_system_permission_type
 FROM (
-          SELECT 'guacadmin'  AS username, 'CREATE_CONNECTION'       AS permission
-    UNION SELECT 'guacadmin'  AS username, 'CREATE_CONNECTION_GROUP' AS permission
-    UNION SELECT 'guacadmin'  AS username, 'CREATE_SHARING_PROFILE'  AS permission
-    UNION SELECT 'guacadmin'  AS username, 'CREATE_USER'             AS permission
-    UNION SELECT 'guacadmin'  AS username, 'CREATE_USER_GROUP'       AS permission
-    UNION SELECT 'guacadmin'  AS username, 'ADMINISTER'              AS permission
-) permissions
+    VALUES
+        ('guacadmin', 'CREATE_CONNECTION'),
+        ('guacadmin', 'CREATE_CONNECTION_GROUP'),
+        ('guacadmin', 'CREATE_SHARING_PROFILE'),
+        ('guacadmin', 'CREATE_USER'),
+        ('guacadmin', 'CREATE_USER_GROUP'),
+        ('guacadmin', 'ADMINISTER')
+) permissions (username, permission)
 JOIN guacamole_entity ON permissions.username = guacamole_entity.name AND guacamole_entity.type = 'USER';
 
 -- Grant admin permission to read/update/administer self
 INSERT INTO guacamole_user_permission (entity_id, affected_user_id, permission)
-SELECT guacamole_entity.entity_id, guacamole_user.user_id, permission
+SELECT guacamole_entity.entity_id, guacamole_user.user_id, permission::guacamole_object_permission_type
 FROM (
-          SELECT 'guacadmin' AS username, 'guacadmin' AS affected_username, 'READ'       AS permission
-    UNION SELECT 'guacadmin' AS username, 'guacadmin' AS affected_username, 'UPDATE'     AS permission
-    UNION SELECT 'guacadmin' AS username, 'guacadmin' AS affected_username, 'ADMINISTER' AS permission
-) permissions
+    VALUES
+        ('guacadmin', 'guacadmin', 'READ'),
+        ('guacadmin', 'guacadmin', 'UPDATE'),
+        ('guacadmin', 'guacadmin', 'ADMINISTER')
+) permissions (username, affected_username, permission)
 JOIN guacamole_entity          ON permissions.username = guacamole_entity.name AND guacamole_entity.type = 'USER'
 JOIN guacamole_entity affected ON permissions.affected_username = affected.name AND guacamole_entity.type = 'USER'
 JOIN guacamole_user            ON guacamole_user.entity_id = affected.entity_id;
