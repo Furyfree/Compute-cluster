@@ -13,7 +13,7 @@ This system allows students to access and manage virtual machines and LXC contai
 - **Database**: PostgreSQL 16 (stores Guacamole connections and VM metadata from Proxmox API)
 - **Authentication**: LDAP + JWT tokens
 - **Virtualization**: Proxmox VE cluster (5 nodes)
-- **Remote Access**: Apache Guacamole (planned)
+- **Remote Access**: Apache Guacamole
 - **Deployment**: Docker Compose
 
 ## Infrastructure
@@ -59,6 +59,7 @@ Services will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
+- Guacamole: http://localhost:8001/guacamole
 
 ### 3. Alternative: Start Development Environment Without Docker
 
@@ -103,6 +104,7 @@ ssh node0-tunnel
 This forwards:
 - Port 3000: Frontend (app-server)
 - Port 8000: Backend API (app-server)
+- Port 8001: Guacamole Web UI (Guacamole container)
 - Port 8006: Proxmox Web UI (node0)
 - Port 8080: LDAP Admin (ldap-server)
 
@@ -123,6 +125,7 @@ Once connected via SSH tunneling (`ssh node0-tunnel`), you can access:
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **API Documentation**: http://localhost:8000/docs
+- **Guacamole Web UI**: http://localhost:8001/guacamole
 - **Proxmox Web UI**: https://localhost:8006
 - **LDAP Admin (phpLDAPadmin)**: http://localhost:8080/phpldapadmin/
 
@@ -153,6 +156,8 @@ Check individual service logs:
 docker logs compute-cluster-backend
 docker logs compute-cluster-frontend
 docker logs compute-cluster-db
+docker logs compute-cluster-guacd
+docker logs compute-cluster-guacamole
 ```
 
 ## Database Schema
