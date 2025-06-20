@@ -77,7 +77,7 @@ services:
       db:
         condition: service_healthy
       guacd:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
