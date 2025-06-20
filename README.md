@@ -129,20 +129,88 @@ Once connected via SSH tunneling (`ssh node0-tunnel`), you can access:
 - **Proxmox Web UI**: https://localhost:8006
 - **LDAP Admin (phpLDAPadmin)**: http://localhost:8080/phpldapadmin/
 
-### Server Updates
+### Server Updates and Deployment
 
-On the app-server, use the rebuild command:
+#### Using the Rebuild Server Script
+
+On the app-server, use the interactive rebuild script:
+
+```bash
+./scripts/rebuild_server.sh
+```
+
+or if available as a system command:
 
 ```bash
 rebuild_server
 ```
 
-This command:
-1. Pulls latest code from git repository
-2. Resets to latest main branch
-3. Rebuilds and restarts all Docker containers
+#### What the Script Does
 
-The `rebuild_server` command is available system-wide via symlink.
+The `rebuild_server.sh` script is an interactive deployment tool that:
+
+1. **Updates the codebase**: Pulls the latest code from the git repository and resets to the main branch
+2. **Provides rebuild profiles**: Offers three different deployment options
+3. **Handles Docker services**: Stops, rebuilds, and restarts the selected services
+
+#### Rebuild Profiles
+
+The script offers three rebuild profiles:
+
+| Profile | Option | Services | Use Case |
+|---------|--------|----------|----------|
+| **app** (default) | `1` | Backend + Frontend | Most common updates - application code changes |
+| **guacamole** | `2` | Database + Guacamole | When updating remote access or database configurations |
+| **full** | `3` | All services | Complete system rebuild or major infrastructure changes |
+
+#### Interactive Usage
+
+When you run the script, it will:
+
+1. Update the git repository
+2. Present a menu of rebuild options:
+   ```
+   Select rebuild profile:
+   1) app - Backend + Frontend only (default)
+   2) guacamole - Database + Guacamole only
+   3) full - All services
+   
+   Choose profile [1-3, default: 1]:
+   ```
+
+3. Show your selection and ask for confirmation:
+   ```
+   Selected profile: app (Backend + Frontend)
+   Continue? [Y/n]:
+   ```
+
+4. Execute the rebuild process:
+   - Stop the selected services
+   - Rebuild Docker images
+   - Start the services again
+
+#### Examples
+
+**Standard application update (most common):**
+```bash
+./scripts/rebuild_server.sh
+# Press Enter to accept default (app profile)
+# Press Enter or 'Y' to confirm
+```
+
+**Update only database and Guacamole:**
+```bash
+./scripts/rebuild_server.sh
+# Type '2' and press Enter
+# Press Enter or 'Y' to confirm
+```
+
+**Full system rebuild:**
+```bash
+./scripts/rebuild_server.sh
+# Type '3' and press Enter
+# Press Enter or 'Y' to confirm
+```
 
 ### Docker Management
 
@@ -169,11 +237,12 @@ PostgreSQL stores:
 
 ## Development Workflow
 
-1. Make code changes
-2. Run `./scripts/rebuild.sh` to test locally
+1. Make code changes locally
+2. Test with `./scripts/rebuild.sh` for local development
 3. Push changes to git repository
 4. SSH to app-server: `ssh app-server`
-5. Run `rebuild_server` to deploy
+5. Run `./scripts/rebuild_server.sh` and select appropriate profile
+6. Verify deployment through the web interfaces
 
 ## Authors
 
