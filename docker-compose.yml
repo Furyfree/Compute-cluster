@@ -44,5 +44,36 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  guacd:
+    image: guacamole/guacd:1.5.4
+    container_name: compute-cluster-guacd
+    restart: unless-stopped
+
+  guacamole:
+    image: guacamole/guacamole:1.5.4
+    container_name: compute-cluster-guacamole
+    ports:
+      - "8001:8080"
+    environment:
+      GUACD_HOSTNAME: guacd
+      GUACD_PORT: 4822
+
+      POSTGRES_DATABASE: mydb
+      POSTGRES_HOSTNAME: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+      LDAP_HOSTNAME: 10.51.33.17
+      LDAP_PORT: 389
+      LDAP_USER_BASE_DN: dc=example,dc=com
+      LDAP_USERNAME_ATTRIBUTE: uid
+    depends_on:
+      db:
+        condition: service_healthy
+      guacd:
+        condition: service_started
+    restart: unless-stopped
+
 volumes:
   pgdata:
