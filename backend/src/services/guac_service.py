@@ -17,14 +17,14 @@ def get_guac_token():
     res.raise_for_status()
     return res.json()
 
-def _get_auth_headers():
-    """Helper function to get authorization headers"""
+def get_formatted_token():
+    """Get formatted authorization token as headers dictionary"""
     token_data = get_guac_token()
     return {"Guacamole-Token": token_data["authToken"]}
 
 def get_connections():
     """Get all connections"""
-    headers = _get_auth_headers()
+    headers = get_formatted_token()
     res = httpx.get(
         f"{GUAC_URL}/api/session/data/postgresql/connections",
         headers=headers
@@ -34,7 +34,7 @@ def get_connections():
 
 def get_connection(connection_id: str):
     """Get specific connection details"""
-    headers = _get_auth_headers()
+    headers = get_formatted_token()
     res = httpx.get(
         f"{GUAC_URL}/api/session/data/postgresql/connections/{connection_id}",
         headers=headers
@@ -49,13 +49,3 @@ def get_connection_url(connection_id: str) -> str:
 
     connection_url = f"{GUAC_EMBED}/#/client/{connection_id}?token={auth_token}"
     return connection_url
-
-def create_connection_token(connection_id: str) -> dict:
-    """Create a specific token for a connection"""
-    headers = _get_auth_headers()
-    res = httpx.post(
-        f"{GUAC_URL}/api/session/data/postgresql/connections/{connection_id}/tokens",
-        headers=headers
-    )
-    res.raise_for_status()
-    return res.json()
