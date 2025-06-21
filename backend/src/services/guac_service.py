@@ -4,6 +4,8 @@ from src.util.env import get_required_env
 GUAC_URL = get_required_env("GUACAMOLE_URL")
 GUAC_USER = get_required_env("GUACAMOLE_USERNAME")
 GUAC_PASS = get_required_env("GUACAMOLE_PASSWORD")
+GUAC_EMBED = get_required_env("GUACAMOLE_URL_EMBED")
+
 
 def get_guac_token():
     """"Get guacamole token for user"""
@@ -40,12 +42,12 @@ def get_connection(connection_id: str):
     res.raise_for_status()
     return res.json()
 
-def get_connection_url(connection_id: str, username: str = None) -> str:
+def get_connection_url(connection_id: str) -> str:
     """Get direct connection URL for embedding"""
     token_data = get_guac_token()
     auth_token = token_data["authToken"]
 
-    connection_url = f"{GUAC_URL}/#/client/{connection_id}?token={auth_token}"
+    connection_url = f"{GUAC_EMBED}/#/client/{connection_id}?token={auth_token}"
     return connection_url
 
 def create_connection_token(connection_id: str) -> dict:
