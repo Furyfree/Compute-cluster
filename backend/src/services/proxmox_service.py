@@ -101,17 +101,31 @@ def get_vm_ip(node_name, vmid):
 def get_node_report(node):
     return proxmox.nodes(node).report.get()
 def get_node_performance(node: str):
+
     status = proxmox.nodes(node).status.get()
 
+    cpu_usage = round(status.get("cpu", 0.0) * 100, 2)
+    load_avg = status.get("loadavg", [])
+
+    mem = status.get("memory", {})
+    disk = status.get("rootfs", {})
+
+    mem_total = mem.get("total", 0)
+    mem_used = mem.get("used", 0)
+    disk_total = disk.get("total", 0)
+    disk_used = disk.get("used", 0)
+
     return {
-        "cpu_usage": round(status.get("cpu", 0.0) * 100, 2),  # Convert to percentage
-        "load_average": status.get("loadavg", []),
-        "memory": {
-            "total": status.get("memory", {}).get("total"),
-            "used": status.get("memory", {}).get("used"),
+        "CPU Usage": f"{cpu_usage:.2f}%",
+        "Load Average (1m, 5m, 15m)": load_avg,
+        "Memory Usage": {
+            "Used": f"{mem_used / 1_073_741_824:.2f} GB",
+            "Total": f"{mem_total / 1_073_741_824:.2f} GB",
+            "Usage Percent": f"{(mem_used / mem_total) * 100:.1f}%" if mem_total else "N/A"
         },
-        "disk": {
-            "total": status.get("rootfs", {}).get("total"),
-            "used": status.get("rootfs", {}).get("used"),
+        "Disk Usage": {
+            "Used": f"{disk_used / 1_073_741_824:.2f} GB",
+            "Total": f"{disk_total / 1_073_741_824:.2f} GB",
+            "Usage Percent": f"{(disk_used / disk_total) * 100:.1f}%" if disk_total else "N/A"
         }
     }
