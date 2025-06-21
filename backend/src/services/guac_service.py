@@ -39,3 +39,21 @@ def get_connection(connection_id: str):
     )
     res.raise_for_status()
     return res.json()
+
+def get_connection_url(connection_id: str, username: str = None) -> str:
+    """Get direct connection URL for embedding"""
+    token_data = get_guac_token()
+    auth_token = token_data["authToken"]
+
+    connection_url = f"{GUAC_URL}/#/client/{connection_id}?token={auth_token}"
+    return connection_url
+
+def create_connection_token(connection_id: str) -> dict:
+    """Create a specific token for a connection"""
+    headers = _get_auth_headers()
+    res = httpx.post(
+        f"{GUAC_URL}/api/session/data/postgresql/connections/{connection_id}/tokens",
+        headers=headers
+    )
+    res.raise_for_status()
+    return res.json()

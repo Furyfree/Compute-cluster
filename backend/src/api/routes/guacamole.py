@@ -16,3 +16,7 @@ def get_connections():
 @router.get("/connections/{connection_id}", dependencies=[Depends(get_current_user)], summary="Get Connection Details")
 def get_connection(connection_id: str):
     return guac_service.get_connection(connection_id)
+
+@router.get("/connections/{connection_id}/url", dependencies=[Depends(get_current_user)], summary="Get Connection URL")
+def get_connection_url(connection_id: str):
+    return guac_service.get_connection_url(connection_id)
