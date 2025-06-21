@@ -14,7 +14,7 @@ def sync_ldap_changes():
     """Sync LDAP users and groups to Proxmox"""
     return proxmox.access.domains("LDAP").sync.post(
         scope="both", 
-        remove_vanished="entry;properties;acl"
+        Full = 1,
         )
 
 def full_ldap_sync():
