@@ -6,4 +6,5 @@ router = APIRouter(prefix="/guacamole", tags=["Guacamole"])
 
 @router.get("/token", dependencies=[Depends(get_current_user)], summary="Get Guacamole Token")
 def get_guac_token():
+    """"Get guacamole token for user"""
     return guac_service.get_guac_token()

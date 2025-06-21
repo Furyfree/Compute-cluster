@@ -6,6 +6,7 @@ GUAC_USER = get_required_env("GUACAMOLE_USERNAME")
 GUAC_PASS = get_required_env("GUACAMOLE_PASSWORD")
 
 def get_guac_token():
+    """"Get guacamole token for user"""
     print(f"GUAC_URL: {GUAC_URL}")
     print(f"GUAC_USER: {GUAC_USER}")
     print(f"Full URL: {GUAC_URL}/api/tokens")
