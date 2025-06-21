@@ -11,12 +11,6 @@ def sync_ldap_to_proxmox():
     result = proxmox_service.sync_ldap_changes()
     return {"message": "LDAP sync completed", "result": result}
 
-@router.post("/ldap/sync/full", dependencies=[Depends(get_current_user)], summary="Full LDAP Sync")
-def full_sync_ldap_to_proxmox():
-    """Full sync of LDAP users and groups to Proxmox (catches missed changes)"""
-    result = proxmox_service.full_ldap_sync()
-    return {"message": "Full LDAP sync completed", "result": result}
-
 @router.get("/ldap/realms", dependencies=[Depends(get_current_user)], summary="List Authentication Realms")
 def list_authentication_realms():
     """List all authentication realms to find the correct LDAP realm name"""
@@ -75,3 +69,8 @@ def stop_lxc_container(node: str, container_id: int):
 def restart_lxc_container(node: str, container_id: int):
     """Restart an LXC container on the specified node"""
     return proxmox_service.reboot_lxc(node, container_id)
+# Node System Report
+@router.get("/nodes/{node}/report", dependencies=[Depends(get_current_user)], summary="Get Node Report")
+def get_node_system_report(node: str):
+    """Get system report from a specific Proxmox node"""
+    return proxmox_service.get_node_report(node)

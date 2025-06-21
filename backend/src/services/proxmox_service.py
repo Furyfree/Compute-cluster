@@ -23,9 +23,6 @@ def sync_ldap_changes():
         verify_ssl=False
     )
     return result
-def full_ldap_sync():
-    """One-time full sync to catch any missed changes"""
-    return proxmox.access.domains("LDAP").sync.post(scope="both",remove_vanished="both")
 
 def list_realms():
     """List all authentication realms"""
