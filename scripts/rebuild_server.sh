@@ -13,8 +13,9 @@ echo "Select rebuild profile:"
 echo "1) app - Backend + Frontend only (default)"
 echo "2) guacamole - Database + Guacamole only"
 echo "3) full - All services"
+echo "4) cancel rebuild"
 echo ""
-read -p "Choose profile [1-3, default: 1]: " choice
+read -p "Choose profile [1-4, default: 1]: " choice
 
 # Set default profile
 PROFILE="app"
@@ -29,6 +30,10 @@ case $choice in
         PROFILE="full"
         DESCRIPTION="All services"
         ;;
+    4)
+        echo "Rebuild cancelled."
+        exit 0
+        ;;
     *)
         PROFILE="app"
         DESCRIPTION="Backend + Frontend"
@@ -36,16 +41,7 @@ case $choice in
 esac
 
 echo ""
-echo "Selected profile: $PROFILE ($DESCRIPTION)"
-read -p "Continue? [Y/n]: " confirm
-
-if [[ $confirm =~ ^[Nn]$ ]]; then
-    echo "Rebuild cancelled."
-    exit 0
-fi
-
-echo ""
-echo "Starting rebuild process for profile: $PROFILE..."
+echo "Starting rebuild process for profile: $PROFILE ($DESCRIPTION)..."
 
 echo "Stopping $DESCRIPTION..."
 docker compose --profile $PROFILE down
