@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.src.api.routes import guacamole
-from src.api.routes import auth, server, proxmox, users
+from src.api.routes import auth, server, proxmox, users, guacamole
 
 app = FastAPI(
     title="Compute Cluster API",
