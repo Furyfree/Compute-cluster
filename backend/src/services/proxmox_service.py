@@ -67,9 +67,6 @@ def stop_vm(node, vmid):
 def reboot_vm(node, vmid):
     return proxmox.nodes(node).qemu(vmid).status.reboot.post()
 
-def get_vm_ip(node, vmid):
-    return None
-
 def start_lxc(node, containerid):
     return proxmox.nodes(node).lxc(containerid).status.start.post()
 
@@ -103,3 +100,5 @@ def get_vm_ip(node_name, vmid):
         if "QEMU agent is not running" in str(e):
             return "QEMU agent not running"
         return f"Error retrieving IP '{str(e)}'"
+def get_node_report(node):
+    return proxmox.nodes(node).report.get()
