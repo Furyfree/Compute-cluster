@@ -102,4 +102,4 @@ def get_vm_ip(node_name, vmid):
     except Exception  as e:
         if "QEMU agent is not running" in str(e):
             return "QEMU agent not running"
-        return f"Error retrieving IP: {str(e)}"
+        return f"Error retrieving IP '{str(e)}'"
