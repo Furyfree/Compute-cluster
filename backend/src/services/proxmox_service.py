@@ -100,3 +100,18 @@ def get_vm_ip(node_name, vmid):
         return f"Error retrieving IP '{str(e)}'"
 def get_node_report(node):
     return proxmox.nodes(node).report.get()
+def get_node_performance(node: str):
+    status = proxmox.nodes(node).status.get()
+
+    return {
+        "cpu_usage": round(status.get("cpu", 0.0) * 100, 2),  # Convert to percentage
+        "load_average": status.get("loadavg", []),
+        "memory": {
+            "total": status.get("memory", {}).get("total"),
+            "used": status.get("memory", {}).get("used"),
+        },
+        "disk": {
+            "total": status.get("rootfs", {}).get("total"),
+            "used": status.get("rootfs", {}).get("used"),
+        }
+    }

@@ -74,3 +74,7 @@ def restart_lxc_container(node: str, container_id: int):
 def get_node_system_report(node: str):
     """Get system report from a specific Proxmox node"""
     return proxmox_service.get_node_report(node)
+@router.get("/proxmox/nodes/{node}/performance", summary="Get node performance metrics", dependencies=[Depends(get_current_user)])
+def node_performance(node: str):
+    """Returns CPU, loadavg, memory, and disk usage for a node"""
+    return proxmox_service.get_node_performance(node)
