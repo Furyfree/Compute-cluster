@@ -71,4 +71,20 @@ def reboot_lxc(node, containerid):
     return proxmox.nodes(node).lxc(containerid).status.reboot.post()
 
 def get_lxc_ip(node, containerid):
+    status = proxmox.nodes(node).lxc(containerid).status.current.get()
+    network_info = status.get('data', {}).get('network', {})
+    for iface_name, iface_data in network_info.items():
+        ip = iface_data.get('ip')
+        ip6 = iface_data.get('ip6')
+        if ip:
+            return ip
+        if ip6:
+            return ip6
     return None
+def get_vm_ip(node, vmid):
+     agent_info = proxmox.nodes(node_name).qemu(vmid).agent('network-get-interfaces').get()
+     for iface in agent_info['result']:
+                for ip in iface.get('ip-addresses', []):
+                    # Skip loopback and link-local addresses
+                    if not ip['ip-address'].startswith('127.') and not ip['ip-address'].startswith('10.51.'):
+                        return ip['ip-address']
