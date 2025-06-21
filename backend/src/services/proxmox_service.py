@@ -8,6 +8,7 @@ proxmox = ProxmoxAPI(
     token_name="guac-api",
     token_value=get_required_env("PROXMOX_TOKEN"),
     verify_ssl=False
+    timeout = 30 #default = 5 seconds
 )
 
 def sync_ldap_changes():
