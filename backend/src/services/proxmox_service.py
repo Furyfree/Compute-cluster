@@ -7,7 +7,7 @@ proxmox = ProxmoxAPI(
     user="root@pam",
     token_name="guac-api",
     token_value=get_required_env("PROXMOX_TOKEN"),
-    verify_ssl=False
+    verify_ssl=False,
     timeout = 30 #default = 5 seconds
 )
 
