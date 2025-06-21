@@ -90,7 +90,7 @@ def get_lxc_ip(node, containerid):
         if ip6:
             return ip6
     return None
-def get_vm_ip(node, vmid):
+def get_vm_ip(node_name, vmid):
      agent_info = proxmox.nodes(node_name).qemu(vmid).agent('network-get-interfaces').get()
      for iface in agent_info['result']:
                 for ip in iface.get('ip-addresses', []):
