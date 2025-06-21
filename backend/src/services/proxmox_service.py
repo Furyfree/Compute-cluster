@@ -12,11 +12,17 @@ proxmox = ProxmoxAPI(
 
 def sync_ldap_changes():
     """Sync LDAP users and groups to Proxmox"""
-    return proxmox.access.domains("LDAP").sync.post(
-        scope="both", 
-        remove_vanished="entry;properties"
-        )
-
+    result = sync_ldap_realm(
+        host= get_required_env("PROXMOX_HOST")
+        realm="LDAP",
+        username="root@pam",
+        password= get_required_env("PROXMOX_PASSWORD"),
+        scope="both",
+        remove_vanished="entry;properties",
+        dry_run=False,
+        verify_ssl=False
+    )
+    return result
 def full_ldap_sync():
     """One-time full sync to catch any missed changes"""
     return proxmox.access.domains("LDAP").sync.post(scope="both",remove_vanished="both")
