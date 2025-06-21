@@ -12,11 +12,11 @@ proxmox = ProxmoxAPI(
 
 def sync_ldap_changes():
     """Sync LDAP users and groups to Proxmox"""
-    return proxmox.access.domains("LDAP").sync.post(scope="both", full=False)
+    return proxmox.access.domains("LDAP").sync.post(scope="both")
 
 def full_ldap_sync():
     """One-time full sync to catch any missed changes"""
-    return proxmox.access.domains("LDAP").sync.post(scope="both", full=True)
+    return proxmox.access.domains("LDAP").sync.post(scope="both")
 
 def list_realms():
     """List all authentication realms"""
