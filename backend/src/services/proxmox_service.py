@@ -12,7 +12,10 @@ proxmox = ProxmoxAPI(
 
 def sync_ldap_changes():
     """Sync LDAP users and groups to Proxmox"""
-    return proxmox.access.domains("LDAP").sync.post(scope="both", remove_vanished="both")
+    return proxmox.access.domains("LDAP").sync.post(
+        scope="both", 
+        remove_vanished="entry;properties;acl"
+        )
 
 def full_ldap_sync():
     """One-time full sync to catch any missed changes"""
