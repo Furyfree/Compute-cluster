@@ -6,15 +6,36 @@ GUAC_USER = get_required_env("GUACAMOLE_USERNAME")
 GUAC_PASS = get_required_env("GUACAMOLE_PASSWORD")
 
 def get_guac_token():
-    print(f"GUAC_URL: {GUAC_URL}")
-    print(f"GUAC_USER: {GUAC_USER}")
-    print(f"Full URL: {GUAC_URL}/api/tokens")
-
+    """"Get guacamole token for user"""
     res = httpx.post(
         f"{GUAC_URL}/api/tokens",
         data={"username": GUAC_USER, "password": GUAC_PASS},
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
-    print(f"Response status: {res.status_code}")
+    res.raise_for_status()
+    return res.json()
+
+def _get_auth_headers():
+    """Helper function to get authorization headers"""
+    token_data = get_guac_token()
+    return {"Guacamole-Token": token_data["authToken"]}
+
+def get_connections():
+    """Get all connections"""
+    headers = _get_auth_headers()
+    res = httpx.get(
+        f"{GUAC_URL}/api/session/data/postgresql/connections",
+        headers=headers
+    )
+    res.raise_for_status()
+    return list(res.json().values())
+
+def get_connection(connection_id: str):
+    """Get specific connection details"""
+    headers = _get_auth_headers()
+    res = httpx.get(
+        f"{GUAC_URL}/api/session/data/postgresql/connections/{connection_id}",
+        headers=headers
+    )
     res.raise_for_status()
     return res.json()
