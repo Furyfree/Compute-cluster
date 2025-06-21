@@ -13,7 +13,7 @@ proxmox = ProxmoxAPI(
 def sync_ldap_changes():
     """Sync LDAP users and groups to Proxmox"""
     result = sync_ldap_realm(
-        host= get_required_env("PROXMOX_HOST"),
+        host= get_required_env("PROXMOX_HOST_NAME"),
         realm="LDAP",
         username="root@pam",
         password= get_required_env("PROXMOX_PASSWORD"),
