@@ -91,9 +91,10 @@ def get_lxc_ip(node, containerid):
             return ip6
     return None
 def get_vm_ip(node_name, vmid):
-     agent_info = proxmox.nodes(node_name).qemu(vmid).agent('network-get-interfaces').get()
-     for iface in agent_info['result']:
-                for ip in iface.get('ip-addresses', []):
-                    # Skip loopback and link-local addresses
-                    if not ip['ip-address'].startswith('127.') and not ip['ip-address'].startswith('10.51.'):
-                        return ip['ip-address']
+    agent_info = proxmox.nodes(node_name).qemu(vmid).agent('network-get-interfaces').get()
+    for iface in agent_info['result']:
+        for ip in iface.get('ip-addresses', []):
+            # Skip loopback (127.x.x.x or ::1)
+            if ip['ip-address'].startswith('127.') or ip['ip-address'] == '::1':
+                continue
+            return ip['ip-address']  # Accept 10.51.x.x and others
