@@ -85,7 +85,7 @@ def create_vnc_connection(connection_data: CreateVNCConnectionRequest):
 
 @router.post("/connections/rdp", dependencies=[Depends(get_current_user)], summary="Create RDP connection")
 def create_rdp_connection(connection_data: CreateRDPConnectionRequest):
-    """Create VNC connection"""
+    """Create RDP connection"""
     result = guac_service.create_rdp_connection(
         name=connection_data.name,
         hostname=connection_data.hostname,
