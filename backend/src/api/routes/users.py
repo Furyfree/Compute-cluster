@@ -86,6 +86,9 @@ def change_username(username: str, username_data: UpdateUsernameRequest):
 @router.patch("/{username}/change/group", dependencies=[Depends(get_current_user)])
 def change_user_group(username: str, group_data: UpdateGroupRequest, current_user: dict = Depends(get_current_user)):
     """Change user group"""
+    print(f"DEBUG: Current user = {current_user}")
+    print(f"DEBUG: is_admin = {current_user.get('is_admin', False)}")
+
     if not current_user.get("is_admin", False):
         raise HTTPException(status_code=403, detail="Admin privileges required")
 
