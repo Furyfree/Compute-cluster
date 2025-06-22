@@ -71,17 +71,6 @@ def change_user_password(username: str, password_data: ChangePasswordRequest):
         "message": f"Password changed for user {username}"
     }
 
-@router.patch("/{username}/change/email", dependencies=[Depends(get_current_user)])
-def change_user_email(username: str, email_data: UpdateEmailRequest):
-    """Change user email"""
-    ldap_result = ldap_service.change_email(username, email_data.email)
-
-    return {
-        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
-        "ldap_result": ldap_result,
-        "message": f"Email changed for user {username} to {email_data.email}"
-    }
-
 @router.patch("/{username}/change/username", dependencies=[Depends(get_current_user)])
 def change_username(username: str, username_data: UpdateUsernameRequest):
     """Change username"""

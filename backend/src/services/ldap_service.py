@@ -151,18 +151,6 @@ def change_username(old_username: str, new_username: str):
         return conn.result
 
 @sync_ldap_after
-def change_email(username: str, new_email: str):
-    """Change user email in LDAP"""
-    with get_admin_connection() as conn:
-        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=["cn"])
-        if not conn.entries:
-            return {"success": False, "description": f"User {username} not found"}
-
-        user_dn = conn.entries[0].entry_dn
-        conn.modify(user_dn, {'mail': [(MODIFY_REPLACE, [new_email])]})
-        return conn.result
-
-@sync_ldap_after
 def change_group(username: str, new_group: str):
     """Change user group in LDAP"""
     with get_admin_connection() as conn:
