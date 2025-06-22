@@ -12,7 +12,7 @@ class AdminChangePasswordRequest(BaseModel):
 class UpdateGroupRequest(BaseModel):
     group: Literal["test", "admin", "user"] = Field(examples=["admin"])
 
-@router.patch("/{username}/admin/change/password", dependencies=[Depends(get_current_user)])
+@router.patch("/{username}/change/password", dependencies=[Depends(get_current_user)])
 def admin_change_user_password(username: str, password_data: AdminChangePasswordRequest, current_user: dict = Depends(get_current_user)):
     """Admin change user password (no old password required)"""
     if not current_user.get("is_admin", False):
@@ -43,7 +43,7 @@ def change_user_group(username: str, group_data: UpdateGroupRequest, current_use
         "message": f"Group changed for user {username} to {group_data.group}"
     }
 
-@router.delete("/{username}/admin/delete", dependencies=[Depends(get_current_user)])
+@router.delete("/{username}/delete", dependencies=[Depends(get_current_user)])
 def delete_user(username: str, current_user: dict = Depends(get_current_user)):
     """Delete user as admin"""
     ldap_result = ldap_service.delete_user(username)
