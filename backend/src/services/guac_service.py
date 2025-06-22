@@ -135,3 +135,48 @@ def create_vnc_connection(
             }
     res.raise_for_status()
     return res.json()
+
+def create_rdp_connection(
+    name: str,
+    hostname: str,
+    username: str,
+    password: str,
+    port: int,
+    max_connections: int,
+    max_connections_per_user: int
+):
+    """Create RDP connection"""
+    headers = get_formatted_token()
+    headers["Content-Type"] = "application/json"
+
+    connection_data = {
+        "name": name,
+        "parentIdentifier": "ROOT",
+        "protocol": "rdp",
+        "parameters": {
+            "hostname": hostname,
+            "port": str(port),
+            "username": username,
+            "password": password
+        },
+        "attributes": {
+            "max-connections": str(max_connections),
+            "max-connections-per-user": str(max_connections_per_user)
+        }
+    }
+
+    res = httpx.post(
+        f"{GUAC_URL}/api/session/data/postgresql/connections",
+        headers=headers,
+        json=connection_data
+    )
+
+    if res.status_code == 400:
+        response_data = res.json()
+        if "already exists" in response_data.get("message", ""):
+            return {
+                "error": "Connection already exists",
+                "message": response_data["message"]
+            }
+    res.raise_for_status()
+    return res.json()
