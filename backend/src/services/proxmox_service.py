@@ -1,6 +1,7 @@
 from proxmoxer import ProxmoxAPI
 from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
+from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
     port=8006,
