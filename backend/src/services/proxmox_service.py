@@ -147,7 +147,7 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
     try:
         template_vmid = OS_TEMPLATE_MAP[os]
         new_vmid = get_next_vmid()
-
+        warnings = []
         # Step 1: Clone the VM
         proxmox.nodes(node).qemu(template_vmid).clone.post(
             newid=new_vmid,
@@ -167,7 +167,14 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
             sshkeys=ssh_key
         )
         time.sleep(2)  # Ensure config is applied before regenerating cloud-init
-        proxmox.nodes(node).qemu(new_vmid).cloudinit.regen.post(force=1)
+        try:
+            proxmox.nodes(node).qemu(new_vmid).cloudinit.regen.post(force=1)
+            except ResourceException as e:
+            error_msg = str(e)
+            if "SSH public key validation error" in error_msg:
+                warnings.append("SSH key validation failed. ")
+            else:
+                return {"status": "error", "message": f"Failed to regenerate cloud-init: {error_msg}"}
         time.sleep(2)  # Allow time for cloud-init regeneration
         # Step 4: Start the VM
         proxmox.nodes(node).qemu(new_vmid).status('start').post()
@@ -176,7 +183,8 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
             "status": "success",
             "vmid": new_vmid,
             "node": node,
-            "os": os.value
+            "os": os.value,
+            "warnings": warnings
         }
 
     except Exception as e:
