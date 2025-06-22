@@ -24,39 +24,6 @@ class UpdateUsernameRequest(BaseModel):
     new_username: str = Field(examples=["johndoe2"])
 
 # API
-@router.patch("/{username}/change/password", dependencies=[Depends(get_admin_user)])
-def admin_change_user_password(username: str, password_data: AdminChangePasswordRequest):
-    """Admin change user password (no old password required)"""
-    ldap_result = ldap_service.admin_change_password(username, password_data.new_password)
-
-    return {
-        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
-        "ldap_result": ldap_result,
-        "message": f"Password changed by admin for user {username}"
-    }
-
-@router.patch("/{username}/change/group", dependencies=[Depends(get_admin_user)])
-def admin_change_user_group(username: str, group_data: UpdateGroupRequest):
-    """Admin change user group"""
-    ldap_result = ldap_service.change_group(username, group_data.group)
-
-    return {
-        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
-        "ldap_result": ldap_result,
-        "message": f"Group changed by admin for user {username} to {group_data.group}"
-    }
-
-@router.delete("/{username}/delete", dependencies=[Depends(get_admin_user)])
-def admin_delete_user(username: str):
-    """Admin delete any user"""
-    ldap_result = ldap_service.delete_user(username)
-
-    return {
-        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
-        "ldap_result": ldap_result,
-        "message": f"User {username} deleted by admin"
-    }
-
 @router.get("/users/list", dependencies=[Depends(get_admin_user)])
 def admin_list_all_users():
     """Admin list all users with full details"""
@@ -113,4 +80,37 @@ def admin_change_username(username: str, username_data: UpdateUsernameRequest):
         "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
         "ldap_result": ldap_result,
         "message": f"Username changed by admin from {username} to {username_data.new_username}"
+    }
+
+@router.patch("/{username}/change/password", dependencies=[Depends(get_admin_user)])
+def admin_change_user_password(username: str, password_data: AdminChangePasswordRequest):
+    """Admin change user password (no old password required)"""
+    ldap_result = ldap_service.admin_change_password(username, password_data.new_password)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Password changed by admin for user {username}"
+    }
+
+@router.patch("/{username}/change/group", dependencies=[Depends(get_admin_user)])
+def admin_change_user_group(username: str, group_data: UpdateGroupRequest):
+    """Admin change user group"""
+    ldap_result = ldap_service.change_group(username, group_data.group)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Group changed by admin for user {username} to {group_data.group}"
+    }
+
+@router.delete("/{username}/delete", dependencies=[Depends(get_admin_user)])
+def admin_delete_user(username: str):
+    """Admin delete any user"""
+    ldap_result = ldap_service.delete_user(username)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"User {username} deleted by admin"
     }
