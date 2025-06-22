@@ -9,9 +9,9 @@ load_dotenv()
 
 LDAP_BASE_DN = get_required_env("LDAP_BASE_DN")
 GROUP_GID_MAPPING = {
-    "user": "500",
-    "admin": "501",
-    "test": "502"
+    "user": "503",
+    "admin": "502",
+    "test": "501"
 }
 
 @sync_ldap_after
