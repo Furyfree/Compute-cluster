@@ -162,3 +162,15 @@ def change_group(username: str, new_group: str):
         new_gid = GROUP_GID_MAPPING.get(new_group, "500")
         conn.modify(user_dn, {'gidNumber': [(MODIFY_REPLACE, [new_gid])]})
         return conn.result
+
+@sync_ldap_after
+def admin_change_password(username: str, new_password: str):
+    """Admin change user password without knowing old password"""
+    with get_admin_connection() as conn:
+        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=["cn"])
+        if not conn.entries:
+            return {"success": False, "description": f"User {username} not found"}
+
+        user_dn = conn.entries[0].entry_dn
+        conn.modify(user_dn, {'userPassword': [(MODIFY_REPLACE, [new_password])]})
+        return conn.result

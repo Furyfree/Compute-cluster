@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from src.services import ldap_service
 from src.api.auth_deps import get_current_user
@@ -17,6 +17,9 @@ class CreateUserRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     old_password: str = Field(examples=["OldPass123"])
     new_password: str = Field(examples=["NewPass456"])
+
+class AdminChangePasswordRequest(BaseModel):
+    new_password: str = Field(examples=["NewAdminPass123"], description="New password set by admin")
 
 class UpdateEmailRequest(BaseModel):
     email: str = Field(examples=["john.doe@example.com"])
@@ -91,4 +94,18 @@ def change_user_group(username: str, group_data: UpdateGroupRequest):
         "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
         "ldap_result": ldap_result,
         "message": f"Group changed for user {username} to {group_data.group}"
+    }
+
+@router.patch("/{username}/admin/change/password", dependencies=[Depends(get_current_user)])
+def admin_change_user_password(username: str, password_data: AdminChangePasswordRequest, current_user: dict = Depends(get_current_user)):
+    """Admin change user password (no old password required)"""
+    if not current_user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+
+    ldap_result = ldap_service.admin_change_password(username, password_data.new_password)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Password changed by admin for user {username}"
     }
