@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from src.services import ldap_service
 from src.api.auth_deps import get_current_user
@@ -17,13 +17,10 @@ class ChangePasswordRequest(BaseModel):
     old_password: str = Field(examples=["OldPass123"])
     new_password: str = Field(examples=["NewPass456"])
 
-class UpdateEmailRequest(BaseModel):
-    email: str = Field(examples=["john.doe@example.com"])
-
 class UpdateUsernameRequest(BaseModel):
     new_username: str = Field(examples=["johndoe2"])
 
-
+# API
 @router.get("/", dependencies=[Depends(get_current_user)])
 def get_all_users():
     """List all users"""
@@ -46,8 +43,11 @@ def create_user(user_data: CreateUserRequest):
     }
 
 @router.patch("/{username}/change/password", dependencies=[Depends(get_current_user)])
-def change_user_password(username: str, password_data: ChangePasswordRequest):
-    """Change user password"""
+def change_user_password(username: str, password_data: ChangePasswordRequest, current_user: dict = Depends(get_current_user)):
+    """Change own password only"""
+    if username != current_user["username"]:
+        raise HTTPException(status_code=403, detail="Can only change your own password")
+
     ldap_result = ldap_service.change_password(username, password_data.new_password)
 
     return {
@@ -57,12 +57,64 @@ def change_user_password(username: str, password_data: ChangePasswordRequest):
     }
 
 @router.patch("/{username}/change/username", dependencies=[Depends(get_current_user)])
-def change_username(username: str, username_data: UpdateUsernameRequest):
-    """Change username"""
+def change_username(username: str, username_data: UpdateUsernameRequest, current_user: dict = Depends(get_current_user)):
+    """Change own username only"""
+    if username != current_user["username"]:
+        raise HTTPException(status_code=403, detail="Can only change your own username")
+
     ldap_result = ldap_service.change_username(username, username_data.new_username)
 
     return {
         "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
         "ldap_result": ldap_result,
         "message": f"Username changed from {username} to {username_data.new_username}"
+    }
+
+@router.get("/me", dependencies=[Depends(get_current_user)])
+def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    """Get current user info"""
+    return {
+        "success": True,
+        "user": current_user
+    }
+
+@router.patch("/me/change/password", dependencies=[Depends(get_current_user)])
+def change_my_password(password_data: ChangePasswordRequest, current_user: dict = Depends(get_current_user)):
+    """Change own password"""
+    username = current_user["username"]
+    ldap_result = ldap_service.change_password(username, password_data.new_password)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Password changed for user {username}"
+    }
+
+@router.patch("/me/change/username", dependencies=[Depends(get_current_user)])
+def change_my_username(username_data: UpdateUsernameRequest, current_user: dict = Depends(get_current_user)):
+    """Change own username"""
+    old_username = current_user["username"]
+    ldap_result = ldap_service.change_username(old_username, username_data.new_username)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Username changed from {old_username} to {username_data.new_username}"
+    }
+
+@router.delete("/me/delete", dependencies=[Depends(get_current_user)])
+def delete_my_account(current_user: dict = Depends(get_current_user)):
+    """Delete own account"""
+    username = current_user["username"]
+
+    # Prevent admin from accidentally deleting themselves
+    if current_user.get("is_admin", False):
+        raise HTTPException(status_code=400, detail="Admin users cannot self-delete. Use admin panel instead.")
+
+    ldap_result = ldap_service.delete_user(username)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Account {username} deleted successfully"
     }
