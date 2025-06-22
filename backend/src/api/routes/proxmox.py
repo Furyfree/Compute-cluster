@@ -3,6 +3,7 @@ from src.api.auth_deps import get_current_user
 from src.services import proxmox_service
 from pydantic import BaseModel, Field
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
+from src.services.proxmox_service import provision_vm_from_template
 router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 
 ## Provision VM from OS Template
