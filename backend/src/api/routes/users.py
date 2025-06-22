@@ -21,7 +21,7 @@ class UpdateUsernameRequest(BaseModel):
     new_username: str = Field(examples=["johndoe2"])
 
 # API
-@router.get("/", dependencies=[Depends(get_current_user)])
+@router.get("/list", dependencies=[Depends(get_current_user)])
 def get_all_users():
     """List all users"""
     return ldap_service.list_users()
@@ -40,34 +40,6 @@ def create_user(user_data: CreateUserRequest):
         "success": True,
         "ldap_result": ldap_result,
         "message": f"User {user_data.username} created successfully"
-    }
-
-@router.patch("/{username}/change/password", dependencies=[Depends(get_current_user)])
-def change_user_password(username: str, password_data: ChangePasswordRequest, current_user: dict = Depends(get_current_user)):
-    """Change own password only"""
-    if username != current_user["username"]:
-        raise HTTPException(status_code=403, detail="Can only change your own password")
-
-    ldap_result = ldap_service.change_password(username, password_data.new_password)
-
-    return {
-        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
-        "ldap_result": ldap_result,
-        "message": f"Password changed for user {username}"
-    }
-
-@router.patch("/{username}/change/username", dependencies=[Depends(get_current_user)])
-def change_username(username: str, username_data: UpdateUsernameRequest, current_user: dict = Depends(get_current_user)):
-    """Change own username only"""
-    if username != current_user["username"]:
-        raise HTTPException(status_code=403, detail="Can only change your own username")
-
-    ldap_result = ldap_service.change_username(username, username_data.new_username)
-
-    return {
-        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
-        "ldap_result": ldap_result,
-        "message": f"Username changed from {username} to {username_data.new_username}"
     }
 
 @router.get("/me", dependencies=[Depends(get_current_user)])
