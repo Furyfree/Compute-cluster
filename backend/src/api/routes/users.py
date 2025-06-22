@@ -12,7 +12,6 @@ class CreateUserRequest(BaseModel):
     last_name: str = Field(examples=["Doe"])
     username: str = Field(examples=["johndoe"])
     password: str = Field(examples=["SecurePass123"])
-    group: Literal["test"] = Field(examples=["test"])
 
 class ChangePasswordRequest(BaseModel):
     old_password: str = Field(examples=["OldPass123"])
@@ -44,7 +43,6 @@ def create_user(user_data: CreateUserRequest):
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         password=user_data.password,
-        group=user_data.group
     )
 
     return {
@@ -86,8 +84,11 @@ def change_username(username: str, username_data: UpdateUsernameRequest):
     }
 
 @router.patch("/{username}/change/group", dependencies=[Depends(get_current_user)])
-def change_user_group(username: str, group_data: UpdateGroupRequest):
+def change_user_group(username: str, group_data: UpdateGroupRequest, current_user: dict = Depends(get_current_user)):
     """Change user group"""
+    if not current_user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+
     ldap_result = ldap_service.change_group(username, group_data.group)
 
     return {

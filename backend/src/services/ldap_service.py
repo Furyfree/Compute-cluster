@@ -9,17 +9,19 @@ load_dotenv()
 
 LDAP_BASE_DN = get_required_env("LDAP_BASE_DN")
 GROUP_GID_MAPPING = {
-    "test": "501"
+    "user": "500",
+    "admin": "501",
+    "test": "502"
 }
 
 @sync_ldap_after
-def create_user(username: str, first_name: str, last_name: str, password: str, group: str):
-    """Create a new user in LDAP"""
+def create_user(username: str, first_name: str, last_name: str, password: str):
+    """Create a new user in LDAP with default 'user' group"""
     with get_admin_connection() as conn:
         full_name = f"{first_name} {last_name}"
         dn = f"cn={full_name},{LDAP_BASE_DN}"
         uid_number = get_next_uid()
-        gid = GROUP_GID_MAPPING.get(group, "500")
+        gid = GROUP_GID_MAPPING["user"]
 
         entry = {
             "objectClass": ["inetOrgPerson", "posixAccount", "top"],
