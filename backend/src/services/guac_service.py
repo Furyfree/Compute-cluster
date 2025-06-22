@@ -67,12 +67,8 @@ def create_ssh_connection(
         "parentIdentifier": "ROOT",
         "protocol": "ssh",
         "parameters": {
-            "guacd-hostname": "guacd",
-            "guacd-port": "4822",
-
             "hostname": hostname,
             "port": "22",
-
             "username": username,
             "password": password,
         },
