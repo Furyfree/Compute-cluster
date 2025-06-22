@@ -82,10 +82,13 @@ def create_ssh_connection(
         headers=headers,
         json=connection_data
     )
-    url = f"{GUAC_URL}/api/session/data/postgresql/connections"
-    print(f"DEBUG: URL = {url}")
-    print(f"DEBUG: Payload = {connection_data}")
-    print(f"DEBUG: Status = {res.status_code}")
-    print(f"DEBUG: Response = {res.text}")
+
+    if res.status_code == 400:
+        response_data = res.json()
+        if "already exists" in response_data.get("message", ""):
+            return {
+                "error": "Connection already exists",
+                "message": response_data["message"]
+            }
     res.raise_for_status()
     return res.json()
