@@ -55,7 +55,7 @@ def create_ssh_connection(connection_data: CreateSSHConnectionRequest):
         "connection": result
     }
 
-@router.post("/connections/VNC", dependencies=[Depends(get_current_user)], summary="Create VNC connection")
+@router.post("/connections/vnc", dependencies=[Depends(get_current_user)], summary="Create VNC connection")
 def create_vnc_connection(connection_data: CreateVNCConnectionRequest):
     """Create VNC connection"""
     result = guac_service.create_vnc_connection(
