@@ -71,14 +71,35 @@ def change_user_password(username: str, password_data: ChangePasswordRequest):
         "message": f"Password changed for user {username}"
     }
 
-@router.patch("/{username}/email", dependencies=[Depends(get_current_user)])
-def update_user_email(username: str, email_data: UpdateEmailRequest):
-    """Update user email"""
+@router.patch("/{username}/change/email", dependencies=[Depends(get_current_user)])
+def change_user_email(username: str, email_data: UpdateEmailRequest):
+    """Change user email"""
+    ldap_result = ldap_service.change_email(username, email_data.email)
 
-@router.patch("/{username}/username", dependencies=[Depends(get_current_user)])
-def update_username(username: str, username_data: UpdateUsernameRequest):
-    """Update username"""
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Email changed for user {username} to {email_data.email}"
+    }
 
-@router.patch("/{username}/group", dependencies=[Depends(get_current_user)])
-def update_user_group(username: str, group_data: UpdateGroupRequest):
-    """Update user group"""
+@router.patch("/{username}/change/username", dependencies=[Depends(get_current_user)])
+def change_username(username: str, username_data: UpdateUsernameRequest):
+    """Change username"""
+    ldap_result = ldap_service.change_username(username, username_data.new_username)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Username changed from {username} to {username_data.new_username}"
+    }
+
+@router.patch("/{username}/change/group", dependencies=[Depends(get_current_user)])
+def change_user_group(username: str, group_data: UpdateGroupRequest):
+    """Change user group"""
+    ldap_result = ldap_service.change_group(username, group_data.group)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Group changed for user {username} to {group_data.group}"
+    }
