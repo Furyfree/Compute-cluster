@@ -13,13 +13,15 @@ echo "Select rebuild profile:"
 echo "1) app - Backend + Frontend only (default)"
 echo "2) guacamole - Database + Guacamole only"
 echo "3) full - All services"
-echo "4) cancel rebuild"
+echo "4) clean-full - DELETE ALL DATA and rebuild everything"
+echo "5) cancel rebuild"
 echo ""
-read -p "Choose profile [1-4, default: 1]: " choice
+read -p "Choose profile [1-5, default: 1]: " choice
 
 # Set default profile
 PROFILE="app"
 DESCRIPTION="Backend + Frontend"
+CLEAN_REBUILD=false
 
 case $choice in
     2)
@@ -31,6 +33,22 @@ case $choice in
         DESCRIPTION="All services"
         ;;
     4)
+        PROFILE="full"
+        DESCRIPTION="All services (CLEAN REBUILD)"
+        CLEAN_REBUILD=true
+        echo ""
+        echo "WARNING: This will DELETE ALL DATA including:"
+        echo " - PostgreSQL database (all Guacamole connections, users)"
+        echo " - Docker volumes"
+        echo " - All containers"
+        echo ""
+        read -p "Are you absolutely sure? Type 'YES' to confirm: " confirm
+        if [ "$confirm" != "YES" ]; then
+            echo "Clean rebuild cancelled."
+            exit 0
+        fi
+        ;;
+    5)
         echo "Rebuild cancelled."
         exit 0
         ;;
@@ -40,18 +58,37 @@ case $choice in
         ;;
 esac
 
-echo ""
-echo "Starting rebuild process for profile: $PROFILE ($DESCRIPTION)..."
+if [ "$CLEAN_REBUILD" = true ]; then
+    echo "CLEAN REBUILD: Stopping all services..."
+    docker compose down --remove-orphans
 
-echo "Stopping $DESCRIPTION..."
-docker compose --profile $PROFILE down
+    echo "CLEAN REBUILD: Removing all containers..."
+    docker compose rm -f
 
-echo "Building $DESCRIPTION..."
-docker compose --profile $PROFILE build
+    echo "CLEAN REBUILD: Removing all volumes..."
+    docker compose down -v
+
+    echo "CLEAN REBUILD: Removing all images..."
+    docker compose down --rmi all
+
+    echo "CLEAN REBUILD: Building everything from scratch..."
+    docker compose --profile $PROFILE build --no-cache
+else
+    echo "Stopping $DESCRIPTION..."
+    docker compose --profile $PROFILE down
+
+    echo "Building $DESCRIPTION..."
+    docker compose --profile $PROFILE build
+fi
 
 echo "Starting $DESCRIPTION..."
 docker compose --profile $PROFILE up -d
 
 echo ""
-echo "$DESCRIPTION rebuilt successfully!"
+if [ "$CLEAN_REBUILD" = true ]; then
+    echo "Clean rebuild completed! Everything has been reset to factory defaults."
+    echo "Remember to reconfigure Guacamole connections if needed."
+else
+    echo "$DESCRIPTION rebuilt successfully!"
+fi
 echo "Server update and rebuild completed successfully!"
