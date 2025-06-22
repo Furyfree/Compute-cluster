@@ -102,7 +102,7 @@ def create_rdp_connection(connection_data: CreateRDPConnectionRequest):
         "connection": result
     }
 
-@router.delete("/connections/{connection_id}", dependencies=[Depends(get_current_user)], summary="Delete Connection")
+@router.delete("/connections/{connection_id}/delete", dependencies=[Depends(get_current_user)], summary="Delete Connection")
 def delete_guacamole_connection(connection_id: str):
     """Delete a Guacamole connection"""
     result = guac_service.delete_connection(connection_id)
