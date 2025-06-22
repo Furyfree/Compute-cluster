@@ -169,7 +169,7 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
         time.sleep(2)  # Ensure config is applied before regenerating cloud-init
         try:
             proxmox.nodes(node).qemu(new_vmid).cloudinit.regen.post(force=1)
-            except ResourceException as e:
+        except Exception as e:
             error_msg = str(e)
             if "SSH public key validation error" in error_msg:
                 warnings.append("SSH key validation failed. ")
