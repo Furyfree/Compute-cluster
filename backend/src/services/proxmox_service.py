@@ -3,6 +3,7 @@ from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 from src.util.proxmox_util import wait_for_vm_ready
+import time
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
     port=8006,
@@ -165,18 +166,17 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
             cipassword=password,
             sshkeys=ssh_key
         )
-
+        time.sleep(2)  # Ensure config is applied before regenerating cloud-init
         proxmox.nodes(node).qemu(new_vmid).cloudinit('regen').post(force=1)
-
+        time.sleep(2)  # Allow time for cloud-init regeneration
         # Step 4: Start the VM
         proxmox.nodes(node).qemu(new_vmid).status('start').post()
 
         return {
             "status": "success",
             "vmid": new_vmid,
-            "template": template_vmid,
-            "os": os.value,
-            "node": node
+            "node": node,
+            "os": os.value
         }
 
     except Exception as e:
