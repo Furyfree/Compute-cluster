@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from src.api.auth_deps import get_current_user
 from src.services import proxmox_service
 from pydantic import BaseModel, Field
+from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 
 # LDAP Sync
