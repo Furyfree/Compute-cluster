@@ -1,8 +1,17 @@
 from fastapi import APIRouter, Depends
 from src.services import guac_service
 from src.api.auth_deps import get_current_user
+from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/guacamole", tags=["Guacamole"])
+
+class CreateSSHConnectionRequest(BaseModel):
+    name: str = Field(examples=["App-server"])
+    hostname: str = Field(examples=["10.51.32.242"], description="IP address of the server")
+    username: str = Field(examples=["app-server"], description="VM login Username")
+    password: str = Field(examples=["password123"])
+    max_connections: int = Field(default=2, examples=[2])
+    max_connections_per_user: int = Field(default=1, examples=[1])
 
 @router.get("/token", dependencies=[Depends(get_current_user)], summary="Get Guacamole Token")
 def get_guac_token():
@@ -20,3 +29,21 @@ def get_connection(connection_id: str):
 @router.get("/connections/{connection_id}/url", dependencies=[Depends(get_current_user)], summary="Get Connection URL")
 def get_connection_url(connection_id: str):
     return guac_service.get_connection_url(connection_id)
+
+@router.post("/connections/ssh", dependencies=[Depends(get_current_user)], summary="Create SSH connection")
+def create_ssh_connection(connection_data: CreateSSHConnectionRequest):
+    """Create SSH connection"""
+    result = guac_service.create_ssh_connection(
+        name=connection_data.name,
+        hostname=connection_data.hostname,
+        username=connection_data.username,
+        password=connection_data.password,
+        max_connections=connection_data.max_connections,
+        max_connections_per_user=connection_data.max_connections_per_user
+    )
+
+    return {
+        "success": True,
+        "message": f"SSH connection '{connection_data.name}' created successfully",
+        "connection": result
+    }

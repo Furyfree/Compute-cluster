@@ -49,3 +49,42 @@ def get_connection_url(connection_id: str) -> str:
 
     connection_url = f"{GUAC_EMBED}/#/client/{connection_id}?token={auth_token}"
     return connection_url
+
+def create_ssh_connection(
+    name: str,
+    hostname: str,
+    username: str,
+    password: str,
+    max_connections: int,
+    max_connections_per_user: int
+):
+    """Create SSH connection in Guacamole"""
+    headers = get_formatted_token()
+    headers["Content-Type"] = "application/json"
+
+    connection_data = {
+        "name": name,
+        "parentIdentifier": "ROOT",
+        "protocol": "ssh",
+        "parameters": {
+            "guacd-hostname": "guacd",
+            "guacd-port": "4822",
+
+            "hostname": hostname,
+            "port": "22",
+
+            "username": username,
+            "password": password,
+        },
+        "attributes": {
+            "max-connections": str(max_connections),
+            "max-connections-per-user": str(max_connections_per_user)
+        }
+    }
+    res = httpx.post(
+        f"{GUAC_URL}/api/session/data/postgresql/connections",
+        headers=headers,
+        json=connection_data
+    )
+    res.raise_for_status()
+    return res.json()
