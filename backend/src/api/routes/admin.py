@@ -4,7 +4,7 @@ from src.services import ldap_service
 from src.api.auth_deps import get_admin_user
 from typing import Literal
 
-router = APIRouter(prefix="/admin", tags=["🔒 Admin"])
+router = APIRouter(prefix="/admin", tags=["Admin"])
 
 # Models
 class AdminChangePasswordRequest(BaseModel):
@@ -47,12 +47,8 @@ def admin_change_user_group(username: str, group_data: UpdateGroupRequest):
     }
 
 @router.delete("/{username}/delete", dependencies=[Depends(get_admin_user)])
-def admin_delete_user(username: str, current_admin: dict = Depends(get_admin_user)):
+def admin_delete_user(username: str):
     """Admin delete any user"""
-    # Prevent admin from deleting themselves
-    if username == current_admin["username"]:
-        raise HTTPException(status_code=400, detail="Cannot delete your own admin account")
-
     ldap_result = ldap_service.delete_user(username)
 
     return {
@@ -61,7 +57,7 @@ def admin_delete_user(username: str, current_admin: dict = Depends(get_admin_use
         "message": f"User {username} deleted by admin"
     }
 
-@router.get("/users/", dependencies=[Depends(get_admin_user)])
+@router.get("/users/list", dependencies=[Depends(get_admin_user)])
 def admin_list_all_users():
     """Admin list all users with full details"""
     users = ldap_service.list_users()
@@ -117,33 +113,4 @@ def admin_change_username(username: str, username_data: UpdateUsernameRequest):
         "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
         "ldap_result": ldap_result,
         "message": f"Username changed by admin from {username} to {username_data.new_username}"
-    }
-
-@router.get("/stats", dependencies=[Depends(get_admin_user)])
-def admin_get_stats():
-    """Admin get system statistics"""
-    users = ldap_service.list_users()
-    detailed_users = []
-
-    for user in users:
-        user_info = ldap_service.get_user_info(user["uid"])
-        if user_info:
-            detailed_users.append(user_info)
-
-    # Count users by group
-    group_counts = {"user": 0, "admin": 0, "test": 0}
-    for user in detailed_users:
-        if user.get("is_admin"):
-            group_counts["admin"] += 1
-        elif user.get("gid_number") == "501":  # test group
-            group_counts["test"] += 1
-        else:
-            group_counts["user"] += 1
-
-    return {
-        "success": True,
-        "stats": {
-            "total_users": len(detailed_users),
-            "groups": group_counts
-        }
     }
