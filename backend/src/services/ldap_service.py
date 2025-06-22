@@ -1,4 +1,4 @@
-from ldap3 import SUBTREE
+from ldap3 import SUBTREE, MODIFY_REPLACE
 from ldap3.core.exceptions import LDAPBindError
 from dotenv import load_dotenv
 from src.util.env import get_required_env
@@ -128,8 +128,15 @@ def get_user_info(username: str):
         }
 
 @sync_ldap_after
-def change_password():
-    return
+def change_password(username: str, new_password: str):
+    with get_admin_connection() as conn:
+        conn.search(LDAP_BASE_DN, f"(uid={username})", attributes=["cn"])
+        if not conn.entries:
+            return {"success": False, "description": f"User {username} not found"}
+
+        user_dn = conn.entries[0].entry_dn
+        conn.modify(user_dn, {'userPassword': [(MODIFY_REPLACE, [new_password])]})
+        return conn.result
 
 @sync_ldap_after
 def change_username():

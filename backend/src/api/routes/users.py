@@ -60,9 +60,16 @@ def delete_user(username: str):
         "message": f"User {username} deleted from LDAP"
     }
 
-@router.patch("/{username}/password", dependencies=[Depends(get_current_user)])
+@router.patch("/{username}/change/password", dependencies=[Depends(get_current_user)])
 def change_user_password(username: str, password_data: ChangePasswordRequest):
     """Change user password"""
+    ldap_result = ldap_service.change_password(username, password_data.new_password)
+
+    return {
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Password changed for user {username}"
+    }
 
 @router.patch("/{username}/email", dependencies=[Depends(get_current_user)])
 def update_user_email(username: str, email_data: UpdateEmailRequest):
