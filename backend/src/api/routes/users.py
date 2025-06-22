@@ -26,14 +26,6 @@ def get_all_users():
     """List all users"""
     return ldap_service.list_users()
 
-@router.get("/me", dependencies=[Depends(get_current_user)])
-def get_current_user_info(current_user: dict = Depends(get_current_user)):
-    """Get current user info"""
-    return {
-        "success": True,
-        "user": current_user
-    }
-
 @router.post("/create", summary="Create User")
 def create_user(user_data: CreateUserRequest):
     """Create a new user"""
@@ -48,6 +40,14 @@ def create_user(user_data: CreateUserRequest):
         "success": True,
         "ldap_result": ldap_result,
         "message": f"User {user_data.username} created successfully"
+    }
+
+@router.get("/me", dependencies=[Depends(get_current_user)])
+def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    """Get current user info"""
+    return {
+        "success": True,
+        "user": current_user
     }
 
 @router.patch("/me/change/username", dependencies=[Depends(get_current_user)])
