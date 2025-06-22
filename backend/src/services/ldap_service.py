@@ -126,7 +126,7 @@ def get_user_info(username: str):
             "home_directory": user_entry.homeDirectory.value if hasattr(user_entry, "homeDirectory") else "",
             "uid_number": user_entry.uidNumber.value if hasattr(user_entry, "uidNumber") else "",
             "gid_number": user_entry.gidNumber.value if hasattr(user_entry, "gidNumber") else "",
-            "is_admin": user_entry.gidNumber.value == "501" if hasattr(user_entry, "gidNumber") else False
+            "is_admin": user_entry.gidNumber.value == "502" if hasattr(user_entry, "gidNumber") else False
         }
 
 @sync_ldap_after
