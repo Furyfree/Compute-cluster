@@ -82,5 +82,10 @@ def create_ssh_connection(
         headers=headers,
         json=connection_data
     )
+    url = f"{GUAC_URL}/api/session/data/postgresql/connections"
+    print(f"DEBUG: URL = {url}")
+    print(f"DEBUG: Payload = {connection_data}")
+    print(f"DEBUG: Status = {res.status_code}")
+    print(f"DEBUG: Response = {res.text}")
     res.raise_for_status()
     return res.json()
