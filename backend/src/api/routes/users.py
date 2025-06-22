@@ -51,11 +51,14 @@ def create_user(user_data: CreateUserRequest):
         "message": f"User {user_data.username} created successfully"
     }
 
-@router.delete("/{username}/delete", dependencies=[Depends(get_current_user)])
-def delete_user(username: str):
+@router.delete("/{username}/admin/delete", dependencies=[Depends(get_current_user)]) #kan delete alle users (admin delete)
+def delete_user(username: str, current_user: dict = Depends(get_current_user)):
     """Delete user"""
     ldap_result = ldap_service.delete_user(username)
 
+    if not current_user.get("is_admin", False):
+        raise HTTPException(status_code=403, detail="Admin privileges required")
+    
     return {
         "ldap_result": ldap_result,
         "message": f"User {username} deleted from LDAP"
