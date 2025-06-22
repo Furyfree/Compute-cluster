@@ -2,6 +2,7 @@ from proxmoxer import ProxmoxAPI
 from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
+from src.util.proxmox_util import wait_for_vm_ready
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
     port=8006,
@@ -146,7 +147,7 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
         template_vmid = OS_TEMPLATE_MAP[os]
         new_vmid = get_next_vmid()
 
-        # Clone the template
+        # Step 1: Clone the VM
         proxmox.nodes(node).qemu(template_vmid).clone.post(
             newid=new_vmid,
             name=f"{os.value.lower()}-{new_vmid}",
@@ -154,17 +155,20 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
             target=node
         )
 
-        # Apply cloud-init config
+        # Step 2: Wait for clone to finish
+        if not wait_for_vm_ready(node, new_vmid, timeout=60):
+            return {"status": "error", "message": f"Timeout waiting for VM {new_vmid} to become available."}
+
+        # Step 3: Configure cloud-init
         proxmox.nodes(node).qemu(new_vmid).config.post(
             ciuser=user,
             cipassword=password,
             sshkeys=ssh_key
         )
 
-        # Regenerate image
         proxmox.nodes(node).qemu(new_vmid).cloudinit('regen').post(force=1)
 
-        # Start VM
+        # Step 4: Start the VM
         proxmox.nodes(node).qemu(new_vmid).status('start').post()
 
         return {
@@ -177,3 +181,4 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
