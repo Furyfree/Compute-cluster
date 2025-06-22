@@ -50,7 +50,7 @@ def create_user(user_data: CreateUserRequest):
         "message": f"User {user_data.username} created successfully"
     }
 
-@router.delete("/{username}", dependencies=[Depends(get_current_user)])
+@router.delete("/{username}/delete", dependencies=[Depends(get_current_user)])
 def delete_user(username: str):
     """Delete user"""
     ldap_result = ldap_service.delete_user(username)
