@@ -5,6 +5,13 @@ from pydantic import BaseModel, Field
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 
+## Provision VM from OS Template
+class ProvisionVMRequest(BaseModel):
+    user: str
+    password: str
+    ssh_key: str
+    os: SupportedOS
+
 # LDAP Sync
 @router.post("/ldap/sync", dependencies=[Depends(get_current_user)], summary="Sync LDAP Changes")
 def sync_ldap_to_proxmox():
@@ -79,17 +86,16 @@ def get_node_system_report(node: str):
 def node_performance(node: str):
     """Returns CPU, loadavg, memory, and disk usage for a node"""
     return proxmox_service.get_node_performance(node)
-class ProvisionVMRequest(BaseModel):
-    user: str
-    password: str
-    ssh_key: str
-    os: SupportedOS
 
-@router.post("/proxmox/nodes/{node}/provision", summary="Provision a new VM from OS template", dependencies=[Depends(get_current_user)])
+@router.post(
+    "/proxmox/nodes/{node}/provision",
+    summary="Provision a new VM from OS template",
+    dependencies=[Depends(get_current_user)]
+)
 def provision_from_os(node: str, payload: ProvisionVMRequest):
     return provision_vm_from_template(
         node=node,
-        os=payload.os,
+        os=payload.os,  # This is now SupportedOS enum
         user=payload.user,
         password=payload.password,
         ssh_key=payload.ssh_key
