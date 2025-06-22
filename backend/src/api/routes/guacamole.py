@@ -13,6 +13,13 @@ class CreateSSHConnectionRequest(BaseModel):
     max_connections: int = Field(default=2, examples=[2])
     max_connections_per_user: int = Field(default=1, examples=[1])
 
+class CreateVNCConnectionRequest(BaseModel):
+    name: str = Field(examples=["Linux-Desktop"])
+    hostname: str = Field(examples=["10.51.32.242"], description="IP address of the server")
+    password: str = Field(examples=["password123"])
+    max_connections: int = Field(default=2, examples=[2])
+    max_connections_per_user: int = Field(default=1, examples=[1])
+
 @router.get("/token", dependencies=[Depends(get_current_user)], summary="Get Guacamole Token")
 def get_guac_token():
     """"Get guacamole token for user"""
@@ -45,5 +52,23 @@ def create_ssh_connection(connection_data: CreateSSHConnectionRequest):
     return {
         "success": True,
         "message": f"SSH connection '{connection_data.name}' created successfully",
+        "connection": result
+    }
+
+@router.post("/connections/VNC", dependencies=[Depends(get_current_user)], summary="Create VNC connection")
+def create_vnc_connection(connection_data: CreateVNCConnectionRequest):
+    """Create VNC connection"""
+    result = guac_service.create_vnc_connection(
+        name=connection_data.name,
+        hostname=connection_data.hostname,
+        password=connection_data.password,
+        port=5900,
+        max_connections=connection_data.max_connections,
+        max_connections_per_user=connection_data.max_connections_per_user
+    )
+
+    return {
+        "success": True,
+        "message": f"VNC connection '{connection_data.name}' created successfully",
         "connection": result
     }
