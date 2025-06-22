@@ -22,7 +22,7 @@ class CreateVNCConnectionRequest(BaseModel):
     max_connections_per_user: int = Field(default=1, examples=[1])
 
 class CreateRDPConnectionRequest(BaseModel):
-    name: str = Field(examples=["Linux-Desktop"])
+    name: str = Field(examples=["Windows-Desktop"])
     hostname: str = Field(examples=["10.51.32.242"], description="IP address of the server")
     username: str = Field(examples=["username"])
     password: str = Field(examples=["password123"])
