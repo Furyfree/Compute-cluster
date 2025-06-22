@@ -163,7 +163,8 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
         # Step 3: Configure cloud-init
         proxmox.nodes(node).qemu(new_vmid).config.post(
             ciuser=user,
-            cipassword=password,
+            cipassword=password
+            # sshkeys=ssh_key
         )
         time.sleep(2)  # Ensure config is applied before regenerating cloud-init
         try:
