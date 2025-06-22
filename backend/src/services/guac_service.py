@@ -180,3 +180,20 @@ def create_rdp_connection(
             }
     res.raise_for_status()
     return res.json()
+
+def delete_connection(connection_id: str):
+    """Delete a connection from Guacamole"""
+    headers = get_formatted_token()
+
+    res = httpx.delete(
+        f"{GUAC_URL}/api/session/data/postgresql/connections/{connection_id}",
+        headers=headers
+    )
+
+    if res.status_code == 404:
+        return {
+            "error": "Connection not found",
+            "message": f"Connection with ID {connection_id} does not exist"
+        }
+    res.raise_for_status()
+    return {"success": True, "message": f"Connection {connection_id} deleted successfully"}
