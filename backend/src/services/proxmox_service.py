@@ -68,6 +68,9 @@ def stop_vm(node, vmid):
 def reboot_vm(node, vmid):
     return proxmox.nodes(node).qemu(vmid).status.reboot.post()
 
+def delete_vm(node, vmid, purge = True):
+    proxmox.nodes(node).qemu(vmid).delete.post(purge=purge)
+
 def start_lxc(node, containerid):
     return proxmox.nodes(node).lxc(containerid).status.start.post()
 
@@ -76,6 +79,9 @@ def stop_lxc(node, containerid):
 
 def reboot_lxc(node, containerid):
     return proxmox.nodes(node).lxc(containerid).status.reboot.post()
+
+def delete_lxc(node, containerid, purge = True):
+    proxmox.nodes(node).lxc(containerid).delete.post(purge=purge)
 
 def get_lxc_ip(node, containerid):
     status = proxmox.nodes(node).lxc(containerid).status.current.get()
@@ -88,6 +94,7 @@ def get_lxc_ip(node, containerid):
         if ip6:
             return ip6
     return None
+
 def get_vm_ip(node_name, vmid):
     try:
         agent_info = proxmox.nodes(node_name).qemu(vmid).agent('network-get-interfaces').get()
@@ -101,8 +108,10 @@ def get_vm_ip(node_name, vmid):
         if "QEMU agent is not running" in str(e):
             return "QEMU agent not running"
         return f"Error retrieving IP '{str(e)}'"
+
 def get_node_report(node):
     return proxmox.nodes(node).report.get()
+
 def get_node_performance(node: str):
 
     status = proxmox.nodes(node).status.get()
@@ -132,6 +141,8 @@ def get_node_performance(node: str):
             "Usage Percent": f"{(disk_used / disk_total) * 100:.1f}%" if disk_total else "N/A"
         }
     }
+
+
 
 # Proxmox VM Provisioning Service
 
