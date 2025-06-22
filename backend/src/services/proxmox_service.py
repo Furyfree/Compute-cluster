@@ -167,7 +167,7 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
             sshkeys=ssh_key
         )
         time.sleep(2)  # Ensure config is applied before regenerating cloud-init
-        proxmox.nodes(node).qemu(new_vmid).cloudinit('regen').post(force=1)
+        proxmox.nodes(node).qemu(new_vmid).cloudinit.regen.post(force=1)
         time.sleep(2)  # Allow time for cloud-init regeneration
         # Step 4: Start the VM
         proxmox.nodes(node).qemu(new_vmid).status('start').post()
