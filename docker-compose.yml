@@ -77,6 +77,11 @@ services:
       LDAP_SEARCH_BIND_DN: ${LDAP_ADMIN_DN}
       LDAP_SEARCH_BIND_PASSWORD: ${LDAP_ADMIN_PASSWORD}
       LDAP_USER_SEARCH_FILTER: (uid={0})
+      LDAP_GROUP_BASE_DN: ${LDAP_BASE_DN}
+      LDAP_GROUP_SEARCH_FILTER: (objectClass=posixGroup)
+      LDAP_MEMBER_ATTRIBUTE: memberUid
+      LDAP_USER_ATTRIBUTES: givenName,sn,mail
+      LDAP_ENCRYPTION_METHOD: none
 
     depends_on:
       db:
