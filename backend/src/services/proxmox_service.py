@@ -143,7 +143,7 @@ def get_next_vmid() -> int:
     existing_ids = [vm["vmid"] for vm in existing_vms if "vmid" in vm]
     return max(existing_ids, default=100) + 1  # start from 101 if none exist
 
-def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: str, ssh_key: str) -> dict:
+def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: str) -> dict:
     try:
         template_vmid = OS_TEMPLATE_MAP[os]
         new_vmid = get_next_vmid()
@@ -164,7 +164,6 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
         proxmox.nodes(node).qemu(new_vmid).config.post(
             ciuser=user,
             cipassword=password,
-            sshkeys=ssh_key
         )
         time.sleep(2)  # Ensure config is applied before regenerating cloud-init
         try:
@@ -189,4 +188,3 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
 
     except Exception as e:
         return {"status": "error", "message": str(e)}
-

@@ -10,7 +10,6 @@ router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 class ProvisionVMRequest(BaseModel):
     user: str
     password: str
-    ssh_key: str
     os: SupportedOS
 
 # LDAP Sync
@@ -98,6 +97,5 @@ def provision_from_os(node: str, payload: ProvisionVMRequest):
         node=node,
         os=payload.os,  # This is now SupportedOS enum
         user=payload.user,
-        password=payload.password,
-        ssh_key=payload.ssh_key
+        password=payload.password
     )
