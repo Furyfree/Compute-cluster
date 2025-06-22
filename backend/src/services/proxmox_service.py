@@ -129,3 +129,62 @@ def get_node_performance(node: str):
             "Usage Percent": f"{(disk_used / disk_total) * 100:.1f}%" if disk_total else "N/A"
         }
     }
+
+# Proxmox VM Provisioning Service
+from enum import Enum
+
+class SupportedOS(str, Enum):
+    ubuntu = "UbuntuServer"
+    debian = "Debian"
+    centos = "CentOS"
+
+OS_TEMPLATE_MAP = {
+    SupportedOS.ubuntu: 202,
+    SupportedOS.debian: 203,
+    SupportedOS.centos: 204,
+}
+
+def get_next_vmid() -> int:
+    """
+    Returns the next available VM ID (max + 1).
+    """
+    existing_vms = proxmox.cluster.resources.get(type="vm")
+    existing_ids = [vm["vmid"] for vm in existing_vms if "vmid" in vm]
+    return max(existing_ids, default=100) + 1  # start from 101 if none exist
+
+def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: str, ssh_key: str) -> dict:
+    try:
+        template_vmid = OS_TEMPLATE_MAP[os]
+        new_vmid = get_next_vmid()
+
+        # Clone the template
+        proxmox.nodes(node).qemu(template_vmid).clone.post(
+            newid=new_vmid,
+            name=f"{os.value.lower()}-{new_vmid}",
+            full=1,
+            target=node
+        )
+
+        # Apply cloud-init config
+        proxmox.nodes(node).qemu(new_vmid).config.post(
+            ciuser=user,
+            cipassword=password,
+            sshkeys=ssh_key
+        )
+
+        # Regenerate image
+        proxmox.nodes(node).qemu(new_vmid).cloudinit('regen').post(force=1)
+
+        # Start VM
+        proxmox.nodes(node).qemu(new_vmid).status('start').post()
+
+        return {
+            "status": "success",
+            "vmid": new_vmid,
+            "template": template_vmid,
+            "os": os.value,
+            "node": node
+        }
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

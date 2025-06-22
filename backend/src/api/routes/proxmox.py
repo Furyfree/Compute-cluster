@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from src.api.auth_deps import get_current_user
 from src.services import proxmox_service
-
+from pydantic import BaseModel, Field
 router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 
 # LDAP Sync
@@ -78,3 +78,18 @@ def get_node_system_report(node: str):
 def node_performance(node: str):
     """Returns CPU, loadavg, memory, and disk usage for a node"""
     return proxmox_service.get_node_performance(node)
+class ProvisionVMRequest(BaseModel):
+    user: str
+    password: str
+    ssh_key: str
+    os: SupportedOS
+
+@router.post("/proxmox/nodes/{node}/provision", summary="Provision a new VM from OS template", dependencies=[Depends(get_current_user)])
+def provision_from_os(node: str, payload: ProvisionVMRequest):
+    return provision_vm_from_template(
+        node=node,
+        os=payload.os,
+        user=payload.user,
+        password=payload.password,
+        ssh_key=payload.ssh_key
+    )
