@@ -26,6 +26,14 @@ def get_all_users():
     """List all users"""
     return ldap_service.list_users()
 
+@router.get("/me", dependencies=[Depends(get_current_user)])
+def get_current_user_info(current_user: dict = Depends(get_current_user)):
+    """Get current user info"""
+    return {
+        "success": True,
+        "user": current_user
+    }
+
 @router.post("/create", summary="Create User")
 def create_user(user_data: CreateUserRequest):
     """Create a new user"""
@@ -42,12 +50,16 @@ def create_user(user_data: CreateUserRequest):
         "message": f"User {user_data.username} created successfully"
     }
 
-@router.get("/me", dependencies=[Depends(get_current_user)])
-def get_current_user_info(current_user: dict = Depends(get_current_user)):
-    """Get current user info"""
+@router.patch("/me/change/username", dependencies=[Depends(get_current_user)])
+def change_my_username(username_data: UpdateUsernameRequest, current_user: dict = Depends(get_current_user)):
+    """Change own username"""
+    old_username = current_user["username"]
+    ldap_result = ldap_service.change_username(old_username, username_data.new_username)
+
     return {
-        "success": True,
-        "user": current_user
+        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
+        "ldap_result": ldap_result,
+        "message": f"Username changed from {old_username} to {username_data.new_username}"
     }
 
 @router.patch("/me/change/password", dependencies=[Depends(get_current_user)])
@@ -60,18 +72,6 @@ def change_my_password(password_data: ChangePasswordRequest, current_user: dict 
         "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
         "ldap_result": ldap_result,
         "message": f"Password changed for user {username}"
-    }
-
-@router.patch("/me/change/username", dependencies=[Depends(get_current_user)])
-def change_my_username(username_data: UpdateUsernameRequest, current_user: dict = Depends(get_current_user)):
-    """Change own username"""
-    old_username = current_user["username"]
-    ldap_result = ldap_service.change_username(old_username, username_data.new_username)
-
-    return {
-        "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
-        "ldap_result": ldap_result,
-        "message": f"Username changed from {old_username} to {username_data.new_username}"
     }
 
 @router.delete("/me/delete", dependencies=[Depends(get_current_user)])
