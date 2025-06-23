@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, lifespan
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import auth, server, proxmox, users, guacamole, admin
 import src.services.load_balance_service as load_balance_service
