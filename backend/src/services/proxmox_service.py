@@ -285,7 +285,7 @@ def migrate_vm(vmid: int, source_node: str, target_node: str): #NO endpoint, use
             password=get_required_env("PROXMOX_PASSWORD"),
             with_local_disks=True,
             online=True,
-            verify_ssl=VERIFY_SSL
+            verify_ssl=False
         )
         return result
     except Exception as e:
