@@ -207,7 +207,7 @@ def get_disk_health(node: str):
             smart_data = proxmox.nodes(node).disks.smart.get(disk=devname)
             results.append({
                 "Device": devname,
-                "Health": smart_data.get("health")
+                "Health": smart_data.get("health"),
             })
         except Exception as e:
             results.append({
@@ -215,7 +215,7 @@ def get_disk_health(node: str):
                 "Error": str(e)
             })
 
-    return results
+    return smart_data
 
 
 
