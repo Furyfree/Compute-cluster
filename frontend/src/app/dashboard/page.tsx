@@ -124,7 +124,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Welcome section */}
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="bg-dtu-white shadow rounded-lg p-6 border-t-4 border-dtu-red">
         <h1 className="text-2xl font-semibold text-gray-900">
           Velkommen, {user.name}!
         </h1>
@@ -139,9 +139,9 @@ export default function Dashboard() {
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
+              <div className="flex-shrink-0 bg-dtu-red rounded-md p-3">
                 <svg
-                  className="h-6 w-6 text-white"
+                  className="h-6 w-6 text-dtu-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -180,9 +180,9 @@ export default function Dashboard() {
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
+              <div className="flex-shrink-0 bg-dtu-green rounded-md p-3">
                 <svg
-                  className="h-6 w-6 text-white"
+                  className="h-6 w-6 text-dtu-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -220,9 +220,9 @@ export default function Dashboard() {
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
-                <div className="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                <div className="flex-shrink-0 bg-dtu-navy rounded-md p-3">
                   <svg
-                    className="h-6 w-6 text-white"
+                    className="h-6 w-6 text-dtu-white"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -284,7 +284,7 @@ export default function Dashboard() {
               </p>
               <Link
                 href="/dashboard/vms"
-                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-dtu-white bg-dtu-red hover:bg-dtu-red-700"
               >
                 Opret din første VM
               </Link>
@@ -298,22 +298,22 @@ export default function Dashboard() {
                       <div
                         className={`h-2.5 w-2.5 rounded-full mr-2 ${
                           vm.status === "running"
-                            ? "bg-green-500"
+                            ? "bg-dtu-green"
                             : vm.status === "stopped"
-                              ? "bg-red-500"
+                              ? "bg-dtu-red"
                               : vm.status === "suspended"
-                                ? "bg-yellow-500"
-                                : "bg-gray-500"
+                                ? "bg-dtu-yellow"
+                                : "bg-dtu-grey"
                         }`}
                       ></div>
-                      <p className="text-sm font-medium text-blue-600">
+                      <p className="text-sm font-medium text-dtu-red">
                         {vm.name}
                       </p>
                     </div>
                     <div className="flex space-x-2">
                       <Link
                         href={`/dashboard/remote?vm=${vm.id}`}
-                        className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200"
+                        className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-dtu-red bg-dtu-red-50 hover:bg-dtu-red-100"
                       >
                         Connect
                       </Link>
@@ -409,7 +409,7 @@ export default function Dashboard() {
           <div className="border-t border-gray-200 px-4 py-5">
             <Link
               href="/admin"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-dtu-white bg-dtu-red hover:bg-dtu-red-700"
             >
               Gå til Admin Panel
             </Link>

@@ -1,7 +1,7 @@
-import { Fragment } from 'react';
-import { User } from '@/types/user';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Fragment } from "react";
+import { User } from "@/types/user";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface UserMenuProps {
   user: User;
@@ -22,19 +22,37 @@ export default function UserMenu({ user }: UserMenuProps) {
         <div className="relative">
           <button
             type="button"
-            className="flex items-center max-w-xs rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="flex items-center max-w-xs rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dtu-red"
             id="user-menu-button"
             aria-expanded="false"
             aria-haspopup="true"
-            onClick={() => document.getElementById('user-dropdown')?.classList.toggle('hidden')}
+            onClick={() =>
+              document
+                .getElementById("user-dropdown")
+                ?.classList.toggle("hidden")
+            }
           >
             <span className="sr-only">Åbn brugermenu</span>
-            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <span className="font-medium text-blue-600">{user.name.charAt(0)}</span>
+            <div className="h-8 w-8 rounded-full bg-dtu-red-50 flex items-center justify-center">
+              <span className="font-medium text-dtu-red">
+                {user.name.charAt(0)}
+              </span>
             </div>
-            <span className="hidden md:block ml-2 text-sm text-gray-700">{user.name}</span>
-            <svg className="ml-1 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+            <span className="hidden md:block ml-2 text-sm text-gray-700">
+              {user.name}
+            </span>
+            <svg
+              className="ml-1 h-5 w-5 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
             </svg>
           </button>
         </div>
@@ -50,14 +68,14 @@ export default function UserMenu({ user }: UserMenuProps) {
       >
         <Link
           href="/dashboard/profile"
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-dtu-red"
           role="menuitem"
         >
           Min Profil
         </Link>
         <Link
           href="/dashboard/settings"
-          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-dtu-red"
           role="menuitem"
         >
           Indstillinger
@@ -65,7 +83,7 @@ export default function UserMenu({ user }: UserMenuProps) {
         {user.is_admin && (
           <Link
             href="/admin"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-dtu-red"
             role="menuitem"
           >
             Admin Panel
@@ -73,7 +91,7 @@ export default function UserMenu({ user }: UserMenuProps) {
         )}
         <button
           onClick={handleLogout}
-          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-dtu-red"
           role="menuitem"
         >
           Log ud
