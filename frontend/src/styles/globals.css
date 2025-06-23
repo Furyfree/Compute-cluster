@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@theme {
+    --color-dtu-corporate-red: #990000;
+    --color-dtu-white: #ffffff;
+    --color-dtu-black: #000000;
+    --color-dtu-blue: #2f3eea;
+    --color-dtu-bright-green: #1fd082;
+    --color-dtu-navy-blue: #030f4f;
+    --color-dtu-yellow: #f6d04d;
+    --color-dtu-orange: #fc7634;
+    --color-dtu-pink: #f7bbb1;
+    --color-dtu-grey: #dadada;
+    --color-dtu-red: #e83f48;
+    --color-dtu-green: #008835;
+    --color-dtu-purple: #79238e;
+}
+
 body {
     @apply bg-white text-black dark:bg-black dark:text-white font-sans antialiased;
 }
