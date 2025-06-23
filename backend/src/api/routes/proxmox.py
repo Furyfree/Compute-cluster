@@ -145,8 +145,12 @@ def get_user_groups(userid: str):
     """Get all groups a user belongs to"""
     return proxmox_service.get_user_groups(userid)
 
-@router.put("/auth/users/{userid}/groups", dependencies=[Depends(get_current_user)], summary="Update User's Groups")
-def update_user_groups(userid: str, payload: UpdateUserGroupsRequest):
-    """Update a user's group membership"""
-    return proxmox_service.update_user_groups(userid, payload.groups)
+@router.put("/auth/users/{userid}/groups/add", dependencies=[Depends(get_current_user)], summary="Add User to Group")
+def add_user_to_group(userid: str, group: str):
+    """Add a user to a specific Proxmox group"""
+    return proxmox_service.add_user_to_group(userid, group)
 
+@router.put("/auth/users/{userid}/groups/remove", dependencies=[Depends(get_current_user)], summary="Remove User from Group")
+def remove_user_from_group(userid: str, group: str):
+    """Remove a user from a specific Proxmox group"""
+    return proxmox_service.remove_user_from_group(userid, group)
