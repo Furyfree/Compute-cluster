@@ -98,11 +98,17 @@ def get_user_groups(userid: str):
     user_groups = []
     groups = proxmox.access.groups.get()
 
+    full_userid = userid
+    if '@' not in userid:
+        full_userid = f"{userid}@LDAP"
+
     for group in groups:
         group_name = group['groupid']
-        members = proxmox.access.groups(group_name).get()
-        if any(member['userid'] == userid for member in members if 'userid' in member):
-            user_groups.append(group_name)
+        if 'users' in group and group['users']:
+            user_list = group['users'].split(',')
+            if full_userid in user_list or userid in user_list:
+                user_groups.append(group_name)
+
     return {"status": "success", "userid": userid, "groups": user_groups}
 
 def update_user_groups(userid: str, groups: list[str]):
