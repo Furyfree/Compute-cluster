@@ -1,4 +1,4 @@
-from fastapi import FastAPI, lifespan
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import auth, server, proxmox, users, guacamole, admin
 import src.services.load_balance_service as load_balance_service
@@ -33,7 +33,7 @@ async def start_load_balance_service():
         print("Rebalance cycle started. Waiting for next cycle...")
         await asyncio.sleep(900)  # Rebalance every 15 minutes
 
-@app.lifespan("startup")
+@app.on_event("startup")
 async def startup_event():
     print("Starting load balance service...")
     asyncio.create_task(start_load_balance_service())
