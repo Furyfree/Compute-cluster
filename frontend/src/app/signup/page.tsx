@@ -48,7 +48,7 @@ const SignupPage: React.FC = () => {
       setPassword("");
 
       // Redirect to login page so they can sign in with their new account
-      router.push("/login");
+      router.push("/");
     } catch (err: any) {
       console.error("Signup error:", err);
       setError(err.message || "User creation failed");
@@ -134,7 +134,7 @@ const SignupPage: React.FC = () => {
 
           <div className="mt-8 text-center">
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => router.push("/")}
               className="text-blue-600 hover:text-blue-700 font-medium text-sm"
             >
               Already have an account? Sign in
