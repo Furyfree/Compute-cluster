@@ -99,7 +99,7 @@ def restart_lxc_container(node: str, container_id: int):
     """Restart an LXC container on the specified node"""
     return proxmox_service.reboot_lxc(node, container_id)
 
-@router.delete("/vms/{node}/{vm_id}/delete", dependencies=[Depends(get_current_user)], summary="Delete Container")
+@router.delete("/containers/{node}/{vm_id}/delete", dependencies=[Depends(get_current_user)], summary="Delete Container")
 def delete_lxc_container(node: str, containerid: int):
     """Delete an LXC container on the specified node"""
     return proxmox_service.delete_lxc(node, containerid)
