@@ -340,13 +340,22 @@ def get_running_vms_by_node(node): #NO endpoint, used internally
 
 def migrate_vm(vmid: int, source_node: str, target_node: str): #NO endpoint, used internally
     try:
-        return proxmox.nodes(source_node).qemu(vmid).migrate.post(
-            target=target_node,
-            online=1,
-            with_local_disks=1
+        result = proxmox_util.migrate_vm_httpx(
+            host=get_required_env("PROXMOX_HOST"),
+            source_node=source_node,
+            vmid=vmid,
+            target_node=target_node,
+            username=get_required_env("PROXMOX_USERNAME"),
+            password=get_required_env("PROXMOX_PASSWORD"),
+            with_local_disks=True,
+            online=True,
+            verify_ssl=VERIFY_SSL
         )
+        return result
     except Exception as e:
         return {"error": str(e)}
+
+
 def manual_load_balance():
     try:
         load_balance_service.rebalance()

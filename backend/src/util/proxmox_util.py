@@ -3,6 +3,8 @@ from proxmoxer import ProxmoxAPI
 from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
+import httpx
+from typing import Literal
 
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
@@ -62,3 +64,66 @@ def select_idle_target(metrics: dict, exclude_node: str) -> str | None:
         key=lambda item: (item[1]["cpu"], item[1]["mem"], item[1]["io_delay"])
     )
     return sorted_nodes[0][0]
+
+# HTTPX-based Migration Function
+
+def migrate_vm_httpx(
+    host: str,
+    source_node: str,
+    vmid: int,
+    target_node: str,
+    username: str,
+    password: str,
+    with_local_disks: bool = False,
+    online: bool = True,
+    verify_ssl: bool = False
+) -> dict:
+    """
+    Migrate a VM via the Proxmox API using httpx.
+
+    :param host: Proxmox API host (e.g. https://proxmox.local:8006)
+    :param source_node: Node where the VM currently runs
+    :param vmid: The VM ID to migrate
+    :param target_node: Node to migrate the VM to
+    :param username: Proxmox username (e.g. root@pam)
+    :param password: Proxmox password
+    :param with_local_disks: Whether to migrate local disks (set to True if VM uses local-lvm)
+    :param online: Whether to attempt online migration
+    :param verify_ssl: Verify HTTPS certs (use False if self-signed)
+    :return: Response JSON or error
+    """
+
+    with httpx.Client(verify=verify_ssl) as client:
+        # 1. Authenticate
+        auth_resp = client.post(
+            f"{host}/api2/json/access/ticket",
+            data={"username": username, "password": password}
+        )
+        auth_resp.raise_for_status()
+        auth_data = auth_resp.json()["data"]
+
+        ticket = auth_data["ticket"]
+        csrf = auth_data["CSRFPreventionToken"]
+
+        # 2. Prepare headers and cookies
+        headers = {"CSRFPreventionToken": csrf}
+        cookies = {"PVEAuthCookie": ticket}
+
+        # 3. Prepare migration parameters
+        payload = {
+            "target": target_node,
+            "online": "1" if online else "0"
+        }
+
+        if with_local_disks:
+            payload["with_local_disks"] = "1"
+
+        # 4. Send migration request
+        migrate_resp = client.post(
+            f"{host}/api2/json/nodes/{source_node}/qemu/{vmid}/migrate",
+            headers=headers,
+            cookies=cookies,
+            data=payload
+        )
+        migrate_resp.raise_for_status()
+        return migrate_resp.json()
