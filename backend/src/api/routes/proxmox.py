@@ -107,7 +107,7 @@ def delete_lxc_container(node: str, containerid: int):
 # LDAP Sync
 @router.post("/ldap/sync", dependencies=[Depends(get_current_user)], summary="Sync LDAP Changes")
 def sync_ldap_to_proxmox():
-    """Sync LDAP users and groups to Proxmox (incremental)"""
+    """Sync LDAP users and groups to Proxmox"""
     result = proxmox_service.sync_ldap_changes()
     return {"message": "LDAP sync completed", "result": result}
 
