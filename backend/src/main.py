@@ -29,9 +29,9 @@ app.include_router(server.router)
 
 async def start_load_balance_service():
     while True:
-        await load_balance_service.rebalance()
-        print("Rebalance cycle started. Waiting for next cycle...")
-        await asyncio.sleep(900)  # Rebalance every 15 minutes
+        await asyncio.to_thread(load_balance_service.rebalance)
+        print("Rebalance cycle complete. Waiting for next cycle...")
+        await asyncio.sleep(900)  # every 15 minutes
 
 @app.on_event("startup")
 async def startup_event():
