@@ -41,6 +41,10 @@ def provision_from_os(node: str, payload: ProvisionVMRequest):
         password=payload.password
         # ssh_key=payload.ssh_key
     )
+@router.get("/nodes/{node}/performance/full", summary="Get full node performance metrics", dependencies=[Depends(get_current_user)])
+def node_performance_full(node: str):
+    """Returns full performance metrics for a node"""
+    return proxmox_service.get_node_performance_full(node)
 
 
 # VM endpoints

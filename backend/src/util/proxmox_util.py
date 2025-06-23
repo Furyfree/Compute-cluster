@@ -19,7 +19,7 @@ def wait_for_vm_ready(node: str, vmid: int, timeout: int = 20):
     """
     for _ in range(timeout):
         config = proxmox.nodes(node).qemu(vmid).config.get()
-        if not config.get("lock"):  # No lock -> safe to continue
+        if not config.get("lock"):  # No lock, safe to continue
             return True
         time.sleep(1)
     return False
