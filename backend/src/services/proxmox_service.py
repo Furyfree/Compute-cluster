@@ -132,7 +132,7 @@ def add_user_to_group(userid: str, group: str):
 
         user_list.append(full_userid)
         updated_users = ','.join(user_list)
-        proxmox.access.groups(group).put(users=updated_users)
+        proxmox.access.groups(group).put(members=updated_users)
 
         return {
             "status": "success",
@@ -164,7 +164,7 @@ def remove_user_from_group(userid: str, group: str):
 
         user_list.remove(full_userid)
         updated_users = ','.join(user_list)
-        proxmox.access.groups(group).put(users=updated_users)
+        proxmox.access.groups(group).put(members=updated_users)
 
         return {
             "status": "success",
@@ -317,7 +317,7 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
-    
+
 # Load Balancer: Raw node metrics for load decisions
 def get_all_node_metrics(): #NO endpoint, used internally
     metrics = {}
