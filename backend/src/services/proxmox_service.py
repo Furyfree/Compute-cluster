@@ -194,23 +194,33 @@ def get_node_performance_full (node: str):
     status = proxmox.nodes(node).status.get()
     return status
 
-def get_disk_status(node: str):
-    smart_disks = proxmox.nodes(node).disks.smart.get()
-    
-    disk_health = []
-    for d in smart_disks:
-        disk_health.append({
-            "Device": d.get("device"),
-            "Model": d.get("model"),
-            "Serial": d.get("serial"),
-            "Health": d.get("health"),
-            "Temperature (C)": d.get("temperature"),
-            "Type": d.get("type"),
-            "SMART Available": d.get("smart_available"),
-            "SMART Enabled": d.get("smart_enabled"),
-        })
+def get_disk_health(node: str):
+    disk_list = proxmox.nodes(node).disks.list.get()
+    results = []
 
-    return disk_health
+    for disk in disk_list:
+        devname = disk.get("devpath")
+        if not devname:
+            continue  # Skip if missing
+
+        try:
+            smart_data = proxmox.nodes(node).disks.smart.get(disk=devname)
+            results.append({
+                "Device": devname,
+                "Model": smart_data.get("model"),
+                "Serial": smart_data.get("serial"),
+                "Health": smart_data.get("health"),
+                "Temperature (C)": smart_data.get("temperature"),
+                "SMART Available": smart_data.get("smart_available"),
+                "SMART Enabled": smart_data.get("smart_enabled"),
+            })
+        except Exception as e:
+            results.append({
+                "Device": devname,
+                "Error": str(e)
+            })
+
+    return results
 
 
 
