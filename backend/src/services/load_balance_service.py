@@ -1,5 +1,5 @@
 import time
-import proxmox_service as proxmox_service
+import src.services.proxmox_service as proxmox_service
 import src.util.proxmox_util as proxmox_util
 
 def rebalance():
