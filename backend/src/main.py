@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import auth, server, proxmox, users, guacamole, admin
 import src.services.load_balance_service as load_balance_service
 import time
+import asyncio
 
 app = FastAPI(
     title="Compute Cluster API",
@@ -24,9 +25,16 @@ app.include_router(admin.router)
 app.include_router(proxmox.router)
 app.include_router(guacamole.router)
 app.include_router(server.router)
-def start_load_balance_service():
+
+
+async def start_load_balance_service():
     while True:
-        load_balance_service.rebalance()
+        await load_balance_service.rebalance()
         print("Rebalance cycle started. Waiting for next cycle...")
-        time.sleep(900)  # Rebalance every 15 minutes
-start_load_balance_service()
+        await asyncio.sleep(900)  # Rebalance every 15 minutes
+
+@app.lifespan("startup")
+async def startup_event():
+    print("Starting load balance service...")
+    asyncio.create_task(start_load_balance_service())
+    print("Load balance service started.")
