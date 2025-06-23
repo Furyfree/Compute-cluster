@@ -1,9 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ButtonHTMLAttributes } from "react";
-
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary";
-};
+import { ButtonProps } from "@/types/components";
 
 export default function Button({
   className,

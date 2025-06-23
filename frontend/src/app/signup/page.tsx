@@ -27,7 +27,7 @@ export default function SignupPage() {
   };
 
   const handleBackToLogin = () => {
-    router.push("/");
+    router.push("/login");
   };
 
   return (

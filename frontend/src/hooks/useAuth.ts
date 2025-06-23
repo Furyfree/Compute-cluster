@@ -31,7 +31,7 @@ export function useLogin() {
       setTimeout(() => {
         removeAuthToken();
         alert("Session udløbet. Log venligst ind igen.");
-        router.push("/");
+        router.push("/login");
       }, msUntilExpiry);
 
       // Send brugeren til dashboard
@@ -66,7 +66,8 @@ export function useSignup() {
       });
 
       alert(`User ${userData.username} created successfully!`);
-      router.push("/");
+      // Redirect to login page after successful signup
+      router.push("/login");
     } catch (err: any) {
       console.error("Signup error:", err);
       setError(err.message || "User creation failed");
