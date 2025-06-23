@@ -14,9 +14,6 @@ class ProvisionVMRequest(BaseModel):
     # ssh_key: str
     os: SupportedOS
 
-class UpdateUserGroupsRequest(BaseModel):
-    groups: list[str]
-
 # Node endpoints
 @router.get("/nodes/{node}/report", dependencies=[Depends(get_current_user)], summary="Get Node Report")
 def get_node_system_report(node: str):

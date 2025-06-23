@@ -112,33 +112,69 @@ def get_user_groups(userid: str):
 
     return {"status": "success", "userid": userid, "groups": user_groups}
 
-def update_user_groups(userid: str, groups: list[str]):
-    """Update user's group"""
-    current_groups = get_user_groups(userid).get("groups", [])
-
+def add_user_to_group(userid: str, group: str):
+    """Add a user to a specific group"""
     full_userid = userid
     if '@' not in userid:
         full_userid = f"{userid}@LDAP"
 
-    for group in current_groups:
-        if group not in groups:
-            try:
-                proxmox.access.groups(group).users(full_userid).delete()
-            except Exception as e:
-                print(f"Error removing {full_userid} from group {group}: {str(e)}")
+    try:
+        group_data = proxmox.access.groups(group).get()
+        current_users = group_data.get('users', '')
 
-    for group in groups:
-        if group not in current_groups:
-            try:
-                proxmox.access.groups(group).users.post(userid=full_userid)
-            except Exception as e:
-                print(f"Error adding {full_userid} to group {group}: {str(e)}")
+        user_list = [u.strip() for u in current_users.split(',') if u.strip()]
 
-    return {
-        "status": "success",
-        "message": f"Updated group membership for {userid}",
-        "groups": groups
-    }
+        if full_userid in user_list:
+            return {
+                "status": "success",
+                "message": f"User {userid} is already in group {group}"
+            }
+
+        user_list.append(full_userid)
+        updated_users = ','.join(user_list)
+        proxmox.access.groups(group).put(users=updated_users)
+
+        return {
+            "status": "success",
+            "message": f"Added user {userid} to group {group}"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Error adding user to group: {str(e)}"
+        }
+
+def remove_user_from_group(userid: str, group: str):
+    """Remove a user from a specific group"""
+    full_userid = userid
+    if '@' not in userid:
+        full_userid = f"{userid}@LDAP"
+
+    try:
+        group_data = proxmox.access.groups(group).get()
+        current_users = group_data.get('users', '')
+
+        user_list = [u.strip() for u in current_users.split(',') if u.strip()]
+
+        if full_userid not in user_list:
+            return {
+                "status": "success",
+                "message": f"User {userid} is not in group {group}"
+            }
+
+        user_list.remove(full_userid)
+        updated_users = ','.join(user_list)
+        proxmox.access.groups(group).put(users=updated_users)
+
+        return {
+            "status": "success",
+            "message": f"Removed user {userid} from group {group}"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Error removing user from group: {str(e)}"
+        }
 
 # IP
 def get_lxc_ip(node, containerid):
