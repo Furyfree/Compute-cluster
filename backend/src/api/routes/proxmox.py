@@ -46,6 +46,11 @@ def node_performance_full(node: str):
     """Returns full performance metrics for a node"""
     return proxmox_service.get_node_performance_full(node)
 
+@router.get("/nodes/{node}/disk/status", summary="Get disk status for a node", dependencies=[Depends(get_current_user)])
+def get_disk_status(node: str):
+    """Get disk health status for a node"""
+    return proxmox_service.get_disk_status(node)
+
 
 # VM endpoints
 @router.get("/vms", dependencies=[Depends(get_current_user)], summary="List all VMs")

@@ -156,6 +156,7 @@ def get_vm_ip(node_name, vmid):
             return "QEMU agent not running"
         return f"Error retrieving IP '{str(e)}'"
 
+# Proxmox Node Performance and Report
 def get_node_report(node):
     return proxmox.nodes(node).report.get()
 
@@ -193,6 +194,23 @@ def get_node_performance_full (node: str):
     status = proxmox.nodes(node).status.get()
     return status
 
+def get_disk_status(node: str):
+    smart_disks = proxmox.nodes(node).disks.smart.get()
+    
+    disk_health = []
+    for d in smart_disks:
+        disk_health.append({
+            "Device": d.get("device"),
+            "Model": d.get("model"),
+            "Serial": d.get("serial"),
+            "Health": d.get("health"),
+            "Temperature (C)": d.get("temperature"),
+            "Type": d.get("type"),
+            "SMART Available": d.get("smart_available"),
+            "SMART Enabled": d.get("smart_enabled"),
+        })
+
+    return disk_health
 
 
 
