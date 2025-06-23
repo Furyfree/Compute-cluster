@@ -23,7 +23,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!token) {
-      router.push("/auth/login");
+      router.push("/");
       return;
     }
 
