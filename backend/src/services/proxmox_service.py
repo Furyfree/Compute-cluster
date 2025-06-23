@@ -342,7 +342,8 @@ def migrate_vm(vmid: int, source_node: str, target_node: str): #NO endpoint, use
     try:
         return proxmox.nodes(source_node).qemu(vmid).migrate.post(
             target=target_node,
-            online=1
+            online=1,
+            with_local_disks=1
         )
     except Exception as e:
         return {"error": str(e)}
