@@ -3,6 +3,7 @@ from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 import src.util.proxmox_util as proxmox_util
+import load_balance_service as load_balance_service
 import time
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
@@ -268,5 +269,40 @@ def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: 
             "os": os.value,
             "warnings": warnings
         }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    
+# Load Balancer: Raw node metrics for load decisions
+def get_all_node_metrics(): #NO endpoint, used internally
+    metrics = {}
+    for node in proxmox.nodes.get():
+        node_name = node['node']
+        status = proxmox.nodes(node_name).status.get()
+        metrics[node_name] = {
+            "cpu": status.get("cpu", 0.0),  # float (0.0 to 1.0)
+            "mem": status.get("mem", 0) / status.get("maxmem", 1),
+            "disk": status.get("disk", 0) / status.get("maxdisk", 1),
+            "io_delay": status.get("iodelay", 0.0),
+        }
+    return metrics
+
+def get_running_vms_by_node(node): #NO endpoint, used internally
+    return [
+        vm for vm in proxmox.nodes(node).qemu.get()
+        if vm.get("status") == "running" and "vmid" in vm
+    ]
+
+def migrate_vm(vmid: int, source_node: str, target_node: str): #NO endpoint, used internally
+    try:
+        return proxmox.nodes(source_node).qemu(vmid).migrate.post(
+            target=target_node,
+            online=True
+        )
+    except Exception as e:
+        return {"error": str(e)}
+def manual_load_balance():
+    try:
+        load_balance_service.rebalance()
+        return {"status": "success", "message": "Load balancing completed."}
     except Exception as e:
         return {"status": "error", "message": str(e)}

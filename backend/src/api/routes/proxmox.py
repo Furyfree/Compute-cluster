@@ -39,7 +39,7 @@ def provision_from_os(node: str, payload: ProvisionVMRequest):
         os=payload.os,  # This is now SupportedOS enum
         user=payload.user,
         password=payload.password
-        # ssh_key=payload.ssh_key
+        ssh_key=payload.ssh_key
     )
 @router.get("/nodes/{node}/performance/full", summary="Get full node performance metrics", dependencies=[Depends(get_current_user)])
 def node_performance_full(node: str):
@@ -50,7 +50,11 @@ def node_performance_full(node: str):
 def get_disk_health(node: str):
     """Get disk health status for a node"""
     return proxmox_service.get_disk_health(node)
-
+# load balance endpoint
+@router.get("/nodes/load-balance", summary="Load balance nodes", dependencies=[Depends(get_current_user)])
+def load_balance_nodes():
+    """Rebalance VMs across nodes based on current load"""
+    return proxmox_service.load_balance_nodes()
 
 # VM endpoints
 @router.get("/vms", dependencies=[Depends(get_current_user)], summary="List all VMs")
@@ -148,3 +152,4 @@ def get_user_groups(userid: str):
 def update_user_groups(userid: str, payload: UpdateUserGroupsRequest):
     """Update a user's group membership"""
     return proxmox_service.update_user_groups(userid, payload.groups)
+
