@@ -2,7 +2,7 @@ from proxmoxer import ProxmoxAPI
 from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
-from src.util.proxmox_util import wait_for_vm_ready
+import src.util.proxmox_util as proxmox_util
 import time
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
@@ -199,23 +199,19 @@ def get_disk_health(node: str):
     results = []
 
     for disk in disk_list:
-        devname = disk.get("devpath")
-        if not devname:
+        dev = disk.get("devpath")
+        if not dev:
             continue
 
         try:
-            smart_data = proxmox.nodes(node).disks.smart.get(disk=devname)
-            results.append({
-                "Device": devname,
-                "Health": smart_data.get("health"),
-            })
+            smart_info = proxmox.nodes(node).disks.smart.get(disk=dev)
+            parsed = proxmox_util.parse_smart_attributes(smart_info)
+            parsed["Device"] = dev
+            results.append(parsed)
         except Exception as e:
-            results.append({
-                "Device": devname,
-                "Error": str(e)
-            })
+            results.append({"Device": dev, "Error": str(e)})
 
-    return smart_data
+    return results
 
 
 
