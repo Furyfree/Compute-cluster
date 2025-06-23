@@ -24,9 +24,9 @@ app.include_router(admin.router)
 app.include_router(proxmox.router)
 app.include_router(guacamole.router)
 app.include_router(server.router)
-
-if __name__ == "__main__":
+def start_load_balance_service():
     while True:
         load_balance_service.rebalance()
         print("Rebalance cycle started. Waiting for next cycle...")
         time.sleep(900)  # Rebalance every 15 minutes
+start_load_balance_service()
