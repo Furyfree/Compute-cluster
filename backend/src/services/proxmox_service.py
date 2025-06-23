@@ -3,7 +3,7 @@ from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 import src.util.proxmox_util as proxmox_util
-import src.services.load_balance_service
+import src.services.load_balance_service as load_balance_service
 import time
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
