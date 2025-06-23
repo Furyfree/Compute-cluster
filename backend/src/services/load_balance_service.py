@@ -4,6 +4,10 @@ import src.util.proxmox_util as proxmox_util
 
 def rebalance():
     metrics = proxmox_service.get_all_node_metrics()
+    print("Current node metrics:")
+    for node_name, node_metrics in metrics.items():
+        print(f"Node {node_name}: CPU={node_metrics['cpu']:.2f}, MEM={node_metrics['mem']:.2f}, IO_DELAY={node_metrics['io_delay']:.2f}")
+    print("Rebalancing nodes based on current load...")
     for node_name, node_metrics in metrics.items():
         if proxmox_util.is_overloaded(node_metrics):
             print(f"[OVERLOAD] Node {node_name} exceeds threshold.")

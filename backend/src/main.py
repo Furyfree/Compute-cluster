@@ -28,4 +28,5 @@ app.include_router(server.router)
 if __name__ == "__main__":
     while True:
         load_balance_service.rebalance()
+        print("Rebalance cycle started. Waiting for next cycle...")
         time.sleep(900)  # Rebalance every 15 minutes
