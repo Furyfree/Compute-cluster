@@ -14,6 +14,9 @@ class ProvisionVMRequest(BaseModel):
     # ssh_key: str
     os: SupportedOS
 
+class GroupRequest(BaseModel):
+    group: str
+
 # Node endpoints
 @router.get("/nodes/{node}/report", dependencies=[Depends(get_current_user)], summary="Get Node Report")
 def get_node_system_report(node: str):
@@ -146,11 +149,11 @@ def get_user_groups(userid: str):
     return proxmox_service.get_user_groups(userid)
 
 @router.put("/auth/users/{userid}/groups/add", dependencies=[Depends(get_current_user)], summary="Add User to Group")
-def add_user_to_group(userid: str, group: str):
+def add_user_to_group(userid: str, payload: GroupRequest):
     """Add a user to a specific Proxmox group"""
-    return proxmox_service.add_user_to_group(userid, group)
+    return proxmox_service.add_user_to_group(userid, payload.group)
 
 @router.put("/auth/users/{userid}/groups/remove", dependencies=[Depends(get_current_user)], summary="Remove User from Group")
-def remove_user_from_group(userid: str, group: str):
+def remove_user_from_group(userid: str, payload: GroupRequest):
     """Remove a user from a specific Proxmox group"""
-    return proxmox_service.remove_user_from_group(userid, group)
+    return proxmox_service.remove_user_from_group(userid, payload.group)
