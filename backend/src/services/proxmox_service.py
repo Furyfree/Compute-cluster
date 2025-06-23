@@ -116,13 +116,23 @@ def update_user_groups(userid: str, groups: list[str]):
     """Update user's group"""
     current_groups = get_user_groups(userid).get("groups", [])
 
+    full_userid = userid
+    if '@' not in userid:
+        full_userid = f"{userid}@LDAP"
+
     for group in current_groups:
         if group not in groups:
-            proxmox.access.groups(group).user(userid).delete()
+            try:
+                proxmox.access.groups(group).users(full_userid).delete()
+            except Exception as e:
+                print(f"Error removing {full_userid} from group {group}: {str(e)}")
 
     for group in groups:
         if group not in current_groups:
-            proxmox.access.groups(group).user(userid).put()
+            try:
+                proxmox.access.groups(group).users.post(userid=full_userid)
+            except Exception as e:
+                print(f"Error adding {full_userid} to group {group}: {str(e)}")
 
     return {
         "status": "success",
