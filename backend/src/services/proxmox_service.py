@@ -83,6 +83,47 @@ def reboot_lxc(node, containerid):
 def delete_lxc(node, containerid, purge = True):
     proxmox.nodes(node).lxc(containerid).delete.post(purge=purge)
 
+
+# Proxmox users
+def list_users():
+    """List all users in Proxmox"""
+    return proxmox.access.users.get()
+
+def list_groups():
+    """List all groups in Proxmox"""
+    return proxmox.access.groups.get()
+
+def get_user_groups(userid: str):
+    """Get all groups a user belongs to"""
+    user_groups = []
+    groups = proxmox.access.groups.get()
+
+    for group in groups:
+        group_name = group['groupid']
+        members = proxmox.access.groups(group_name).get()
+        if any(member['userid'] == userid for member in members if 'userid' in member):
+            user_groups.append(group_name)
+    return {"status": "success", "userid": userid, "groups": user_groups}
+
+def update_user_groups(userid: str, groups: list[str]):
+    """Update user's group"""
+    current_groups = get_user_groups(userid).get("groups", [])
+
+    for group in current_groups:
+        if group not in groups:
+            proxmox.access.groups(group).user(userid).delete()
+
+    for group in groups:
+        if group not in current_groups:
+            proxmox.access.groups(group).user(userid).put()
+
+    return {
+        "status": "success",
+        "message": f"Updated group membership for {userid}",
+        "groups": groups
+    }
+
+# IP
 def get_lxc_ip(node, containerid):
     status = proxmox.nodes(node).lxc(containerid).status.current.get()
     network_info = status.get('data', {}).get('network', {})

@@ -4,8 +4,8 @@ from src.services import proxmox_service
 from pydantic import BaseModel
 from src.models.enums import SupportedOS
 from src.services.proxmox_service import provision_vm_from_template
-router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 
+router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 
 ## Provision VM from OS Template
 class ProvisionVMRequest(BaseModel):
@@ -14,6 +14,8 @@ class ProvisionVMRequest(BaseModel):
     # ssh_key: str
     os: SupportedOS
 
+class UpdateUserGroupsRequest(BaseModel):
+    groups: list[str]
 
 # Node endpoints
 @router.get("/nodes/{node}/report", dependencies=[Depends(get_current_user)], summary="Get Node Report")
@@ -21,13 +23,13 @@ def get_node_system_report(node: str):
     """Get system report from a specific Proxmox node"""
     return proxmox_service.get_node_report(node)
 
-@router.get("/proxmox/nodes/{node}/performance", summary="Get node performance metrics", dependencies=[Depends(get_current_user)])
+@router.get("/nodes/{node}/performance", summary="Get node performance metrics", dependencies=[Depends(get_current_user)])
 def node_performance(node: str):
     """Returns CPU, loadavg, memory, and disk usage for a node"""
     return proxmox_service.get_node_performance(node)
 
 @router.post(
-    "/proxmox/nodes/{node}/provision",
+    "/nodes/{node}/provision",
     summary="Provision a new VM from OS template",
     dependencies=[Depends(get_current_user)]
 )
@@ -100,19 +102,40 @@ def restart_lxc_container(node: str, container_id: int):
     return proxmox_service.reboot_lxc(node, container_id)
 
 @router.delete("/containers/{node}/{container_id}/delete", dependencies=[Depends(get_current_user)], summary="Delete Container")
-def delete_lxc_container(node: str, containerid: int):
+def delete_lxc_container(node: str, container_id: int):
     """Delete an LXC container on the specified node"""
-    return proxmox_service.delete_lxc(node, containerid)
+    return proxmox_service.delete_lxc(node, container_id)
 
-# LDAP Sync
-@router.post("/ldap/sync", dependencies=[Depends(get_current_user)], summary="Sync LDAP Changes")
+
+# Proxmox Authentication Management
+@router.post("/auth/sync", dependencies=[Depends(get_current_user)], summary="Sync LDAP Changes")
 def sync_ldap_to_proxmox():
     """Sync LDAP users and groups to Proxmox"""
     result = proxmox_service.sync_ldap_changes()
     return {"message": "LDAP sync completed", "result": result}
 
-@router.get("/ldap/realms", dependencies=[Depends(get_current_user)], summary="List Authentication Realms")
+@router.get("/auth/realms", dependencies=[Depends(get_current_user)], summary="List Authentication Realms")
 def list_authentication_realms():
     """List all authentication realms to find the correct LDAP realm name"""
     result = proxmox_service.list_realms()
     return {"realms": result}
+
+@router.get("/auth/users/list", dependencies=[Depends(get_current_user)], summary="List All Users")
+def list_users():
+    """List all users in Proxmox"""
+    return proxmox_service.list_users()
+
+@router.get("/auth/groups/list", dependencies=[Depends(get_current_user)], summary="List All Groups")
+def list_groups():
+    """List all groups in Proxmox"""
+    return proxmox_service.list_groups()
+
+@router.get("/auth/users/{userid}/groups", dependencies=[Depends(get_current_user)], summary="Get User's Groups")
+def get_user_groups(userid: str):
+    """Get all groups a user belongs to"""
+    return proxmox_service.get_user_groups(userid)
+
+@router.put("/auth/users/{userid}/groups", dependencies=[Depends(get_current_user)], summary="Update User's Groups")
+def update_user_groups(userid: str, payload: UpdateUserGroupsRequest):
+    """Update a user's group membership"""
+    return proxmox_service.update_user_groups(userid, payload.groups)
