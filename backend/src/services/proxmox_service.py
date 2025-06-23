@@ -277,7 +277,7 @@ def get_running_vms_by_node(node): #NO endpoint, used internally
 def migrate_vm(vmid: int, source_node: str, target_node: str): #NO endpoint, used internally
     try:
         result = proxmox_util.migrate_vm_httpx(
-            host=get_required_env("PROXMOX_HOST"),
+            host=get_required_env("PROXMOX_HOST_NAME"),
             source_node=source_node,
             vmid=vmid,
             target_node=target_node,
