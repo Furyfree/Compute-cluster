@@ -191,7 +191,7 @@ def get_node_performance(node: str):
 
 def get_node_performance_full (node: str):
     status = proxmox.nodes(node).status.get()
-    return status.json()
+    return status
 
 
 
