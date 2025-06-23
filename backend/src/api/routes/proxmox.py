@@ -54,7 +54,7 @@ def get_disk_health(node: str):
 @router.get("/nodes/load-balance", summary="Load balance nodes", dependencies=[Depends(get_current_user)])
 def load_balance_nodes():
     """Rebalance VMs across nodes based on current load"""
-    return proxmox_service.load_balance_nodes()
+    return proxmox_service.manual_load_balance()
 
 # VM endpoints
 @router.get("/vms", dependencies=[Depends(get_current_user)], summary="List all VMs")
