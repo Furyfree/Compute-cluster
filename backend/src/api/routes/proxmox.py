@@ -38,7 +38,7 @@ def provision_from_os(node: str, payload: ProvisionVMRequest):
         node=node,
         os=payload.os,  # This is now SupportedOS enum
         user=payload.user,
-        password=payload.password
+        password=payload.password,
         ssh_key=payload.ssh_key
     )
 @router.get("/nodes/{node}/performance/full", summary="Get full node performance metrics", dependencies=[Depends(get_current_user)])
