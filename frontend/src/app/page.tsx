@@ -1,28 +1,66 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLogin } from "@/hooks/useAuth";
+import AuthCard from "@/components/AuthCard";
+import Input from "@/components/Input";
 import Button from "@/components/Button";
 
-export default function LandingPage() {
+export default function HomePage() {
   const router = useRouter();
+  const { login, loading, error } = useLogin();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await login({ username, password });
+  };
+
+  const handleSignUp = () => {
+    router.push("/signup");
+  };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-dtu-white dark:bg-dtu-black">
-      <div className="text-center space-y-6">
-        <h1 className="text-4xl font-bold text-dtu-corporateRed dark:text-dtu-pink">
-          Velkommen til DTU Compute Cluster
-        </h1>
-        <p className="text-lg text-dtu-grey dark:text-dtu-grey">
-          Login for at få adgang til dine virtuelle maskiner.
-        </p>
-        <Button
-          variant="primary"
-          onClick={() => router.push("/login")}
-          className="text-lg px-6 py-3"
-        >
-          Gå til login
+    <AuthCard title="Login" subtitle="Sign in to your account">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <Input
+          type="text"
+          label="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter username"
+          required
+        />
+
+        <Input
+          type="password"
+          label="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter password"
+          required
+        />
+
+        {error && (
+          <div className="text-red-600 text-sm text-center">{error}</div>
+        )}
+
+        <Button type="submit" disabled={loading} className="w-full">
+          {loading ? "Logger ind..." : "Sign in"}
         </Button>
-      </div>
-    </main>
+
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full"
+          onClick={handleSignUp}
+        >
+          Sign up
+        </Button>
+      </form>
+    </AuthCard>
   );
 }
