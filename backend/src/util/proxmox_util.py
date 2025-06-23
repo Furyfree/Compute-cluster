@@ -116,7 +116,7 @@ def migrate_vm_httpx(
         }
 
         if with_local_disks:
-            payload["with_local_disks"] = "1"
+            payload["with-local-disks"] = "1"
 
         # 4. Send migration request
         migrate_resp = client.post(
