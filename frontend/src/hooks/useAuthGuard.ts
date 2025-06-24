@@ -34,7 +34,7 @@ export function useAuthGuard(redirectTo: string = "/login") {
     };
 
     checkAuth();
-  }, [router, redirectTo]);
+  }, [redirectTo]);
 
   return { isAuthenticated, isLoading };
 }
@@ -100,7 +100,7 @@ export function useAdminGuard(redirectTo: string = "/dashboard") {
     };
 
     checkAdminAuth();
-  }, [router, redirectTo]);
+  }, [redirectTo]);
 
   return { isAdmin, isLoading };
 }
