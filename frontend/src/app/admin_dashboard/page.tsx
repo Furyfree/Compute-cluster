@@ -476,7 +476,7 @@ export default function AdminDashboardPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 min-h-0 overflow-y-auto">
           {selectedUser ? (
             <div className="max-w-2xl">
               <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 mb-6">
@@ -675,7 +675,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-500">
+            <div className="h-full flex items-center justify-center text-gray-500">
               <div className="text-center">
                 <p className="text-lg mb-2">No user selected</p>
                 <p className="text-sm">

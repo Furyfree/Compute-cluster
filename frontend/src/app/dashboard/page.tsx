@@ -307,7 +307,7 @@ export default function DashboardPage() {
         </aside>
 
         {/* Content */}
-        <main className="flex-1 p-6 space-y-6 overflow-y-auto">
+        <main className="flex-1 p-6 space-y-6 overflow-y-auto min-h-0">
           {selectedResource ? (
             <>
               {/* Remote Desktop Access */}
@@ -379,7 +379,7 @@ export default function DashboardPage() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-500">
+            <div className="h-full flex items-center justify-center text-gray-500">
               <div className="text-center">
                 <p className="text-lg mb-2">No resource selected</p>
                 <p className="text-sm">
