@@ -14,7 +14,7 @@ import src.services.proxmox_service as proxmox_service
 def provision_worker(req: ProvisionRequest):
     if req.os not in SupportedOS:
         raise HTTPException(400, detail="Unsupported OS template requested")
-    template_vmid = SupportedOS[req.os]
+    template_vmid = OS_TEMPLATE_MAP[req.os]
     template_node = "pve-template"
     target_node = proxmox_service.pick_best_node()
     if template_node == target_node:
