@@ -37,7 +37,7 @@ def list_realms():
     """List all authentication realms"""
     return proxmox.access.domains.get()
 
-def list_vms():
+def list_admin_vms():
     all_vms = []
     for node in proxmox.nodes.get():
         node_name = node["node"]
@@ -50,6 +50,21 @@ def list_vms():
                 "status": vm.get("status", "unknown")
             })
     return all_vms
+
+def list_user_vms(username: str):
+    all_vms = list_admin_vms()
+    acl = proxmox.access.acl.get()["data"]
+
+    user_vmid_set = set()
+    for entry in acl:
+        if entry["path"].startswith("/vms/") and username in entry.get("users", []):
+            try:
+                vmid = int(entry["path"].split("/vms/")[1])
+                user_vmid_set.add(vmid)
+            except ValueError:
+                continue
+
+    return [vm for vm in all_vms if vm["vmid"] in user_vmid_set]
 
 def list_lxc():
     all_lxcs = []
@@ -239,7 +254,7 @@ def provision_cloud_init_vm(username: str, password: str, OS: SupportedOS, ssh_k
             return {"error": "No suitable node found for provisioning."}
     except Exception as e:
         return {"error": f"Error selecting node: {str(e)}"}
-    
+
 def provision_cloud_init_vm_with_retry(node: str, vmid: int, req: ProvisionRequest, retries: int = 5, delay: float = 2.0):
     """
     Retry-safe wrapper for cloud-init config to handle Proxmox file lock errors.
@@ -273,11 +288,11 @@ def wait_for_first_ip(node: str, vmid: int, timeout: int = 120) -> str | None: #
         except Exception:
             pass
         time.sleep(3)
-    return None  
+    return None
 
-async def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str):
+def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str):
     try:
-        result = await proxmox.nodes(source_node).qemu(source_vmid).clone.post(
+        result = proxmox.nodes(source_node).qemu(source_vmid).clone.post(
             newid=target_vmid,
             name=vm_name,
             full=1,

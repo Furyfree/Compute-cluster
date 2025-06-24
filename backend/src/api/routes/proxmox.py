@@ -42,10 +42,12 @@ def load_balance_nodes():
     return proxmox_service.manual_load_balance()
 
 # VM endpoints
-@router.get("/vms", dependencies=[Depends(get_current_user)], summary="List all VMs")
-def get_vms():
-    """Get a list of all virtual machines across all nodes"""
-    return proxmox_service.list_vms()
+@router.get("/vms", summary="List VMs user has access to")
+def get_vms(current_user=Depends(get_current_user)):
+    if current_user["is_admin"]:
+        return proxmox_service.list_admin_vms()
+    else:
+        return proxmox_service.list_user_vms(current_user["username"])
 
 @router.get("/vms/ip", dependencies=[Depends(get_current_user)], summary="Get IP for VM")
 def get_virtual_machine_ip(node: str, vm_id: int):
