@@ -21,7 +21,8 @@ async def provision_worker(req: ProvisionRequest):
         raise HTTPException(400, detail="Template VM not found")
     target_node = proxmox_service.pick_best_node()
     if template_node == target_node:
-        raise HTTPException(400, detail="Template and target node must differ")
+        print("Using same node for template and target, skipping migration")
+        migrate_result = {"status": "skipped"}
     vmid = proxmox_service.get_next_vmid()
     name = f"{req.os.value.lower()}-{vmid}"
 
@@ -36,13 +37,14 @@ async def provision_worker(req: ProvisionRequest):
     start_result = proxmox_service.start_vm(target_node, vmid)
     if "error" in start_result:
         raise HTTPException(400, detail=start_result["error"])
-
+    if migrate_result["status"] == "skipped":
+        ip = proxmox_service.wait_for_first_ip(target_node, vmid)
+        return ProvisionResponse(vmid=vmid, ip=ip, node=target_node)
     migrate_result = proxmox_service.migrate_vm(
         vmid=vmid,
         source_node=target_node,
         target_node=target_node,
     )
-
     ip = proxmox_service.wait_for_first_ip(target_node, vmid)
 
     return ProvisionResponse(vmid=vmid, ip=ip, node=target_node)
