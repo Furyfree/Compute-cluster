@@ -86,9 +86,10 @@ def grant_vm_access(vmid: int, username: str):
 def revoke_vm_access(vmid: int, username: str):
     """Revoke user access from a specific VM"""
     try:
-        result = proxmox.access.acl.delete(
+        result = proxmox.access.acl.put(
             path=f"/vms/{vmid}",
             users=[f"{username}@LDAP"],
+            roles=[],
             delete=1
         )
         return {"success": True, "vmid": vmid, "username": username}
