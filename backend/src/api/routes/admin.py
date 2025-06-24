@@ -119,14 +119,26 @@ def admin_delete_user(username: str):
         "message": f"User {username} deleted by admin"
     }
 
-@router.post("/admin/vms/{vmid}/grant")
+@router.post("/vms/{vmid}/grant")
 def grant_user_access(vmid: int, body: VMAccessRequest, current_user=Depends(get_admin_user)):
-    if not current_user["is_admin"]:
-        raise HTTPException(status_code=403)
-    return proxmox_service.grant_vm_access(vmid, body.username)
+    node = proxmox_service.get_node_by_vmid(vmid)
+    if not node:
+        raise HTTPException(status_code=404, detail=f"VM {vmid} not found")
 
-@router.post("/admin/vms/{vmid}/revoke")
-def revoke_user_access(vmid: int, body: VMAccessRequest, current_user=Depends(get_admin_user)):
-    if not current_user["is_admin"]:
-        raise HTTPException(status_code=403)
-    return proxmox_service.revoke_vm_access(vmid, body.username)
+    result = proxmox_service.grant_vm_access(vmid, body.username)
+    if result.get("success"):
+        return {"success": True, "message": f"Access granted to {body.username} for VM {vmid}"}
+    else:
+        raise HTTPException(status_code=500, detail=f"Failed to grant access: {result.get('error', 'Unknown error')}")
+
+@router.delete("/vms/{vmid}/revoke")
+def revoke_user_access(vmid: int, username: str, current_user=Depends(get_admin_user)):
+    node = proxmox_service.get_node_by_vmid(vmid)
+    if not node:
+        raise HTTPException(status_code=404, detail=f"VM {vmid} not found")
+
+    result = proxmox_service.revoke_vm_access(vmid, username)
+    if result.get("success"):
+        return {"success": True, "message": f"Access revoked from {username} for VM {vmid}"}
+    else:
+        raise HTTPException(status_code=500, detail=f"Failed to revoke access: {result.get('error', 'Unknown error')}")
