@@ -1,4 +1,5 @@
 import { getAuthToken } from "./auth";
+import { getVMs } from "./proxmox";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -77,6 +78,28 @@ export async function adminDeleteUser(username: string) {
   });
 }
 
+// VM Management for Users
+export async function adminGetUserVMs(username: string) {
+  return authenticatedFetch(`/admin/users/${username}/vms`);
+}
+
+export async function adminGrantVMAccess(vmid: number, username: string) {
+  return authenticatedFetch(`/admin/vms/${vmid}/grant`, {
+    method: "POST",
+    body: JSON.stringify({ username }),
+  });
+}
+
+export async function adminRevokeVMAccess(vmid: number, username: string) {
+  return authenticatedFetch(`/admin/vms/${vmid}/revoke?username=${username}`, {
+    method: "DELETE",
+  });
+}
+
+export async function adminGetAllVMs() {
+  return getVMs();
+}
+
 // Types
 export interface AdminCreateUserRequest {
   first_name: string;
@@ -108,4 +131,33 @@ export interface AdminUserListResponse {
 export interface AdminUserDetailsResponse {
   success: boolean;
   user: AdminUser;
+}
+
+export interface AdminUserVMsResponse {
+  success: boolean;
+  username: string;
+  vms: VM[];
+}
+
+export interface VM {
+  vmid: number;
+  name: string;
+  node: string;
+  status: "running" | "stopped" | "paused";
+  cpu: number;
+  maxcpu: number;
+  mem: number;
+  maxmem: number;
+  disk: number;
+  maxdisk: number;
+  pid?: number;
+  uptime?: number;
+  template?: boolean;
+  tags?: string;
+  lock?: string;
+}
+
+export interface VMAccessResponse {
+  success: boolean;
+  message: string;
 }

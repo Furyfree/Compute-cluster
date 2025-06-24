@@ -14,9 +14,15 @@ import {
   adminChangeUserPassword,
   adminChangeUserGroup,
   adminDeleteUser,
+  adminGetUserVMs,
+  adminGrantVMAccess,
+  adminRevokeVMAccess,
+  adminGetAllVMs,
   AdminUser,
   UserGroup,
   AdminCreateUserRequest,
+  VM,
+  AdminUserVMsResponse,
 } from "@/lib/api/admin";
 import { removeAuthToken } from "@/lib/api/auth";
 import { forceNavigate } from "@/lib/navigation";
@@ -30,6 +36,12 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"users" | "create">("users");
+
+  // VM management state
+  const [userVMs, setUserVMs] = useState<VM[]>([]);
+  const [allVMs, setAllVMs] = useState<VM[]>([]);
+  const [vmLoading, setVmLoading] = useState(false);
+  const [showAddVMModal, setShowAddVMModal] = useState(false);
 
   // Create user form state
   const [createForm, setCreateForm] = useState({
@@ -77,6 +89,71 @@ export default function AdminDashboardPage() {
     } catch (err: any) {
       console.error("Failed to fetch user details:", err);
     }
+
+    // Fetch user's VMs
+    await fetchUserVMs(user.username);
+  };
+
+  // Fetch user's VMs
+  const fetchUserVMs = async (username: string) => {
+    setVmLoading(true);
+    try {
+      const response = await adminGetUserVMs(username);
+      setUserVMs(response.vms || []);
+    } catch (err: any) {
+      console.error("Failed to fetch user VMs:", err);
+      setUserVMs([]);
+    } finally {
+      setVmLoading(false);
+    }
+  };
+
+  // Fetch all VMs for adding access
+  const fetchAllVMs = async () => {
+    try {
+      const response = await adminGetAllVMs();
+      setAllVMs(response.data || []);
+    } catch (err: any) {
+      console.error("Failed to fetch all VMs:", err);
+      setAllVMs([]);
+    }
+  };
+
+  // Handle grant VM access
+  const handleGrantVMAccess = async (vmid: number) => {
+    if (!selectedUser) return;
+
+    try {
+      await adminGrantVMAccess(vmid, selectedUser.username);
+      await fetchUserVMs(selectedUser.username);
+      setShowAddVMModal(false);
+      alert("VM access granted successfully!");
+    } catch (err: any) {
+      alert(`Failed to grant VM access: ${err.message}`);
+    }
+  };
+
+  // Handle revoke VM access
+  const handleRevokeVMAccess = async (vmid: number) => {
+    if (!selectedUser) return;
+
+    if (!confirm(`Are you sure you want to revoke access to VM ${vmid}?`)) {
+      return;
+    }
+
+    try {
+      await adminRevokeVMAccess(vmid, selectedUser.username);
+      await fetchUserVMs(selectedUser.username);
+      alert("VM access revoked successfully!");
+    } catch (err: any) {
+      alert(`Failed to revoke VM access: ${err.message}`);
+    }
+  };
+
+  // Handle show add VM modal
+  const handleShowAddVMModal = () => {
+    setShowAddVMModal(true);
+    fetchAllVMs();
   };
 
   // Handle create user
@@ -434,6 +511,68 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
+              {/* VM Management Section */}
+              <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">
+                    VM Access Management
+                  </h3>
+                  <Button onClick={handleShowAddVMModal} variant="blue">
+                    Add VM Access
+                  </Button>
+                </div>
+
+                {vmLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-dtu-corporate-red"></div>
+                  </div>
+                ) : userVMs.length > 0 ? (
+                  <div className="space-y-3">
+                    {userVMs.map((vm) => (
+                      <div
+                        key={vm.vmid}
+                        className="flex items-center justify-between p-4 border border-gray-200 dark:border-zinc-700 rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <h4 className="font-medium">
+                                VM {vm.vmid} - {vm.name}
+                              </h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Node: {vm.node} | Status: {vm.status}
+                              </p>
+                            </div>
+                            <span
+                              className={`px-2 py-1 text-xs rounded-full ${
+                                vm.status === "running"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                  : vm.status === "stopped"
+                                    ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                    : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                              }`}
+                            >
+                              {vm.status}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="red"
+                          size="sm"
+                          onClick={() => handleRevokeVMAccess(vm.vmid)}
+                        >
+                          Remove Access
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No VM access granted to this user</p>
+                  </div>
+                )}
+              </div>
+
               {/* Edit User Form */}
               <div className="bg-white dark:bg-zinc-800 rounded-lg p-6">
                 <h3 className="text-xl font-semibold mb-4">Edit User</h3>
@@ -543,6 +682,95 @@ export default function AdminDashboardPage() {
           )}
         </main>
       </div>
+
+      {/* Add VM Access Modal */}
+      {showAddVMModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Add VM Access</h3>
+              <button
+                onClick={() => setShowAddVMModal(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Select VMs to grant access to {selectedUser?.username}
+            </p>
+
+            {allVMs.length > 0 ? (
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {allVMs
+                  .filter(
+                    (vm) => !userVMs.some((userVm) => userVm.vmid === vm.vmid),
+                  )
+                  .map((vm) => (
+                    <div
+                      key={vm.vmid}
+                      className="flex items-center justify-between p-3 border border-gray-200 dark:border-zinc-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <h4 className="font-medium">
+                              VM {vm.vmid} - {vm.name}
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Node: {vm.node} | Status: {vm.status}
+                            </p>
+                          </div>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              vm.status === "running"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                : vm.status === "stopped"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                            }`}
+                          >
+                            {vm.status}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        variant="blue"
+                        size="sm"
+                        onClick={() => handleGrantVMAccess(vm.vmid)}
+                      >
+                        Grant Access
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>Loading VMs...</p>
+              </div>
+            )}
+
+            <div className="flex justify-end mt-6">
+              <Button variant="grey" onClick={() => setShowAddVMModal(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
