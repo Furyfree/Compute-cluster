@@ -6,6 +6,7 @@ import { useLogin } from "@/hooks/useAuth";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import { safeNavigate } from "@/lib/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function LoginPage() {
   };
 
   const handleSignUp = () => {
-    router.push("/signup");
+    safeNavigate("/signup");
   };
 
   return (

@@ -6,6 +6,7 @@ import { useSignup } from "@/hooks/useAuth";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import { safeNavigate } from "@/lib/navigation";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function SignupPage() {
   };
 
   const handleBackToLogin = () => {
-    router.push("/login");
+    safeNavigate("/login");
   };
 
   return (

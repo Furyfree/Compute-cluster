@@ -19,6 +19,7 @@ import {
   AdminCreateUserRequest,
 } from "@/lib/api/admin";
 import { removeAuthToken } from "@/lib/api/auth";
+import { forceNavigate } from "@/lib/navigation";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -167,12 +168,18 @@ export default function AdminDashboardPage() {
   };
 
   const handleLogout = () => {
-    removeAuthToken();
-    router.push("/login");
+    console.log("[Admin] Logout button clicked");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("expires_at");
+      sessionStorage.clear();
+      forceNavigate("/login");
+    }
   };
 
   const handleGoToDashboard = () => {
-    router.push("/dashboard");
+    console.log("[Admin] Dashboard button clicked");
+    forceNavigate("/dashboard");
   };
 
   // Fetch users on component mount

@@ -9,6 +9,7 @@ import {
   removeAuthToken,
 } from "@/lib/api/auth";
 import { LoginCredentials, SignupData } from "@/types/auth";
+import { safeNavigate, performLogout } from "@/lib/navigation";
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
@@ -29,13 +30,12 @@ export function useLogin() {
       const msUntilExpiry =
         new Date(data.expires_at).getTime() - new Date().getTime();
       setTimeout(() => {
-        removeAuthToken();
         alert("Session udløbet. Log venligst ind igen.");
-        router.push("/login");
+        performLogout();
       }, msUntilExpiry);
 
       // Send brugeren til dashboard
-      router.push("/dashboard");
+      safeNavigate("/dashboard");
     } catch (err: any) {
       console.error("Login fejl:", err);
       setError(err.message || "Login mislykkedes");
@@ -67,7 +67,7 @@ export function useSignup() {
 
       alert(`User ${userData.username} created successfully!`);
       // Redirect to login page after successful signup
-      router.push("/login");
+      safeNavigate("/login");
     } catch (err: any) {
       console.error("Signup error:", err);
       setError(err.message || "User creation failed");

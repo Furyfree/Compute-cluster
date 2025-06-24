@@ -2,12 +2,34 @@
 
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import { safeNavigate } from "@/lib/navigation";
 
 export default function LandingPage() {
   const router = useRouter();
 
   const handleGoToLogin = () => {
-    router.push("/login");
+    console.log("[Landing] Go to login clicked");
+    try {
+      if (typeof window !== "undefined") {
+        console.log("[Landing] Using direct navigation");
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      console.error("[Landing] Navigation failed:", error);
+    }
+  };
+
+  const testNavigation = () => {
+    console.log("[Landing] Testing navigation methods");
+    alert("Navigation test - check console for logs");
+
+    // Test 1: Direct window.location
+    console.log("Test 1: window.location.href");
+
+    // Test 2: Delayed navigation
+    setTimeout(() => {
+      console.log("Test 2: Delayed navigation would execute now");
+    }, 1000);
   };
 
   return (
@@ -30,13 +52,22 @@ export default function LandingPage() {
         <p className="text-lg text-dtu-grey dark:text-dtu-grey">
           Log in to access your virtual machines.
         </p>
-        <Button
-          variant="red"
-          onClick={handleGoToLogin}
-          className="text-lg px-8 py-4"
-        >
-          Go to login
-        </Button>
+        <div className="space-y-4">
+          <Button
+            variant="red"
+            onClick={handleGoToLogin}
+            className="text-lg px-8 py-4"
+          >
+            Go to login
+          </Button>
+          <Button
+            variant="grey"
+            onClick={testNavigation}
+            className="text-sm px-4 py-2"
+          >
+            Test Navigation (Debug)
+          </Button>
+        </div>
       </div>
     </main>
   );
