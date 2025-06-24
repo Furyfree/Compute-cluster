@@ -11,7 +11,7 @@ router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
 class ProvisionVMRequest(BaseModel):
     user: str
     password: str
-    # ssh_key: str
+    ssh_key: str
     os: SupportedOS
 
 class GroupRequest(BaseModel):
