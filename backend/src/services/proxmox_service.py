@@ -263,7 +263,8 @@ def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str)
             full=1,
             target=source_node,
         )
-        proxmox_util.wait_for_task_completion(source_node, result["data"]["upid"])
+        upid = result["data"]
+        proxmox_util.wait_for_task_completion(source_node, upid)
     except Exception as e:
         return {"error": f"Failed to clone VM: {str(e)}"}
 
