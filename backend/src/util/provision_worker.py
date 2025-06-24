@@ -9,9 +9,10 @@ from src.util.proxmox_util import migrate_vm_httpx
 from fastapi import HTTPException, Depends
 from pydantic import BaseModel
 import src.services.proxmox_service as proxmox_service
+import asyncio
 
 
-def provision_worker(req: ProvisionRequest):
+async def provision_worker(req: ProvisionRequest):
     if req.os not in SupportedOS:
         raise HTTPException(400, detail="Unsupported OS template requested")
     template_vmid = OS_TEMPLATE_MAP[req.os]
@@ -31,7 +32,7 @@ def provision_worker(req: ProvisionRequest):
     provision_result = proxmox_service.cloud_init_vm(template_node, vmid, req)
     if "error" in provision_result:
         raise HTTPException(400, detail=provision_result["error"])
-
+    await asyncio.sleep(5)
     start_result = proxmox_service.start_vm(target_node, vmid)
     if "error" in start_result:
         raise HTTPException(400, detail=start_result["error"])

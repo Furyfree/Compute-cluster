@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends
 from src.api.auth_deps import get_current_user
 from src.services import proxmox_service
@@ -134,4 +135,4 @@ def get_user_groups(userid: str):
 
 @router.post("/provision", dependencies=[Depends(get_current_user)], summary="Provision VM from OS Template")
 def provision_vm(req: ProvisionRequest):
-    return provision_worker.provision_worker(req)
+    return asyncio.run(provision_worker.provision_worker(req))
