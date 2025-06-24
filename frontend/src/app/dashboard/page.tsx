@@ -76,7 +76,7 @@ export default function DashboardPage() {
           {/* Guacamole */}
           <div className="flex-1 min-h-[300px] h-full bg-black rounded overflow-hidden border border-dtu-grey dark:border-zinc-700">
             <iframe
-              src={`http://localhost:8001/guacamole/#/client/1?token=DD7EA02DAEBFADD9E6E0C2FBEC778C2EFDAE2A7BD2FB6858D160CB07F35ACB97`}
+              src={`http://compute-cluster-guacamole:8080/guacamole/#/client/1?token=DD7EA02DAEBFADD9E6E0C2FBEC778C2EFDAE2A7BD2FB6858D160CB07F35ACB97`}
               title="Guacamole"
               className="w-full h-full border-none"
             />
