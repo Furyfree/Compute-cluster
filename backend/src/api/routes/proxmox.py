@@ -2,9 +2,7 @@ import asyncio
 from fastapi import APIRouter, Depends
 from src.api.auth_deps import get_current_user
 from src.services import proxmox_service
-from pydantic import BaseModel
-from src.models.enums import SupportedOS
-from src.models.models import ProvisionRequest, ProvisionResponse, GroupRequest
+from src.models.models import ProvisionRequest
 import src.util.provision_worker as provision_worker
 
 router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
