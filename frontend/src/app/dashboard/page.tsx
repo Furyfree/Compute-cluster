@@ -1,259 +1,123 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useState } from "react";
+import Button from "@/components/Button";
 
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  is_admin: boolean;
-};
+const mockVMs = [
+  {
+    id: "vm1",
+    name: "Virtuel Maskine XX",
+    ip: "192.168.1.100",
+    status: "running",
+    memory: "4 GB",
+    cpu: "2 vCPU",
+    disk: "40 GB",
+  },
+  {
+    id: "vm2",
+    name: "Virtuel Maskine YY",
+    ip: "192.168.1.101",
+    status: "stopped",
+    memory: "8 GB",
+    cpu: "4 vCPU",
+    disk: "100 GB",
+  },
+];
 
-export default function Dashboard() {
-  const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [newUser, setNewUser] = useState({ name: "", email: "", password: "" });
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-
-  const router = useRouter();
-
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-  useEffect(() => {
-    if (!token) {
-      router.push("/");
-      return;
-    }
-
-    const expiresAt = localStorage.getItem("expires_at");
-    if (expiresAt) {
-      const msUntilExpiry =
-        new Date(expiresAt).getTime() - new Date().getTime();
-      setTimeout(() => {
-        alert("Session expired. Please log in again.");
-        handleLogout();
-      }, msUntilExpiry);
-    }
-
-    fetch("http://127.0.0.1:8000/auth/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Unauthorized");
-        return res.json();
-      })
-      .then(setUser)
-      .catch(() => {
-        localStorage.removeItem("token");
-        router.push("/auth/login");
-      });
-  }, []);
-
-  const fetchUsers = async () => {
-    const res = await fetch("http://127.0.0.1:8000/admin/users/", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      setUsers(data);
-    } else {
-      console.error("Unexpected user data:", data);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.is_admin) {
-      fetchUsers();
-    }
-  }, [user]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("expires_at");
-    router.push("/auth/login");
-  };
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-
-    const res = await fetch("http://127.0.0.1:8000/admin/users/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(newUser),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.detail || "Failed to create user");
-      return;
-    }
-
-    alert(`✅ Created ${data.email}`);
-    await fetchUsers();
-    setNewUser({ name: "", email: "", password: "" });
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Delete this user?")) return;
-
-    const res = await fetch(`http://127.0.0.1:8000/admin/users/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.ok) {
-      setUsers(users.filter((u) => u.id !== id));
-    } else {
-      const err = await res.json();
-      alert(err.detail || "Delete failed");
-    }
-  };
-
-  const handleEditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingUser) return;
-
-    const res = await fetch(
-      `http://127.0.0.1:8000/admin/users/${editingUser.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: editingUser.name,
-          email: editingUser.email,
-          is_admin: editingUser.is_admin,
-        }),
-      },
-    );
-
-    const updated = await res.json();
-    if (!res.ok) return alert(updated.detail || "Failed to update user");
-
-    setUsers(users.map((u) => (u.id === updated.id ? updated : u)));
-    setEditingUser(null);
-  };
-
-  if (!user) return <p>Loading...</p>;
+export default function DashboardPage() {
+  const [selectedVMId, setSelectedVMId] = useState("vm1");
+  const selectedVM = mockVMs.find((vm) => vm.id === selectedVMId)!;
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
-      <h1>Welcome, {user.name}!</h1>
-      <p>Email: {user.email}</p>
-      <p>Admin: {user.is_admin ? " Yes" : " No"}</p>
+    <div className="min-h-screen bg-dtu-white dark:bg-dtu-black text-dtu-black dark:text-dtu-white">
+      {/* Topbar */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-dtu-grey dark:border-zinc-800">
+        <Image
+          src="/images/DTU_Red.png"
+          alt="DTU Logo"
+          width={25}
+          height={15}
+        />
+        <div className="bg-dtu-grey dark:bg-zinc-800 px-4 py-2 rounded text-sm">
+          User ▾
+        </div>
+      </header>
 
-      <button onClick={handleLogout} style={{ marginTop: "1rem" }}>
-        Logout
-      </button>
+      {/* Main layout */}
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Sidebar */}
+        <aside className="w-64 border-r border-dtu-grey dark:border-zinc-800 p-4 space-y-2 bg-dtu-grey/20 dark:bg-zinc-900">
+          <h2 className="text-lg font-semibold mb-2">Dine maskiner</h2>
+          {mockVMs.map((vm) => (
+            <button
+              key={vm.id}
+              onClick={() => setSelectedVMId(vm.id)}
+              className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                selectedVMId === vm.id
+                  ? "bg-dtu-blue text-white"
+                  : "hover:bg-dtu-blue/10"
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <span>{vm.name}</span>
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    vm.status === "running" ? "bg-dtu-green" : "bg-dtu-red"
+                  }`}
+                />
+              </div>
+            </button>
+          ))}
+        </aside>
 
-      {user.is_admin && (
-        <>
-          <hr style={{ margin: "2rem 0" }} />
-          <h2>Add a New User</h2>
-          <form
-            onSubmit={handleCreateUser}
-            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-          >
-            <input
-              placeholder="Name"
-              value={newUser.name}
-              onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-              required
+        {/* Content */}
+        <main className="flex-1 p-6 space-y-6 overflow-y-auto">
+          {/* Guacamole */}
+          <div className="w-full aspect-[16/9] bg-black rounded overflow-hidden border border-dtu-grey dark:border-zinc-700">
+            <iframe
+              src={`http://your-guacamole-server/vm/${selectedVMId}`}
+              title="Guacamole"
+              className="w-full h-full border-none"
             />
-            <input
-              placeholder="Email"
-              value={newUser.email}
-              onChange={(e) =>
-                setNewUser({ ...newUser, email: e.target.value })
-              }
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={newUser.password}
-              onChange={(e) =>
-                setNewUser({ ...newUser, password: e.target.value })
-              }
-              required
-            />
-            <button type="submit">Create User</button>
-          </form>
+          </div>
 
-          <hr style={{ margin: "2rem 0" }} />
-          <h2>All Users</h2>
+          {/* Info */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+              💡 <strong>IP:</strong> {selectedVM.ip}
+            </div>
+            <div>
+              <strong>Status:</strong>{" "}
+              <span
+                className={
+                  selectedVM.status === "running"
+                    ? "text-dtu-green"
+                    : "text-dtu-red"
+                }
+              >
+                {selectedVM.status}
+              </span>
+            </div>
+            <div>
+              🧠 <strong>RAM:</strong> {selectedVM.memory}
+            </div>
+            <div>
+              🖥️ <strong>CPU:</strong> {selectedVM.cpu}
+            </div>
+            <div>
+              💾 <strong>Disk:</strong> {selectedVM.disk}
+            </div>
+          </div>
 
-          {Array.isArray(users) &&
-            users.map((u) =>
-              editingUser?.id === u.id ? (
-                <form
-                  onSubmit={handleEditSubmit}
-                  key={u.id}
-                  style={{
-                    display: "flex",
-                    gap: "0.5rem",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  <input
-                    value={editingUser.name}
-                    onChange={(e) =>
-                      setEditingUser({ ...editingUser, name: e.target.value })
-                    }
-                  />
-                  <input
-                    value={editingUser.email}
-                    onChange={(e) =>
-                      setEditingUser({ ...editingUser, email: e.target.value })
-                    }
-                  />
-                  <label>
-                    Admin:
-                    <input
-                      type="checkbox"
-                      checked={editingUser.is_admin}
-                      onChange={(e) =>
-                        setEditingUser({
-                          ...editingUser,
-                          is_admin: e.target.checked,
-                        })
-                      }
-                    />
-                  </label>
-                  <button type="submit">Save</button>
-                  <button type="button" onClick={() => setEditingUser(null)}>
-                    Cancel
-                  </button>
-                </form>
-              ) : (
-                <div key={u.id} style={{ marginBottom: "0.5rem" }}>
-                  <strong>{u.name}</strong> — {u.email} —{" "}
-                  {u.is_admin ? "Admin" : "User"}
-                  <button
-                    onClick={() => setEditingUser(u)}
-                    style={{ marginLeft: "1rem" }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(u.id)}
-                    style={{ marginLeft: "0.5rem", color: "red" }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              ),
-            )}
-        </>
-      )}
+          {/* Controls */}
+          <div className="flex gap-4 pt-2">
+            <Button variant="red">Stop</Button>
+            <Button variant="orange">Reboot</Button>
+            <Button variant="green">Start</Button>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

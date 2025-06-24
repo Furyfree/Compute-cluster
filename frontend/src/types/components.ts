@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary";
+  variant?: "red" | "grey" | "green" | "orange";
 }
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
