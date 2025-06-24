@@ -74,9 +74,9 @@ export default function DashboardPage() {
         {/* Content */}
         <main className="flex-1 p-6 space-y-6 overflow-y-auto">
           {/* Guacamole */}
-          <div className="w-full aspect-[16/9] bg-black rounded overflow-hidden border border-dtu-grey dark:border-zinc-700">
+          <div className="flex-1 min-h-[300px] h-full bg-black rounded overflow-hidden border border-dtu-grey dark:border-zinc-700">
             <iframe
-              src={`http://your-guacamole-server/vm/${selectedVMId}`}
+              src={`http://compute-cluster-guacamole:8080/guacamole/#/client/1?token=DD7EA02DAEBFADD9E6E0C2FBEC778C2EFDAE2A7BD2FB6858D160CB07F35ACB97`}
               title="Guacamole"
               className="w-full h-full border-none"
             />
@@ -85,7 +85,7 @@ export default function DashboardPage() {
           {/* Info */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
             <div>
-              💡 <strong>IP:</strong> {selectedVM.ip}
+              <strong>IP:</strong> {selectedVM.ip}
             </div>
             <div>
               <strong>Status:</strong>{" "}
@@ -100,13 +100,13 @@ export default function DashboardPage() {
               </span>
             </div>
             <div>
-              🧠 <strong>RAM:</strong> {selectedVM.memory}
+              <strong>RAM:</strong> {selectedVM.memory}
             </div>
             <div>
-              🖥️ <strong>CPU:</strong> {selectedVM.cpu}
+              <strong>CPU:</strong> {selectedVM.cpu}
             </div>
             <div>
-              💾 <strong>Disk:</strong> {selectedVM.disk}
+              <strong>Disk:</strong> {selectedVM.disk}
             </div>
           </div>
 
