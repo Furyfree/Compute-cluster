@@ -6,7 +6,8 @@ from src.models.models import ProvisionRequest, ProvisionResponse
 import src.util.proxmox_util as proxmox_util
 import src.services.load_balance_service as load_balance_service
 import time
-from typing import Dict
+from typing import Dict, Tuple, Union, Literal
+import re
 
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
@@ -263,10 +264,12 @@ def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str)
             full=1,
             target=source_node,
         )
-        try:
-            proxmox_util.wait_for_task_completion(source_node, result)
-        except Exception as e:
-            return {"error": f"Failed to wait for clone task completion: {str(e)}"}
+
+        upid = result["data"] if isinstance(result, dict) else result
+        proxmox_util.wait_for_task_completion(upid)
+
+        return {"success": True, "upid": upid}
+
     except Exception as e:
         return {"error": f"Failed to clone VM: {str(e)}"}
 

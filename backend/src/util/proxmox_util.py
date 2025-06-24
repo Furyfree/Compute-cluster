@@ -5,7 +5,9 @@ from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 import httpx
 from typing import Literal
-
+import re
+import asyncio
+UPID_RE = re.compile(r"UPID:(?P<node>[^:]+):")
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
     port=8006,
@@ -128,15 +130,16 @@ def migrate_vm_httpx(
         migrate_resp.raise_for_status()
         return migrate_resp.json()
     
-async def wait_for_task_completion(node: str, upid: str, timeout: int = 60) -> bool:
-    import time
+async def wait_for_task_completion(upid: str, *, timeout: int = 120) -> None:
     deadline = time.time() + timeout
     while time.time() < deadline:
-        status = proxmox.nodes(node).tasks(upid).status.get()
-        if status.get("status") == "stopped":
-            if status.get("exitstatus") == "OK":
-                return True
-            else:
-                raise RuntimeError(f"Task failed: {status.get('exitstatus')}")
-        time.sleep(1)
-    raise TimeoutError(f"Task {upid} did not complete within timeout")
+        task_json = proxmox.cluster.tasks(upid).status.get()
+        data = task_json.get("data", {})
+        status = data.get("status")
+        exitstatus = data.get("exitstatus")
+        if status == "stopped":
+            if exitstatus == "OK":
+                return
+            raise RuntimeError(f"Task failed: {exitstatus}")
+        await asyncio.sleep(2)
+    raise TimeoutError(f"Task {upid} did not complete in {timeout} seconds")
