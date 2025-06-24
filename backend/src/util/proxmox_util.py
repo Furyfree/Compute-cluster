@@ -128,11 +128,11 @@ def migrate_vm_httpx(
         )
         migrate_resp.raise_for_status()
         return migrate_resp.json()
-    
-async def wait_for_task_completion(upid: str, *, timeout: int = 120) -> None:
+
+async def wait_for_task_completion(upid: str, node: str, *, timeout: int = 120) -> None:
     deadline = time.time() + timeout
     while time.time() < deadline:
-        task_json = proxmox.cluster.tasks(upid).status.get()
+        task_json = proxmox.nodes(node).tasks(upid).status.get()
         data = task_json.get("data", {})
         status = data.get("status")
         exitstatus = data.get("exitstatus")

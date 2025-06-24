@@ -276,9 +276,6 @@ def provision_cloud_init_vm(username: str, password: str, OS: SupportedOS, ssh_k
         return {"error": f"Error selecting node: {str(e)}"}
 
 def provision_cloud_init_vm_with_retry(node: str, vmid: int, req: ProvisionRequest, retries: int = 5, delay: float = 2.0):
-    """
-    Retry-safe wrapper for cloud-init config to handle Proxmox file lock errors.
-    """
     for attempt in range(retries):
         try:
             proxmox.nodes(node).qemu(vmid).config.post(
@@ -320,7 +317,7 @@ async def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name
         )
 
         upid = result["data"] if isinstance(result, dict) else result
-        await proxmox_util.wait_for_task_completion(upid)
+        await proxmox_util.wait_for_task_completion(upid, node=source_node)
         return {"success": True, "upid": upid}
 
     except Exception as e:
