@@ -15,14 +15,16 @@ def provision_worker(req: ProvisionRequest):
     if req.os not in SupportedOS:
         raise HTTPException(400, detail="Unsupported OS template requested")
     template_vmid = OS_TEMPLATE_MAP[req.os]
-    template_node = "pve-template"
+    template_node = proxmox_service.list_vms().get(template_vmid, {}).get("node")
+    if not template_node:
+        raise HTTPException(400, detail="Template VM not found")
     target_node = proxmox_service.pick_best_node()
     if template_node == target_node:
         raise HTTPException(400, detail="Template and target node must differ")
     vmid = proxmox_service.get_next_vmid()
     name = f"{req.os.value.lower()}-{vmid}"
 
-    clone_result = proxmox_service.clone_vm(template_node, template_vmid, target_node, vmid, name)
+    clone_result = proxmox_service.clone_vm(template_node, template_vmid, vmid, name)
     if "error" in clone_result:
         raise HTTPException(400, detail=clone_result["error"])
 

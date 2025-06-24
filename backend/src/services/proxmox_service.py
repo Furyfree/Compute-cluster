@@ -87,6 +87,11 @@ def reboot_lxc(node, containerid):
 def delete_lxc(node, containerid, purge = True):
     proxmox.nodes(node).lxc(containerid).delete.post(purge=purge)
 
+def get_vmid_and_node_by_name(name: str) -> tuple[int, str] | None:
+    for vm in proxmox.cluster.resources.get(type="vm"):
+        if vm.get("name") == name:
+            return int(vm["vmid"]), vm["node"]
+    return None
 
 # Proxmox users
 
