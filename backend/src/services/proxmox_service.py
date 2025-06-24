@@ -257,12 +257,13 @@ def wait_for_first_ip(node: str, vmid: int, timeout: int = 120) -> str | None: #
 
 def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str):
     try: 
-        return proxmox.nodes(source_node).qemu(source_vmid).clone.post(
+        result = proxmox.nodes(source_node).qemu(source_vmid).clone.post(
             newid=target_vmid,
             name=vm_name,
-            full=0,
+            full=1,
             target=source_node,
         )
+        proxmox_util.wait_for_task_completion(source_node, result["data"]["upid"])
     except Exception as e:
         return {"error": f"Failed to clone VM: {str(e)}"}
 

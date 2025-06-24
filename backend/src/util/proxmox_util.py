@@ -127,3 +127,16 @@ def migrate_vm_httpx(
         )
         migrate_resp.raise_for_status()
         return migrate_resp.json()
+    
+async def wait_for_task_completion(node: str, upid: str, timeout: int = 60) -> bool:
+    import time
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        status = proxmox.nodes(node).tasks(upid).status.get()
+        if status.get("status") == "stopped":
+            if status.get("exitstatus") == "OK":
+                return True
+            else:
+                raise RuntimeError(f"Task failed: {status.get('exitstatus')}")
+        time.sleep(1)
+    raise TimeoutError(f"Task {upid} did not complete within timeout")
