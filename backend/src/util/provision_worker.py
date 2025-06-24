@@ -28,7 +28,7 @@ async def provision_worker(req: ProvisionRequest):
     if "error" in clone_result:
         raise HTTPException(400, detail=clone_result["error"])
 
-    await asyncio.sleep(5)  # allow locks to clear
+    await asyncio.sleep(30)  # allow locks to clear
 
 
     provision_result = proxmox_service.provision_cloud_init_vm_with_retry(template_node, vmid, req)
