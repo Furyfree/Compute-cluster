@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import auth, server, proxmox, users, guacamole, admin
 import src.services.load_balance_service as load_balance_service
-import time
 import asyncio
 
 app = FastAPI(
