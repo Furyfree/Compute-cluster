@@ -132,6 +132,6 @@ def get_user_groups(userid: str):
     """Get all groups a user belongs to"""
     return proxmox_service.get_user_groups(userid)
 
-@router.post("/proxmox/provision", dependencies=[Depends(get_current_user)], summary="Provision VM from OS Template")
+@router.post("/provision", dependencies=[Depends(get_current_user)], summary="Provision VM from OS Template")
 def provision_vm(req: ProvisionRequest):
     return provision_worker.provision_worker(req)

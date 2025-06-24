@@ -15,7 +15,7 @@ def provision_worker(req: ProvisionRequest):
     if req.os not in SupportedOS:
         raise HTTPException(400, detail="Unsupported OS template requested")
     template_vmid = OS_TEMPLATE_MAP[req.os]
-    template_node = proxmox_service.list_vms().get(template_vmid, {}).get("node")
+    template_node = proxmox_service.get_node_by_vmid(template_vmid)
     if not template_node:
         raise HTTPException(400, detail="Template VM not found")
     target_node = proxmox_service.pick_best_node()

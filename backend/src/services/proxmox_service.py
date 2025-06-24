@@ -93,6 +93,15 @@ def get_vmid_and_node_by_name(name: str) -> tuple[int, str] | None:
             return int(vm["vmid"]), vm["node"]
     return None
 
+def get_node_by_vmid(vmid: int) -> str | None:
+    """
+    Return the node where a VM with the given VMID is located.
+    """
+    for vm in proxmox.cluster.resources.get(type="vm"):
+        if str(vm["vmid"]) == str(vmid):
+            return vm["node"]
+    return None
+
 # Proxmox users
 
 def list_users():
