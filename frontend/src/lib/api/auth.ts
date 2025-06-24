@@ -68,3 +68,23 @@ export function isTokenExpired(): boolean {
 
   return new Date(expiresAt).getTime() <= new Date().getTime();
 }
+
+export async function getCurrentUser() {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || "Failed to get current user");
+  }
+
+  return response.json();
+}

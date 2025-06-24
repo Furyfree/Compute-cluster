@@ -4,6 +4,7 @@ import { ButtonProps } from "@/types/components";
 export default function Button({
   className,
   variant = "red",
+  disabled,
   ...props
 }: ButtonProps) {
   const base =
@@ -17,7 +18,15 @@ export default function Button({
       "bg-dtu-orange text-dtu-white hover:bg-dtu-orange-300 focus:ring-dtu-orange/50",
   };
 
+  const disabledStyles = disabled
+    ? "opacity-50 cursor-not-allowed hover:bg-current"
+    : "";
+
   return (
-    <button className={cn(base, variants[variant], className)} {...props} />
+    <button
+      className={cn(base, variants[variant], disabledStyles, className)}
+      disabled={disabled}
+      {...props}
+    />
   );
 }

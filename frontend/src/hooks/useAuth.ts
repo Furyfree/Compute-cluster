@@ -62,7 +62,7 @@ export function useSignup() {
         last_name: userData.lastName,
         username: userData.username,
         password: userData.password,
-        group: "test",
+        group: "user",
       });
 
       alert(`User ${userData.username} created successfully!`);
