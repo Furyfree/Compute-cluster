@@ -89,7 +89,8 @@ def revoke_vm_access(vmid: int, username: str):
         result = proxmox.access.acl.put(
             path=f"/vms/{vmid}",
             users=[f"{username}@LDAP"],
-            roles=["NoAccess"],
+            roles=["PVEVMUser"],
+            delete=1
         )
         return {"success": True, "vmid": vmid, "username": username}
     except Exception as e:
