@@ -56,8 +56,7 @@ def list_user_vms(username: str):
     acl = proxmox.access.acl.get()
 
     user_vmid_set = set()
-    for entry in acl["data"]:
-        # Vi vil kun tjekke ACLs der gælder for faktiske brugere
+    for entry in acl:
         if entry["type"] != "user":
             continue
         if not entry["path"].startswith("/vms/"):
