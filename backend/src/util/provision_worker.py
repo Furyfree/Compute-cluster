@@ -58,6 +58,6 @@ async def provision_worker(req: ProvisionRequest):
         print("Using same node for template and target, skipping migration")
         node_to_check = template_node
 
-    ip = await proxmox_service.wait_for_first_ip(node_to_check, vmid)
+    ip = proxmox_service.wait_for_first_ip(node_to_check, vmid)
 
     return ProvisionResponse(vmid=vmid, ip=ip, node=node_to_check)
