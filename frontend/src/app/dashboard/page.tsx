@@ -85,7 +85,7 @@ export default function DashboardPage() {
           {/* Info */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
             <div>
-              💡 <strong>IP:</strong> {selectedVM.ip}
+              <strong>IP:</strong> {selectedVM.ip}
             </div>
             <div>
               <strong>Status:</strong>{" "}
