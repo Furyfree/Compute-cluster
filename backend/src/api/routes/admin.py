@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from src.services import ldap_service
 from src.api.auth_deps import get_admin_user
 from typing import Literal
+from src.services import proxmox_service
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -114,3 +115,21 @@ def admin_delete_user(username: str):
         "ldap_result": ldap_result,
         "message": f"User {username} deleted by admin"
     }
+
+@router.post("/admin/vms/{vmid}/grant")
+def grant_user_access(vmid: int, payload: dict, current_user=Depends(get_current_user)):
+    if not current_user["is_admin"]:
+        raise HTTPException(status_code=403)
+    username = payload.get("username")
+    if not username:
+        raise HTTPException(status_code=400, detail="Missing username")
+    return proxmox_service.grant_vm_access(vmid, username)
+
+@router.post("/admin/vms/{vmid}/revoke")
+def revoke_user_access(vmid: int, payload: dict, current_user=Depends(get_current_user)):
+    if not current_user["is_admin"]:
+        raise HTTPException(status_code=403)
+    username = payload.get("username")
+    if not username:
+        raise HTTPException(status_code=400, detail="Missing username")
+    return proxmox_service.revoke_vm_access(vmid, username)

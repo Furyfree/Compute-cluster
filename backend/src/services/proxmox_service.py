@@ -71,6 +71,21 @@ def list_user_vms(username: str):
 
     return [vm for vm in all_vms if vm["vmid"] in user_vmid_set]
 
+def grant_vm_access(vmid: int, username: str, roleid="PVEVMUser"):
+    path = f"/vms/{vmid}"
+    return proxmox.access.acl.put(
+        path=path,
+        users=[f"{username}@LDAP"],  # tilpas hvis du bruger pam
+        roleid=roleid,
+        propagate=1
+    )
+
+def revoke_vm_access(vmid: int, username: str):
+    path = f"/vms/{vmid}"
+    return proxmox.access.acl.delete(
+        path=path,
+        users=[f"{username}@LDAP"]
+    )
 
 def list_lxc():
     all_lxcs = []
