@@ -268,12 +268,13 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
     setLoading(true);
     setError(null);
     try {
-      const response =
+      const rawResponse =
         type === "vm"
           ? await getVMIP(node, vmid)
           : await getContainerIP(node, vmid);
+      const ip = await rawResponse.text();
 
-      setIp(response.ip || null);
+      setIp(ip || null);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to fetch IP";
       setError(message);
