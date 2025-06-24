@@ -24,6 +24,9 @@ class AdminCreateUserRequest(BaseModel):
 class UpdateUsernameRequest(BaseModel):
     new_username: str = Field(examples=["johndoe2"])
 
+class VMAccessRequest(BaseModel):
+    username: str
+
 # API
 @router.get("/users/list", dependencies=[Depends(get_admin_user)])
 def admin_list_all_users():
@@ -117,19 +120,13 @@ def admin_delete_user(username: str):
     }
 
 @router.post("/admin/vms/{vmid}/grant")
-def grant_user_access(vmid: int, payload: dict, current_user=Depends(get_admin_user)):
+def grant_user_access(vmid: int, body: VMAccessRequest, current_user=Depends(get_admin_user)):
     if not current_user["is_admin"]:
         raise HTTPException(status_code=403)
-    username = payload.get("username")
-    if not username:
-        raise HTTPException(status_code=400, detail="Missing username")
-    return proxmox_service.grant_vm_access(vmid, username)
+    return proxmox_service.grant_vm_access(vmid, body.username)
 
 @router.post("/admin/vms/{vmid}/revoke")
-def revoke_user_access(vmid: int, payload: dict, current_user=Depends(get_admin_user)):
+def revoke_user_access(vmid: int, body: VMAccessRequest, current_user=Depends(get_admin_user)):
     if not current_user["is_admin"]:
         raise HTTPException(status_code=403)
-    username = payload.get("username")
-    if not username:
-        raise HTTPException(status_code=400, detail="Missing username")
-    return proxmox_service.revoke_vm_access(vmid, username)
+    return proxmox_service.revoke_vm_access(vmid, body.username)
