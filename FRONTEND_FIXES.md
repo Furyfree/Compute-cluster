@@ -55,16 +55,27 @@ Dette dokument beskriver alle de ændringer og forbedringer der er lavet til fro
 - Guacamole integration forbedret
 - Environment-ready setup
 
+### 7. CPU-intensiv embedded Guacamole iframe
+**Problem**: Embedded iframe til Guacamole brugte for meget CPU
+**Løsning**: Ændret til popup window design
+
+- Erstattet embedded iframe med link-baseret tilgang
+- Popup windows for bedre performance og isolation
+- Window management controls (focus, close, etc.)
+- Fallback options for blocked popups
+
 ## Nye komponenter og hooks
 
 ### Hooks
 - `useAuthGuard.ts` - Route beskyttelse
 - `useProxmox.ts` - VM/container management
+- `useGuacamole.ts` - Guacamole connection management
 - Forbedret `useAuth.ts` - Bedre error handling
 
 ### Komponenter
 - `ErrorBoundary.tsx` - Error handling
 - `Loading.tsx` - Loading states og skeletons
+- `RemoteDesktop.tsx` - Optimized Guacamole integration
 - Forbedrede existing komponenter
 
 ### Types
@@ -94,9 +105,11 @@ Dette dokument beskriver alle de ændringer og forbedringer der er lavet til fro
 - User deletion
 
 ### Remote Desktop
-- Guacamole token management
-- Connection URL generation
+- Guacamole token management med popup windows
+- Connection URL generation og mapping
 - SSH/VNC/RDP connection setup
+- Window management (focus, close, status tracking)
+- CPU-optimized design (no embedded iframes)
 
 ## Styling og UI Forbedringer
 
@@ -134,7 +147,7 @@ Tilføjet DTU's officielle farver til Tailwind:
 - Error handling uden sensitive data exposure
 - CSRF protection ready
 
-## Performance Optimiseringer
+### Performance Optimiseringer
 
 ### Code Splitting
 - Lazy loading af admin components
@@ -145,6 +158,12 @@ Tilføjet DTU's officielle farver til Tailwind:
 - Efficient re-renders med useCallback
 - Memoized selectors
 - Optimistic UI updates
+
+### Guacamole Optimization
+- Erstattet CPU-intensive embedded iframes med popup windows
+- Window isolation for bedre performance
+- Reduced memory footprint på main application
+- Better resource management
 
 ## Deployment Forbedringer
 
@@ -220,12 +239,13 @@ For at opdatere fra den gamle version:
    npm start
    ```
 
-## Known Issues og Future Improvements
+### Known Issues og Future Improvements
 
 ### Current Limitations
 - Guacamole URLs kan kræve justering for production
 - Nogle VM operations kan kræve polling for status updates
 - Mobile view kunne forbedres for komplekse tabeller
+- Popup blockers kan forhindre remote desktop windows
 
 ### Planned Improvements
 - Real-time WebSocket updates
@@ -233,6 +253,12 @@ For at opdatere fra den gamle version:
 - Advanced filtering og search
 - User activity logs
 - Performance metrics dashboard
+- Automatic popup blocker detection og guidance
+
+### Recent Performance Fixes
+- **Guacamole CPU Usage**: Løst ved at erstatte embedded iframe med popup windows
+- **Memory Optimization**: Bedre resource isolation
+- **User Experience**: Window management controls og status indicators
 
 ## Testing Status
 
@@ -262,7 +288,14 @@ Frontenden er nu en fuldt fungerende applikation med:
 - Robust authentication system
 - Admin management interface
 - VM/Container control funktionalitet
+- Optimized remote desktop access (CPU-efficient)
 - Professional UI/UX
 - Production-ready deployment setup
 
-Alle oprindelige problemer er løst og systemet er klar til test og deployment.
+Alle oprindelige problemer er løst, inklusive CPU-intensive Guacamole integration, og systemet er klar til test og deployment.
+
+### Key Performance Improvements
+- ✅ CPU usage significantly reduced by eliminating embedded iframes
+- ✅ Better memory management with isolated popup windows
+- ✅ Improved user experience with window management controls
+- ✅ Fallback options for various connection scenarios

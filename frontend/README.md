@@ -7,7 +7,7 @@ This is the frontend application for the DTU Compute Cluster system, built with 
 - **User Authentication**: LDAP-based login system
 - **VM Management**: Start, stop, restart, and delete virtual machines
 - **Container Management**: Manage LXC containers
-- **Remote Desktop**: Integrated Guacamole remote desktop access
+- **Remote Desktop**: Optimized Guacamole remote desktop access via popup windows
 - **Admin Panel**: User management for administrators
 - **Responsive Design**: Mobile-friendly interface using Tailwind CSS
 
@@ -90,6 +90,7 @@ The frontend communicates with the FastAPI backend through the following endpoin
 - `GET /guacamole/token` - Get Guacamole token
 - `GET /guacamole/connections` - List connections
 - `GET /guacamole/connections/{id}/url` - Get connection URL
+- Opens in optimized popup windows for better performance
 
 ## Authentication Flow
 
@@ -220,3 +221,12 @@ docker run -p 3000:3000 compute-cluster-frontend
 - Guacamole URLs may need adjustment for production
 - Some VM operations may require polling for status updates
 - Mobile view could be improved for complex tables
+- Popup blockers may prevent remote desktop windows from opening
+
+## Performance Optimizations
+
+### Guacamole Integration
+- Changed from embedded iframe to popup windows to reduce CPU usage
+- Popup windows provide better isolation and performance
+- Window management controls (focus, close) for better UX
+- Fallback options for blocked popups

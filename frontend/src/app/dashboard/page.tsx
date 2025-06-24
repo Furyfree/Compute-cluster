@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { useProxmoxResources, useResourceIP } from "@/hooks/useProxmox";
-import { getConnectionUrl } from "@/lib/api/guacamole";
 import { getCurrentUserInfo } from "@/lib/api/users";
 import { removeAuthToken } from "@/lib/api/auth";
 import { ProxmoxResource } from "@/types/proxmox";
+import RemoteDesktop from "@/components/RemoteDesktop";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -28,7 +28,6 @@ export default function DashboardPage() {
   const [selectedResource, setSelectedResource] =
     useState<ProxmoxResource | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [guacamoleUrl, setGuacamoleUrl] = useState<string>("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Get IP for selected resource
@@ -70,28 +69,6 @@ export default function DashboardPage() {
       fetchUserInfo();
     }
   }, [isAuthenticated]);
-
-  // Fetch Guacamole URL for selected resource
-  useEffect(() => {
-    const fetchGuacamoleUrl = async () => {
-      if (!selectedResource?.vmid) return;
-
-      try {
-        // For now, we'll use a default connection. In a real implementation,
-        // you'd need to map VMs to their Guacamole connections
-        const response = await getConnectionUrl("1");
-        if (response.url) {
-          setGuacamoleUrl(response.url);
-        }
-      } catch (err) {
-        console.error("Failed to fetch Guacamole URL:", err);
-        // Fallback to default URL
-        setGuacamoleUrl("http://compute-cluster-guacamole:8080/guacamole/#/");
-      }
-    };
-
-    fetchGuacamoleUrl();
-  }, [selectedResource]);
 
   const handleResourceAction = async (action: string) => {
     if (!selectedResource) return;
@@ -303,23 +280,8 @@ export default function DashboardPage() {
         <main className="flex-1 p-6 space-y-6 overflow-y-auto">
           {selectedResource ? (
             <>
-              {/* Guacamole */}
-              <div className="flex-1 min-h-[400px] h-full bg-black rounded overflow-hidden border border-dtu-grey dark:border-zinc-700">
-                {guacamoleUrl ? (
-                  <iframe
-                    src={guacamoleUrl}
-                    title="Remote Desktop"
-                    className="w-full h-full border-none"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-white">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-                      <p>Loading remote desktop...</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Remote Desktop Access */}
+              <RemoteDesktop resource={selectedResource} />
 
               {/* Info */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
