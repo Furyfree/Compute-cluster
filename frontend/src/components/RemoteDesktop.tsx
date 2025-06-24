@@ -10,7 +10,10 @@ interface RemoteDesktopProps {
   className?: string;
 }
 
-export default function RemoteDesktop({ resource, className }: RemoteDesktopProps) {
+export default function RemoteDesktop({
+  resource,
+  className,
+}: RemoteDesktopProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const {
@@ -36,7 +39,9 @@ export default function RemoteDesktop({ resource, className }: RemoteDesktopProp
   const isResourceRunning = resource?.status === "running";
 
   return (
-    <div className={`bg-white dark:bg-zinc-800 rounded-lg p-6 border border-dtu-grey dark:border-zinc-700 ${className}`}>
+    <div
+      className={`bg-white dark:bg-zinc-800 rounded-lg p-6 border border-dtu-grey dark:border-zinc-700 ${className}`}
+    >
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Remote Desktop Access</h3>
         {isWindowOpen && (
@@ -47,7 +52,7 @@ export default function RemoteDesktop({ resource, className }: RemoteDesktopProp
               className="text-sm"
               title="Bring remote desktop window to front"
             >
-              📂 Focus
+              Focus
             </Button>
             <Button
               variant="red"
@@ -55,24 +60,26 @@ export default function RemoteDesktop({ resource, className }: RemoteDesktopProp
               className="text-sm"
               title="Close remote desktop window"
             >
-              ✕ Close
+              Close
             </Button>
           </div>
         )}
       </div>
 
       <div className="text-center py-8">
-        <div className="text-6xl mb-4">🖥️</div>
+        <div className="text-6xl mb-4"></div>
 
         {!resource ? (
           <div className="text-gray-500 dark:text-gray-400">
             <p className="mb-2">No resource selected</p>
-            <p className="text-sm">Select a VM or container to access remote desktop</p>
+            <p className="text-sm">
+              Select a VM or container to access remote desktop
+            </p>
           </div>
         ) : !isResourceRunning ? (
           <div>
             <p className="text-yellow-600 dark:text-yellow-400 mb-4">
-              ⚠️ {resource.name} is currently {resource.status}
+              {resource.name} is currently {resource.status}
             </p>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               The machine must be running to access remote desktop
@@ -125,12 +132,12 @@ export default function RemoteDesktop({ resource, className }: RemoteDesktopProp
                 onClick={openRemoteDesktop}
                 className="text-lg px-8 py-4"
               >
-                {isWindowOpen ? "🔄 Open Another Window" : "🚀 Open Remote Desktop"}
+                {isWindowOpen ? "Open Another Window" : "Open Remote Desktop"}
               </Button>
 
               {isWindowOpen && (
                 <p className="text-green-600 dark:text-green-400 text-sm">
-                  ✅ Remote desktop window is active
+                  Remote desktop window is active
                 </p>
               )}
             </div>
@@ -152,22 +159,29 @@ export default function RemoteDesktop({ resource, className }: RemoteDesktopProp
                       onClick={handleNewTab}
                       className="text-sm"
                     >
-                      📄 Open in New Tab
+                      Open in New Tab
                     </Button>
                     <Button
                       variant="grey"
                       onClick={handleDirectGuacamole}
                       className="text-sm"
                     >
-                      🌐 Guacamole Homepage
+                      Guacamole Homepage
                     </Button>
                   </div>
 
                   <div className="text-xs text-gray-500 dark:text-gray-400 text-left">
-                    <p className="mb-1"><strong>Connection Details:</strong></p>
-                    <p>Resource: {resource.name} (ID: {resource.vmid})</p>
+                    <p className="mb-1">
+                      <strong>Connection Details:</strong>
+                    </p>
+                    <p>
+                      Resource: {resource.name} (ID: {resource.vmid})
+                    </p>
                     <p>Node: {resource.node}</p>
-                    <p>Type: {resource.type === "vm" ? "Virtual Machine" : "Container"}</p>
+                    <p>
+                      Type:{" "}
+                      {resource.type === "vm" ? "Virtual Machine" : "Container"}
+                    </p>
                   </div>
                 </div>
               )}
@@ -176,10 +190,10 @@ export default function RemoteDesktop({ resource, className }: RemoteDesktopProp
         ) : (
           <div className="space-y-4">
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              📡 No remote desktop connection configured
+              No remote desktop connection configured
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              This resource doesn't have a remote desktop connection set up yet.
+              This resource doesnt have a remote desktop connection set up yet.
             </p>
             <Button
               variant="grey"
@@ -193,7 +207,8 @@ export default function RemoteDesktop({ resource, className }: RemoteDesktopProp
 
         <div className="mt-8 pt-4 border-t border-gray-200 dark:border-zinc-600">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            💡 Tip: Remote desktop opens in a popup window for better performance.
+            💡 Tip: Remote desktop opens in a popup window for better
+            performance.
             <br />
             If blocked, please allow popups for this site.
           </p>
@@ -206,7 +221,7 @@ export default function RemoteDesktop({ resource, className }: RemoteDesktopProp
 // Additional helper component for connection status
 export function RemoteDesktopStatus({
   isConnected,
-  resourceName
+  resourceName,
 }: {
   isConnected: boolean;
   resourceName?: string;

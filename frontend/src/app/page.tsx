@@ -1,12 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import { safeNavigate } from "@/lib/navigation";
 
 export default function LandingPage() {
-  const router = useRouter();
-
   const handleGoToLogin = () => {
     console.log("[Landing] Go to login clicked");
     try {
@@ -17,19 +13,6 @@ export default function LandingPage() {
     } catch (error) {
       console.error("[Landing] Navigation failed:", error);
     }
-  };
-
-  const testNavigation = () => {
-    console.log("[Landing] Testing navigation methods");
-    alert("Navigation test - check console for logs");
-
-    // Test 1: Direct window.location
-    console.log("Test 1: window.location.href");
-
-    // Test 2: Delayed navigation
-    setTimeout(() => {
-      console.log("Test 2: Delayed navigation would execute now");
-    }, 1000);
   };
 
   return (

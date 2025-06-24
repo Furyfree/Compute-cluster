@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLogin } from "@/hooks/useAuth";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/Input";
@@ -9,7 +9,6 @@ import Button from "@/components/Button";
 import { safeNavigate } from "@/lib/navigation";
 
 export default function LoginPage() {
-  const router = useRouter();
   const { login, loading, error } = useLogin();
 
   const [username, setUsername] = useState("");
@@ -26,9 +25,11 @@ export default function LoginPage() {
 
   return (
     <AuthCard title="Login" subtitle="Sign in to your account">
-      <img
+      <Image
         src="/images/DTU_Red.png"
         alt="DTU Logo"
+        width={40}
+        height={56}
         className="mx-auto h-16 mb-4"
       />
       <form className="space-y-4" onSubmit={handleSubmit}>

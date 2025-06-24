@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAuthToken, isTokenExpired, removeAuthToken } from "@/lib/api/auth";
+import { getAuthToken, isTokenExpired } from "@/lib/api/auth";
 import { safeNavigate, performLogout } from "@/lib/navigation";
 
 export function useAuthGuard(redirectTo: string = "/login") {

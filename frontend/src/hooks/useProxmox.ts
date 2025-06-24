@@ -17,7 +17,12 @@ import {
   getNodePerformance,
   provisionVM,
 } from "@/lib/api/proxmox";
-import { VM, Container, NodePerformance, ProxmoxResource } from "@/types/proxmox";
+import {
+  VM,
+  Container,
+  NodePerformance,
+  ProxmoxResource,
+} from "@/types/proxmox";
 
 // Hook for VM management
 export function useVMs() {
@@ -31,52 +36,74 @@ export function useVMs() {
     try {
       const response = await getVMs();
       setVMs(response.data || response);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch VMs");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch VMs";
+      setError(message);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const startVMAction = useCallback(async (node: string, vmId: number) => {
-    try {
-      await startVM(node, vmId);
-      await fetchVMs(); // Refresh VM list
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
-  }, [fetchVMs]);
+  const startVMAction = useCallback(
+    async (node: string, vmId: number) => {
+      try {
+        await startVM(node, vmId);
+        await fetchVMs(); // Refresh VM list
+        return { success: true };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to start VM";
+        return { success: false, error: message };
+      }
+    },
+    [fetchVMs],
+  );
 
-  const stopVMAction = useCallback(async (node: string, vmId: number) => {
-    try {
-      await stopVM(node, vmId);
-      await fetchVMs(); // Refresh VM list
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
-  }, [fetchVMs]);
+  const stopVMAction = useCallback(
+    async (node: string, vmId: number) => {
+      try {
+        await stopVM(node, vmId);
+        await fetchVMs(); // Refresh VM list
+        return { success: true };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to stop VM";
+        return { success: false, error: message };
+      }
+    },
+    [fetchVMs],
+  );
 
-  const restartVMAction = useCallback(async (node: string, vmId: number) => {
-    try {
-      await restartVM(node, vmId);
-      await fetchVMs(); // Refresh VM list
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
-  }, [fetchVMs]);
+  const restartVMAction = useCallback(
+    async (node: string, vmId: number) => {
+      try {
+        await restartVM(node, vmId);
+        await fetchVMs(); // Refresh VM list
+        return { success: true };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to restart VM";
+        return { success: false, error: message };
+      }
+    },
+    [fetchVMs],
+  );
 
-  const deleteVMAction = useCallback(async (node: string, vmId: number) => {
-    try {
-      await deleteVM(node, vmId);
-      await fetchVMs(); // Refresh VM list
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
-  }, [fetchVMs]);
+  const deleteVMAction = useCallback(
+    async (node: string, vmId: number) => {
+      try {
+        await deleteVM(node, vmId);
+        await fetchVMs(); // Refresh VM list
+        return { success: true };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to delete VM";
+        return { success: false, error: message };
+      }
+    },
+    [fetchVMs],
+  );
 
   useEffect(() => {
     fetchVMs();
@@ -106,52 +133,74 @@ export function useContainers() {
     try {
       const response = await getContainers();
       setContainers(response.data || response);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch containers");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch containers";
+      setError(message);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const startContainerAction = useCallback(async (node: string, containerId: number) => {
-    try {
-      await startContainer(node, containerId);
-      await fetchContainers(); // Refresh container list
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
-  }, [fetchContainers]);
+  const startContainerAction = useCallback(
+    async (node: string, containerId: number) => {
+      try {
+        await startContainer(node, containerId);
+        await fetchContainers(); // Refresh container list
+        return { success: true };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to start container";
+        return { success: false, error: message };
+      }
+    },
+    [fetchContainers],
+  );
 
-  const stopContainerAction = useCallback(async (node: string, containerId: number) => {
-    try {
-      await stopContainer(node, containerId);
-      await fetchContainers(); // Refresh container list
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
-  }, [fetchContainers]);
+  const stopContainerAction = useCallback(
+    async (node: string, containerId: number) => {
+      try {
+        await stopContainer(node, containerId);
+        await fetchContainers(); // Refresh container list
+        return { success: true };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to stop container";
+        return { success: false, error: message };
+      }
+    },
+    [fetchContainers],
+  );
 
-  const restartContainerAction = useCallback(async (node: string, containerId: number) => {
-    try {
-      await restartContainer(node, containerId);
-      await fetchContainers(); // Refresh container list
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
-  }, [fetchContainers]);
+  const restartContainerAction = useCallback(
+    async (node: string, containerId: number) => {
+      try {
+        await restartContainer(node, containerId);
+        await fetchContainers(); // Refresh container list
+        return { success: true };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to stop container";
+        return { success: false, error: message };
+      }
+    },
+    [fetchContainers],
+  );
 
-  const deleteContainerAction = useCallback(async (node: string, containerId: number) => {
-    try {
-      await deleteContainer(node, containerId);
-      await fetchContainers(); // Refresh container list
-      return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
-    }
-  }, [fetchContainers]);
+  const deleteContainerAction = useCallback(
+    async (node: string, containerId: number) => {
+      try {
+        await deleteContainer(node, containerId);
+        await fetchContainers(); // Refresh container list
+        return { success: true };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to delete container";
+        return { success: false, error: message };
+      }
+    },
+    [fetchContainers],
+  );
 
   useEffect(() => {
     fetchContainers();
@@ -172,17 +221,21 @@ export function useContainers() {
 // Hook for combined VM and Container resources
 export function useProxmoxResources() {
   const { vms, loading: vmsLoading, error: vmsError } = useVMs();
-  const { containers, loading: containersLoading, error: containersError } = useContainers();
+  const {
+    containers,
+    loading: containersLoading,
+    error: containersError,
+  } = useContainers();
 
   const allResources: ProxmoxResource[] = [
-    ...vms.map(vm => ({
+    ...vms.map((vm) => ({
       vmid: vm.vmid,
       name: vm.name,
       node: vm.node,
       status: vm.status,
       type: "vm" as const,
     })),
-    ...containers.map(container => ({
+    ...containers.map((container) => ({
       vmid: container.vmid,
       name: container.name,
       node: container.node,
@@ -215,13 +268,15 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
     setLoading(true);
     setError(null);
     try {
-      const response = type === "vm"
-        ? await getVMIP(node, vmid)
-        : await getContainerIP(node, vmid);
+      const response =
+        type === "vm"
+          ? await getVMIP(node, vmid)
+          : await getContainerIP(node, vmid);
 
       setIp(response.ip || null);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch IP");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to fetch IP";
+      setError(message);
       setIp(null);
     } finally {
       setLoading(false);
@@ -236,7 +291,10 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
 }
 
 // Hook for node performance monitoring
-export function useNodePerformance(node: string, refreshInterval: number = 30000) {
+export function useNodePerformance(
+  node: string,
+  refreshInterval: number = 30000,
+) {
   const [performance, setPerformance] = useState<NodePerformance | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -249,8 +307,12 @@ export function useNodePerformance(node: string, refreshInterval: number = 30000
     try {
       const response = await getNodePerformance(node);
       setPerformance(response);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch node performance");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to fetch node performance");
+      }
     } finally {
       setLoading(false);
     }
@@ -273,22 +335,27 @@ export function useVMProvisioning() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const provisionNewVM = useCallback(async (
-    node: string,
-    payload: { user: string; password: string; os: string }
-  ) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await provisionVM(node, payload);
-      return { success: true, data: response };
-    } catch (err: any) {
-      setError(err.message || "Failed to provision VM");
-      return { success: false, error: err.message };
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const provisionNewVM = useCallback(
+    async (
+      node: string,
+      payload: { user: string; password: string; os: string },
+    ) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await provisionVM(node, payload);
+        return { success: true, data: response };
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to provision VM";
+        setError(message);
+        return { success: false, error: message };
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   return {
     provisionVM: provisionNewVM,

@@ -1,7 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSignup } from "@/hooks/useAuth";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/Input";
@@ -9,7 +9,6 @@ import Button from "@/components/Button";
 import { safeNavigate } from "@/lib/navigation";
 
 export default function SignupPage() {
-  const router = useRouter();
   const { signup, loading, error } = useSignup();
 
   const [firstName, setFirstName] = useState("");
@@ -37,11 +36,7 @@ export default function SignupPage() {
       subtitle="Create your account"
       className="max-w-md"
     >
-      <img
-        src="/images/DTU_Red.png"
-        alt="DTU Logo"
-        className="mx-auto h-16 mb-4"
-      />
+      <Image src="/images/DTU_Red.png" alt="DTU Logo" width={40} height={56} />
       <form onSubmit={handleSubmit} className="space-y-6">
         <Input
           type="text"

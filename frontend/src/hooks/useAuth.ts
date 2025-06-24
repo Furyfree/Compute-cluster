@@ -1,20 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  loginUser,
-  createUser,
-  saveAuthToken,
-  removeAuthToken,
-} from "@/lib/api/auth";
+import { loginUser, createUser, saveAuthToken } from "@/lib/api/auth";
 import { LoginCredentials, SignupData } from "@/types/auth";
 import { safeNavigate, performLogout } from "@/lib/navigation";
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const login = async (credentials: LoginCredentials) => {
     setError(null);
@@ -36,9 +29,10 @@ export function useLogin() {
 
       // Send brugeren til dashboard
       safeNavigate("/dashboard");
-    } catch (err: any) {
-      console.error("Login fejl:", err);
-      setError(err.message || "Login mislykkedes");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Login mislykkedes";
+      console.error("Login fejl:", message);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -50,7 +44,6 @@ export function useLogin() {
 export function useSignup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const signup = async (userData: SignupData) => {
     setError(null);
@@ -68,9 +61,11 @@ export function useSignup() {
       alert(`User ${userData.username} created successfully!`);
       // Redirect to login page after successful signup
       safeNavigate("/login");
-    } catch (err: any) {
-      console.error("Signup error:", err);
-      setError(err.message || "User creation failed");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "User creation failed";
+      console.error("Signup error:", message);
+      setError(message);
     } finally {
       setLoading(false);
     }

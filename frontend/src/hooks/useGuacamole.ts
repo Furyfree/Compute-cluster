@@ -6,7 +6,6 @@ import {
   getConnections,
   getConnectionUrl,
   GuacamoleConnection,
-  ConnectionUrlResponse,
 } from "@/lib/api/guacamole";
 
 // Hook for managing Guacamole connections
@@ -21,8 +20,10 @@ export function useGuacamoleConnections() {
     try {
       const response = await getConnections();
       setConnections(response.connections || response);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch connections");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch connections";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -57,13 +58,16 @@ export function useGuacamoleConnection(vmId?: number, vmName?: string) {
     try {
       // First, get all connections
       const connectionsResponse = await getConnections();
-      const connections = connectionsResponse.connections || connectionsResponse;
+      const connections =
+        connectionsResponse.connections || connectionsResponse;
 
       // Find a connection that matches this VM (by name or ID)
       let targetConnection = null;
       if (connections && Array.isArray(connections)) {
         targetConnection = connections.find((conn: GuacamoleConnection) =>
-          vmName ? conn.name.toLowerCase().includes(vmName.toLowerCase()) : false
+          vmName
+            ? conn.name.toLowerCase().includes(vmName.toLowerCase())
+            : false,
         );
       }
 
@@ -82,9 +86,10 @@ export function useGuacamoleConnection(vmId?: number, vmName?: string) {
           setConnectionUrl("http://compute-cluster-guacamole:8080/guacamole");
         }
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to get connection URL");
-      // Fallback URL
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to get connection URL";
+      setError(message);
       setConnectionUrl("http://compute-cluster-guacamole:8080/guacamole");
     } finally {
       setLoading(false);
@@ -110,22 +115,22 @@ export function useGuacamoleWindow() {
 
   const openConnection = useCallback((url: string, windowName?: string) => {
     const windowFeatures = [
-      'width=1200',
-      'height=800',
-      'left=100',
-      'top=100',
-      'resizable=yes',
-      'scrollbars=yes',
-      'status=yes',
-      'menubar=no',
-      'toolbar=no',
-      'location=no'
-    ].join(',');
+      "width=1200",
+      "height=800",
+      "left=100",
+      "top=100",
+      "resizable=yes",
+      "scrollbars=yes",
+      "status=yes",
+      "menubar=no",
+      "toolbar=no",
+      "location=no",
+    ].join(",");
 
     const newWindow = window.open(
       url,
-      windowName || 'guacamole_connection',
-      windowFeatures
+      windowName || "guacamole_connection",
+      windowFeatures,
     );
 
     if (newWindow) {
@@ -149,7 +154,9 @@ export function useGuacamoleWindow() {
       return newWindow;
     } else {
       // Popup blocked or failed to open
-      throw new Error('Failed to open connection window. Please check popup blocker settings.');
+      throw new Error(
+        "Failed to open connection window. Please check popup blocker settings.",
+      );
     }
   }, []);
 
@@ -177,17 +184,27 @@ export function useGuacamoleWindow() {
 
 // Combined hook for complete Guacamole integration
 export function useGuacamole(vmId?: number, vmName?: string) {
-  const { connectionUrl, loading, error } = useGuacamoleConnection(vmId, vmName);
-  const { openConnection, closeConnection, focusConnection, isWindowOpen } = useGuacamoleWindow();
+  const { connectionUrl, loading, error } = useGuacamoleConnection(
+    vmId,
+    vmName,
+  );
+  const { openConnection, closeConnection, focusConnection, isWindowOpen } =
+    useGuacamoleWindow();
 
   const openRemoteDesktop = useCallback(() => {
     if (connectionUrl) {
       try {
-        openConnection(connectionUrl, `guac_${vmId}_${vmName?.replace(/\s+/g, '_')}`);
-      } catch (err: any) {
-        console.error('Failed to open remote desktop:', err);
+        openConnection(
+          connectionUrl,
+          `guac_${vmId}_${vmName?.replace(/\s+/g, "_")}`,
+        );
+      } catch (err: unknown) {
+        console.error(
+          "Failed to open remote desktop:",
+          err instanceof Error ? err.message : err,
+        );
         // Fallback: try to open in same tab
-        window.open(connectionUrl, '_blank', 'noopener,noreferrer');
+        window.open(connectionUrl, "_blank", "noopener,noreferrer");
       }
     }
   }, [connectionUrl, openConnection, vmId, vmName]);
