@@ -240,7 +240,26 @@ def provision_cloud_init_vm(username: str, password: str, OS: SupportedOS, ssh_k
     except Exception as e:
         return {"error": f"Error selecting node: {str(e)}"}
     
-    
+def provision_cloud_init_vm_with_retry(node: str, vmid: int, req: ProvisionRequest, retries: int = 5, delay: float = 2.0):
+    """
+    Retry-safe wrapper for cloud-init config to handle Proxmox file lock errors.
+    """
+    for attempt in range(retries):
+        try:
+            proxmox.nodes(node).qemu(vmid).config.post(
+                ciuser=req.username,
+                cipassword=req.password,
+                sshkeys=req.ssh_key,
+                ipconfig0="ip=dhcp",
+            )
+            return {"success": True}
+        except Exception as e:
+            message = str(e)
+            if "lock" in message.lower() and attempt < retries - 1:
+                time.sleep(delay)
+                continue
+            return {"error": f"Failed to configure cloud-init: {message}"}
+
 def wait_for_first_ip(node: str, vmid: int, timeout: int = 120) -> str | None: #Poll the QEMU guest agent until a non‑loopback IPv4 address is returned
     deadline = time.time() + timeout
     while time.time() < deadline:

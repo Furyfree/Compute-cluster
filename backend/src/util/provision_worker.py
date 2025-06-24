@@ -32,7 +32,7 @@ async def provision_worker(req: ProvisionRequest):
     await asyncio.sleep(5)  # allow locks to clear
 
 
-    provision_result = proxmox_service.cloud_init_vm(template_node, vmid, req)
+    provision_result = proxmox_service.provision_cloud_init_vm_with_retry(template_node, vmid, req)
     if "error" in provision_result:
         raise HTTPException(400, detail=provision_result["error"])
 
@@ -43,6 +43,7 @@ async def provision_worker(req: ProvisionRequest):
     if "error" in start_result:
         raise HTTPException(400, detail=start_result["error"])
 
+    await asyncio.sleep(5)  # wait for VM to start
 
     if template_node != target_node:
         migrate_result = proxmox_service.migrate_vm(
@@ -56,7 +57,6 @@ async def provision_worker(req: ProvisionRequest):
     else:
         print("Using same node for template and target, skipping migration")
         node_to_check = template_node
-
 
     ip = await proxmox_service.wait_for_first_ip(node_to_check, vmid)
 
