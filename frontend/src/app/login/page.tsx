@@ -25,6 +25,11 @@ export default function LoginPage() {
 
   return (
     <AuthCard title="Login" subtitle="Sign in to your account">
+      <img
+        src="/images/DTU_Red.png"
+        alt="DTU Logo"
+        className="mx-auto h-16 mb-4"
+      />
       <form className="space-y-4" onSubmit={handleSubmit}>
         <Input
           type="text"

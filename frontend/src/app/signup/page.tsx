@@ -36,6 +36,11 @@ export default function SignupPage() {
       subtitle="Create your account"
       className="max-w-md"
     >
+      <img
+        src="/images/DTU_Red.png"
+        alt="DTU Logo"
+        className="mx-auto h-16 mb-4"
+      />
       <form onSubmit={handleSubmit} className="space-y-6">
         <Input
           type="text"
