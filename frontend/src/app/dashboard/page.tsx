@@ -237,10 +237,6 @@ export default function DashboardPage() {
               Admin Panel
             </Button>
           )}
-          {/* Debug info */}
-          <div className="text-xs text-gray-500">
-            Debug: User loaded={!!currentUser}, Admin={currentUser?.is_admin}
-          </div>
           <div className="relative group">
             <div className="bg-dtu-grey dark:bg-zinc-800 px-4 py-2 rounded text-sm cursor-pointer">
               {currentUser?.username || "User"} ▾
