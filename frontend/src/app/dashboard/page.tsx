@@ -166,9 +166,13 @@ export default function DashboardPage() {
   };
 
   const handleLogout = () => {
-    removeAuthToken();
-    console.log("Token fjernet");
-    router.push("/login");
+    console.log("Logout button clicked");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("expires_at");
+      sessionStorage.clear();
+      forceNavigate("/login");
+    }
   };
 
   const handleGoToAdmin = (e: React.MouseEvent) => {
