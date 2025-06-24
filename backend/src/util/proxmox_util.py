@@ -4,7 +4,6 @@ from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 import httpx
-from typing import Literal
 import re
 import asyncio
 UPID_RE = re.compile(r"UPID:(?P<node>[^:]+):")

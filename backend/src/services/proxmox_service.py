@@ -6,8 +6,7 @@ from src.models.models import ProvisionRequest, ProvisionResponse
 import src.util.proxmox_util as proxmox_util
 import src.services.load_balance_service as load_balance_service
 import time
-from typing import Dict, Tuple, Union, Literal
-import re
+from typing import Dict
 
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),

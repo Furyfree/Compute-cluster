@@ -3,7 +3,6 @@ from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
 import src.util.proxmox_util as proxmox_util
-import time
 from src.models.models import ProvisionRequest, ProvisionResponse
 from src.util.proxmox_util import migrate_vm_httpx
 from fastapi import HTTPException, Depends
