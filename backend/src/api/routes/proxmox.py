@@ -3,7 +3,6 @@ from src.api.auth_deps import get_current_user
 from src.services import proxmox_service
 from pydantic import BaseModel
 from src.models.enums import SupportedOS
-from src.services.proxmox_service import provision_vm_from_template
 from src.models.models import ProvisionRequest, ProvisionResponse, GroupRequest
 import src.util.provision_worker as provision_worker
 
