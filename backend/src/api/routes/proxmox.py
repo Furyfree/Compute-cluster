@@ -4,18 +4,10 @@ from src.services import proxmox_service
 from pydantic import BaseModel
 from src.models.enums import SupportedOS
 from src.services.proxmox_service import provision_vm_from_template
+from src.models.models import ProvisionRequest, ProvisionResponse, GroupRequest
+import src.util.provision_worker as provision_worker
 
 router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
-
-## Provision VM from OS Template
-class ProvisionVMRequest(BaseModel):
-    user: str
-    password: str
-    ssh_key: str
-    os: SupportedOS
-
-class GroupRequest(BaseModel):
-    group: str
 
 # Node endpoints
 @router.get("/nodes/{node}/report", dependencies=[Depends(get_current_user)], summary="Get Node Report")
@@ -33,14 +25,7 @@ def node_performance(node: str):
     summary="Provision a new VM from OS template",
     dependencies=[Depends(get_current_user)]
 )
-def provision_from_os(node: str, payload: ProvisionVMRequest):
-    return provision_vm_from_template(
-        node=node,
-        os=payload.os,  # This is now SupportedOS enum
-        user=payload.user,
-        password=payload.password,
-        ssh_key=payload.ssh_key
-    )
+
 @router.get("/nodes/{node}/performance/full", summary="Get full node performance metrics", dependencies=[Depends(get_current_user)])
 def node_performance_full(node: str):
     """Returns full performance metrics for a node"""
@@ -147,3 +132,7 @@ def list_groups():
 def get_user_groups(userid: str):
     """Get all groups a user belongs to"""
     return proxmox_service.get_user_groups(userid)
+
+@router.post("/proxmox/provision", dependencies=[Depends(get_current_user)], summary="Provision VM from OS Template")
+def provision_vm(req: ProvisionRequest):
+    return provision_worker.provision_worker(req)

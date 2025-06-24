@@ -2,9 +2,11 @@ from proxmoxer import ProxmoxAPI
 from src.util.env import get_required_env
 from src.util.ldap_sync_realm_httpx import sync_ldap_realm
 from src.models.enums import SupportedOS, OS_TEMPLATE_MAP
+from src.models.models import ProvisionRequest, ProvisionResponse
 import src.util.proxmox_util as proxmox_util
 import src.services.load_balance_service as load_balance_service
 import time
+
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
     port=8006,
@@ -86,6 +88,7 @@ def delete_lxc(node, containerid, purge = True):
 
 
 # Proxmox users
+
 def list_users():
     """List all users in Proxmox"""
     return proxmox.access.users.get()
@@ -113,6 +116,7 @@ def get_user_groups(userid: str):
     return {"status": "success", "userid": userid, "groups": user_groups}
 
 # IP
+
 def get_lxc_ip(node, containerid):
     status = proxmox.nodes(node).lxc(containerid).status.current.get()
     network_info = status.get('data', {}).get('network', {})
@@ -140,6 +144,7 @@ def get_vm_ip(node_name, vmid):
         return f"Error retrieving IP '{str(e)}'"
 
 # Proxmox Node Performance and Report
+
 def get_node_report(node):
     return proxmox.nodes(node).report.get()
 
@@ -196,63 +201,66 @@ def get_disk_health(node: str):
 
     return results
 
-
-
 # Proxmox VM Provisioning Service
 
 def get_next_vmid() -> int:
-    """
-    Returns the next available VM ID (max + 1).
-    """
     existing_vms = proxmox.cluster.resources.get(type="vm")
     existing_ids = [vm["vmid"] for vm in existing_vms if "vmid" in vm]
     return max(existing_ids, default=100) + 1  # start from 101 if none exist
 
-def provision_vm_from_template(node: str, os: SupportedOS, user: str, password: str, ssh_keys: str) -> dict:
+def pick_best_node():
+    def score(m: Dict[str, float]) -> float:
+        return (m["cpu"] * 4) + (m["mem"] * 3) + (m["disk"] * 2) + m["io_delay"]
+    metrics = get_all_node_metrics()
+    best = min(metrics.items(), key=lambda kv: score(kv[1]))[0]
+    return best
+
+def provision_cloud_init_vm(username: str, password: str, OS: SupportedOS, ssh_key: str = None, vm_name: str = None):
+    vmid = get_next_vmid()
     try:
-        template_vmid = OS_TEMPLATE_MAP[os]
-        new_vmid = get_next_vmid()
-        warnings = []
-        # Step 1: Clone the VM
-        proxmox.nodes(node).qemu(template_vmid).clone.post(
-            newid=new_vmid,
-            name=f"{os.value.lower()}-{new_vmid}",
-            full=1,
-            target=node
-        )
-
-        # Step 2: Wait for clone to finish
-        if not wait_for_vm_ready(node, new_vmid, timeout=60):
-            return {"status": "error", "message": f"Timeout waiting for VM {new_vmid} to become available."}
-
-        # Step 3: Configure cloud-init
-        proxmox.nodes(node).qemu(new_vmid).config.post(
-            ciuser=user,
-            cipassword=password,
-            sshkeys=ssh_keys
-        )
-        time.sleep(2)  # Ensure config is applied before regenerating cloud-init
-        try:
-            proxmox.nodes(node).qemu(new_vmid).cloudinit.regen.post(force=1)
-        except Exception as e:
-            error_msg = str(e)
-            if "SSH public key validation error" in error_msg:
-                warnings.append("SSH key validation failed. ")
-            else:
-                return {"status": "error", "message": f"Failed to regenerate cloud-init: {error_msg}"}
-        time.sleep(2)  # Allow time for cloud-init regeneration
-        # Step 4: Start the VM
-        proxmox.nodes(node).qemu(new_vmid).status('start').post()
-
-        return {
-            "status": "success",
-            "vmid": new_vmid,
-            "node": node,
-            "os": os.value,
-            "warnings": warnings
-        }
+        node = pick_best_node()
+        if not node:
+            return {"error": "No suitable node found for provisioning."}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {"error": f"Error selecting node: {str(e)}"}
+    
+    
+def wait_for_first_ip(node: str, vmid: int, timeout: int = 120) -> str | None: #Poll the QEMU guest agent until a non‑loopback IPv4 address is returned
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            agent_data = proxmox.nodes(node).qemu(vmid).agent("network-get-interfaces").get()
+            for interface in agent_data["result"]:
+                for addr in interface.get("ip-addresses", []):
+                    ip = addr.get("ip-address")
+                    if ip and not ip.startswith("127.") and ":" not in ip:
+                        return ip
+        except Exception:
+            pass
+        time.sleep(3)
+    return None  
+
+def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str):
+    try: 
+        return proxmox.nodes(source_node).qemu(source_vmid).clone.post(
+            newid=target_vmid,
+            name=vm_name,
+            full=0,
+            target=source_node,
+        )
+    except Exception as e:
+        return {"error": f"Failed to clone VM: {str(e)}"}
+
+def cloud_init_vm(node: str, vmid: int, req: ProvisionRequest):
+    try:
+        return proxmox.nodes(req.node).qemu(req.vmid).config.post(
+            ciuser=req.username,
+            cipassword=req.password,
+            sshkeys=req.ssh_key,
+            ipconfig0="ip=dhcp",
+        )
+    except Exception as e:
+        return {"error": f"Failed to configure cloud-init: {str(e)}"}
 
 # Load Balancer: Raw node metrics for load decisions
 def get_all_node_metrics(): #NO endpoint, used internally
@@ -290,7 +298,6 @@ def migrate_vm(vmid: int, source_node: str, target_node: str): #NO endpoint, use
         return result
     except Exception as e:
         return {"error": str(e)}
-
 
 def manual_load_balance():
     try:
