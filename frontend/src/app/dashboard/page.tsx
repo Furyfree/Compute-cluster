@@ -10,6 +10,7 @@ import { getCurrentUserInfo } from "@/lib/api/users";
 import { removeAuthToken } from "@/lib/api/auth";
 import { ProxmoxResource } from "@/types/proxmox";
 import RemoteDesktop from "@/components/RemoteDesktop";
+import { performLogout, forceNavigate } from "@/lib/navigation";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -170,8 +171,26 @@ export default function DashboardPage() {
     router.push("/login");
   };
 
-  const handleGoToAdmin = () => {
-    router.push("/admin_dashboard");
+  const handleGoToAdmin = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("[Dashboard] Admin button clicked");
+
+    try {
+      if (typeof window !== "undefined") {
+        // Use multiple fallback methods
+        setTimeout(() => {
+          window.location.href = "/admin_dashboard";
+        }, 100);
+
+        // Immediate fallback
+        window.location.replace("/admin_dashboard");
+      }
+    } catch (error) {
+      console.error("[Dashboard] Admin navigation failed:", error);
+      // Ultimate fallback
+      window.location.href = "/admin_dashboard";
+    }
   };
 
   // Show loading screen while checking authentication
@@ -206,11 +225,18 @@ export default function DashboardPage() {
             <Button
               variant="grey"
               onClick={handleGoToAdmin}
+              onMouseDown={(e) => {
+                console.log("[Dashboard] Admin panel mousedown");
+              }}
               className="text-sm"
             >
               Admin Panel
             </Button>
           )}
+          {/* Debug info */}
+          <div className="text-xs text-gray-500">
+            Debug: User loaded={!!currentUser}, Admin={currentUser?.is_admin}
+          </div>
           <div className="relative group">
             <div className="bg-dtu-grey dark:bg-zinc-800 px-4 py-2 rounded text-sm cursor-pointer">
               {currentUser?.username || "User"} ▾
@@ -219,6 +245,9 @@ export default function DashboardPage() {
               <div className="py-1">
                 <button
                   onClick={handleLogout}
+                  onMouseDown={(e) => {
+                    console.log("[Dashboard] Logout mousedown");
+                  }}
                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 w-full text-left"
                 >
                   Logout

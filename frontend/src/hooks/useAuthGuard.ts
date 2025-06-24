@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAuthToken, isTokenExpired, removeAuthToken } from "@/lib/api/auth";
+import { safeNavigate, performLogout } from "@/lib/navigation";
 
 export function useAuthGuard(redirectTo: string = "/login") {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -16,16 +17,15 @@ export function useAuthGuard(redirectTo: string = "/login") {
       if (!token) {
         setIsAuthenticated(false);
         setIsLoading(false);
-        router.push(redirectTo);
+        safeNavigate(redirectTo);
         return;
       }
 
       if (isTokenExpired()) {
-        removeAuthToken();
         setIsAuthenticated(false);
         setIsLoading(false);
         alert("Session udløbet. Log venligst ind igen.");
-        router.push(redirectTo);
+        performLogout();
         return;
       }
 
@@ -66,7 +66,7 @@ export function useAdminGuard(redirectTo: string = "/dashboard") {
       if (!token || isTokenExpired()) {
         setIsAdmin(false);
         setIsLoading(false);
-        router.push("/login");
+        safeNavigate("/login");
         return;
       }
 
@@ -88,12 +88,12 @@ export function useAdminGuard(redirectTo: string = "/dashboard") {
         setIsAdmin(userIsAdmin);
 
         if (!userIsAdmin) {
-          router.push(redirectTo);
+          safeNavigate(redirectTo);
         }
       } catch (error) {
         console.error("Admin check error:", error);
         setIsAdmin(false);
-        router.push("/login");
+        safeNavigate("/login");
       } finally {
         setIsLoading(false);
       }
