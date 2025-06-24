@@ -53,18 +53,19 @@ def list_admin_vms():
 
 def list_user_vms(username: str):
     all_vms = list_admin_vms()
-    acl = proxmox.access.acl.get()["data"]
+    acl = proxmox.access.acl.get()
 
-    user_vmid_set = set()
-    for entry in acl:
-        if entry["path"].startswith("/vms/") and username in entry.get("users", []):
-            try:
-                vmid = int(entry["path"].split("/vms/")[1])
-                user_vmid_set.add(vmid)
-            except ValueError:
-                continue
+    return acl
+    # user_vmid_set = set()
+    # for entry in acl:
+    #     if entry["path"].startswith("/vms/") and username in entry.get("users", []):
+    #         try:
+    #             vmid = int(entry["path"].split("/vms/")[1])
+    #             user_vmid_set.add(vmid)
+    #         except ValueError:
+    #             continue
 
-    return [vm for vm in all_vms if vm["vmid"] in user_vmid_set]
+    # return [vm for vm in all_vms if vm["vmid"] in user_vmid_set]
 
 def list_lxc():
     all_lxcs = []
