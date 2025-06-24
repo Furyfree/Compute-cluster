@@ -25,7 +25,7 @@ async def provision_worker(req: ProvisionRequest):
     vmid = proxmox_service.get_next_vmid()
     name = f"{req.os.value.lower()}-{vmid}"
 
-    clone_result = proxmox_service.clone_vm(template_node, template_vmid, vmid, name)
+    clone_result = await proxmox_service.clone_vm(template_node, template_vmid, vmid, name)
     if "error" in clone_result:
         raise HTTPException(400, detail=clone_result["error"])
 
