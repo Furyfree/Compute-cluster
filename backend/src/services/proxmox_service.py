@@ -315,9 +315,7 @@ async def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name
             full=1,
             target=source_node,
         )
-
         upid = result["data"] if isinstance(result, dict) else result
-        await proxmox_util.wait_for_task_completion(upid, node=source_node)
         return {"success": True, "upid": upid}
 
     except Exception as e:
