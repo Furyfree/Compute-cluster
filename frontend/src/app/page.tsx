@@ -31,7 +31,7 @@ export default function LandingPage() {
           Log in to access your virtual machines.
         </p>
         <Button
-          variant="primary"
+          variant="red"
           onClick={handleGoToLogin}
           className="text-lg px-8 py-4"
         >

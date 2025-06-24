@@ -59,7 +59,7 @@ export default function LoginPage() {
 
         <Button
           type="button"
-          variant="secondary"
+          variant="grey"
           className="w-full"
           onClick={handleSignUp}
         >
