@@ -111,10 +111,14 @@ export default function AdminDashboardPage() {
   // Fetch all VMs for adding access
   const fetchAllVMs = async () => {
     try {
+      console.log("Fetching all VMs...");
       const response = await adminGetAllVMs();
-      setAllVMs(response.data || []);
+      console.log("All VMs response:", response);
+      // Backend returns array directly
+      setAllVMs(Array.isArray(response) ? response : []);
     } catch (err: any) {
       console.error("Failed to fetch all VMs:", err);
+      alert(`Failed to fetch VMs: ${err.message}`);
       setAllVMs([]);
     }
   };

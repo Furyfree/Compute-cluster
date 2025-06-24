@@ -97,7 +97,9 @@ export async function adminRevokeVMAccess(vmid: number, username: string) {
 }
 
 export async function adminGetAllVMs() {
-  return getVMs();
+  const response = await getVMs();
+  // Backend returns array directly, so we use it as-is
+  return response;
 }
 
 // Types
@@ -144,17 +146,6 @@ export interface VM {
   name: string;
   node: string;
   status: "running" | "stopped" | "paused";
-  cpu: number;
-  maxcpu: number;
-  mem: number;
-  maxmem: number;
-  disk: number;
-  maxdisk: number;
-  pid?: number;
-  uptime?: number;
-  template?: boolean;
-  tags?: string;
-  lock?: string;
 }
 
 export interface VMAccessResponse {
