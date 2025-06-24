@@ -268,7 +268,7 @@ def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str)
 
 def cloud_init_vm(node: str, vmid: int, req: ProvisionRequest):
     try:
-        return proxmox.nodes(req.node).qemu(req.vmid).config.post(
+        return proxmox.nodes(node).qemu(vmid).config.post(
             ciuser=req.username,
             cipassword=req.password,
             sshkeys=req.ssh_key,
