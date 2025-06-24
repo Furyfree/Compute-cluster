@@ -119,6 +119,22 @@ def admin_delete_user(username: str):
         "message": f"User {username} deleted by admin"
     }
 
+@router.get("/users/{username}/vms", dependencies=[Depends(get_admin_user)])
+def admin_get_user_vms(username: str):
+    """Admin get list of VMs that a user has access to"""
+    user_info = ldap_service.get_user_info(username)
+
+    if not user_info:
+        raise HTTPException(status_code=404, detail=f"User {username} not found")
+
+    vms = proxmox_service.list_user_vms(username)
+
+    return {
+        "success": True,
+        "username": username,
+        "vms": vms
+    }
+
 @router.post("/vms/{vmid}/grant", dependencies=[Depends(get_admin_user)])
 def grant_user_access(vmid: int, body: VMAccessRequest):
     node = proxmox_service.get_node_by_vmid(vmid)
