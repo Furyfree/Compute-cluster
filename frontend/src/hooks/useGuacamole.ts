@@ -14,7 +14,26 @@ export function useGuacamoleConnections() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchConnections = useCallback(async () => {
+  useEffect(() => {
+    const fetchConnections = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await getConnections();
+        setConnections(response.connections || response);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch connections";
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConnections();
+  }, []);
+
+  const refetchConnections = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -29,15 +48,11 @@ export function useGuacamoleConnections() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchConnections();
-  }, [fetchConnections]);
-
   return {
     connections,
     loading,
     error,
-    refetch: fetchConnections,
+    refetch: refetchConnections,
   };
 }
 
@@ -47,7 +62,60 @@ export function useGuacamoleConnection(vmId?: number, vmName?: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getConnectionForResource = useCallback(async () => {
+  useEffect(() => {
+    const getConnectionForResource = async () => {
+      if (!vmId && !vmName) {
+        setConnectionUrl("");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        // First, get all connections
+        const connectionsResponse = await getConnections();
+        const connections =
+          connectionsResponse.connections || connectionsResponse;
+
+        // Find a connection that matches this VM (by name or ID)
+        let targetConnection = null;
+        if (connections && Array.isArray(connections)) {
+          targetConnection = connections.find((conn: GuacamoleConnection) =>
+            vmName
+              ? conn.name.toLowerCase().includes(vmName.toLowerCase())
+              : false,
+          );
+        }
+
+        if (targetConnection) {
+          // Get the connection URL
+          const urlResponse = await getConnectionUrl(targetConnection.id);
+          setConnectionUrl(urlResponse.url || "");
+        } else {
+          // Fallback: use default connection or construct generic URL
+          try {
+            const token = await getGuacamoleToken();
+            const baseUrl = "http://compute-cluster-guacamole:8080/guacamole";
+            setConnectionUrl(`${baseUrl}/#/?token=${token.token}`);
+          } catch (tokenErr) {
+            // Ultimate fallback
+            setConnectionUrl("http://compute-cluster-guacamole:8080/guacamole");
+          }
+        }
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to get connection URL";
+        setError(message);
+        setConnectionUrl("http://compute-cluster-guacamole:8080/guacamole");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getConnectionForResource();
+  }, [vmId, vmName]);
+
+  const refetchConnection = useCallback(async () => {
     if (!vmId && !vmName) {
       setConnectionUrl("");
       return;
@@ -96,15 +164,11 @@ export function useGuacamoleConnection(vmId?: number, vmName?: string) {
     }
   }, [vmId, vmName]);
 
-  useEffect(() => {
-    getConnectionForResource();
-  }, [getConnectionForResource]);
-
   return {
     connectionUrl,
     loading,
     error,
-    refetch: getConnectionForResource,
+    refetch: refetchConnection,
   };
 }
 

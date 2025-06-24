@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   getVMs,
   getContainers,
@@ -257,22 +257,25 @@ export function useProxmoxResources() {
     error: containersError,
   } = useContainers();
 
-  const allResources: ProxmoxResource[] = [
-    ...vms.map((vm) => ({
-      vmid: vm.vmid,
-      name: vm.name,
-      node: vm.node,
-      status: vm.status,
-      type: "vm" as const,
-    })),
-    ...containers.map((container) => ({
-      vmid: container.vmid,
-      name: container.name,
-      node: container.node,
-      status: container.status,
-      type: "lxc" as const,
-    })),
-  ];
+  const allResources: ProxmoxResource[] = useMemo(
+    () => [
+      ...vms.map((vm) => ({
+        vmid: vm.vmid,
+        name: vm.name,
+        node: vm.node,
+        status: vm.status,
+        type: "vm" as const,
+      })),
+      ...containers.map((container) => ({
+        vmid: container.vmid,
+        name: container.name,
+        node: container.node,
+        status: container.status,
+        type: "lxc" as const,
+      })),
+    ],
+    [vms, containers],
+  );
 
   const loading = vmsLoading || containersLoading;
   const error = vmsError || containersError;
