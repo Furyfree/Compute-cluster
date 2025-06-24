@@ -6,7 +6,7 @@ class SupportedOS(str, Enum):
     centos = "CentOS"
 
 OS_TEMPLATE_MAP = {
-    SupportedOS.ubuntu: 202,
-    SupportedOS.debian: 203,
-    SupportedOS.centos: 204,
+    SupportedOS.ubuntu: 203,
+    SupportedOS.debian: 204,
+    SupportedOS.centos: 205,
 }
