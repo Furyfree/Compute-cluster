@@ -9,6 +9,7 @@ from fastapi import HTTPException, Depends
 from pydantic import BaseModel
 import src.services.proxmox_service as proxmox_service
 import asyncio
+import src.services.guac_service as guac_service
 
 
 async def provision_worker(req: ProvisionRequest):
@@ -58,5 +59,15 @@ async def provision_worker(req: ProvisionRequest):
         node_to_check = template_node
 
     ip = proxmox_service.wait_for_first_ip(node_to_check, vmid)
-
+    if not ip:
+        raise HTTPException(500, detail="Failed to retrieve IP address for the new VM")
+    print(f"Provisioned VM {vmid} with IP {ip} on node {node_to_check}")
+    await guac_service.create_ssh_connection(
+        name=name,
+        ip=ip,
+        username=req.username,
+        password=req.password,
+        max_connections=2,
+        max_connections_per_user=1
+    )
     return ProvisionResponse(vmid=vmid, ip=ip, node=node_to_check)
