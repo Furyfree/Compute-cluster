@@ -290,7 +290,7 @@ def wait_for_first_ip(node: str, vmid: int, timeout: int = 120) -> str | None: #
         time.sleep(3)
     return None
 
-def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str):
+async def clone_vm(source_node: str, source_vmid: int, target_vmid: int, vm_name: str):
     try:
         result = proxmox.nodes(source_node).qemu(source_vmid).clone.post(
             newid=target_vmid,
