@@ -30,7 +30,7 @@ export function useVMs() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchVMs = useCallback(async () => {
+  const fetchVMs = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -43,7 +43,7 @@ export function useVMs() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   const startVMAction = useCallback(
     async (node: string, vmId: number) => {
@@ -106,14 +106,29 @@ export function useVMs() {
   );
 
   useEffect(() => {
-    fetchVMs();
-  }, [fetchVMs]);
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await getVMs();
+        setVMs(response.data || response);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch VMs";
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return {
     vms,
     loading,
     error,
-    refetch: fetchVMs,
+    refetch: () => fetchVMs(),
     startVM: startVMAction,
     stopVM: stopVMAction,
     restartVM: restartVMAction,
@@ -127,7 +142,7 @@ export function useContainers() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchContainers = useCallback(async () => {
+  const fetchContainers = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -140,7 +155,7 @@ export function useContainers() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   const startContainerAction = useCallback(
     async (node: string, containerId: number) => {
@@ -203,14 +218,29 @@ export function useContainers() {
   );
 
   useEffect(() => {
-    fetchContainers();
-  }, [fetchContainers]);
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await getContainers();
+        setContainers(response.data || response);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch containers";
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return {
     containers,
     loading,
     error,
-    refetch: fetchContainers,
+    refetch: () => fetchContainers(),
     startContainer: startContainerAction,
     stopContainer: stopContainerAction,
     restartContainer: restartContainerAction,
@@ -262,7 +292,34 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchIP = useCallback(async () => {
+  useEffect(() => {
+    const fetchIP = async () => {
+      if (!node || !vmid) return;
+
+      setLoading(true);
+      setError(null);
+      try {
+        const rawResponse =
+          type === "vm"
+            ? await getVMIP(node, vmid)
+            : await getContainerIP(node, vmid);
+        const ip = await rawResponse.text();
+
+        setIp(ip || null);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to fetch IP";
+        setError(message);
+        setIp(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIP();
+  }, [node, vmid, type]);
+
+  const refetchIP = useCallback(async () => {
     if (!node || !vmid) return;
 
     setLoading(true);
@@ -284,11 +341,7 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
     }
   }, [node, vmid, type]);
 
-  useEffect(() => {
-    fetchIP();
-  }, [fetchIP]);
-
-  return { ip, loading, error, refetch: fetchIP };
+  return { ip, loading, error, refetch: refetchIP };
 }
 
 // Hook for node performance monitoring
@@ -300,7 +353,35 @@ export function useNodePerformance(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPerformance = useCallback(async () => {
+  useEffect(() => {
+    const fetchPerformance = async () => {
+      if (!node) return;
+
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await getNodePerformance(node);
+        setPerformance(response);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Failed to fetch node performance");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPerformance();
+
+    if (refreshInterval > 0) {
+      const interval = setInterval(fetchPerformance, refreshInterval);
+      return () => clearInterval(interval);
+    }
+  }, [node, refreshInterval]);
+
+  const refetchPerformance = useCallback(async () => {
     if (!node) return;
 
     setLoading(true);
@@ -319,16 +400,7 @@ export function useNodePerformance(
     }
   }, [node]);
 
-  useEffect(() => {
-    fetchPerformance();
-
-    if (refreshInterval > 0) {
-      const interval = setInterval(fetchPerformance, refreshInterval);
-      return () => clearInterval(interval);
-    }
-  }, [fetchPerformance, refreshInterval]);
-
-  return { performance, loading, error, refetch: fetchPerformance };
+  return { performance, loading, error, refetch: refetchPerformance };
 }
 
 // Hook for VM provisioning
