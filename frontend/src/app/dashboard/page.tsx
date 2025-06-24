@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const selectedVM = mockVMs.find((vm) => vm.id === selectedVMId)!;
 
   return (
-    <div className="min-h-screen bg-dtu-white dark:bg-dtu-black text-dtu-black dark:text-dtu-white">
+    <div className="min-h-screen bg-dtu-white dark:bg-zinc-900 text-dtu-black dark:text-dtu-white">
       {/* Topbar */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-dtu-grey dark:border-zinc-800">
         <Image
