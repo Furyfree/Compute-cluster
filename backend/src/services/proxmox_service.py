@@ -71,18 +71,30 @@ def list_user_vms(username: str):
     return [vm for vm in all_vms if vm["vmid"] in user_vmid_set]
 
 def grant_vm_access(vmid: int, username: str):
-    return proxmox.access.acl.put(
-        path = f"/vms/{vmid}",
-        users=[f"{username}@LDAP"],
-        roleid="PVEVMUser",
-        propagate=1
-    )
+    """Grant user access to a specific VM with PVEVMUser role"""
+    try:
+        result = proxmox.access.acl.put(
+            path=f"/vms/{vmid}",
+            users=[f"{username}@LDAP"],
+            roles=["PVEVMUser"],
+            propagate=1
+        )
+        return {"success": True, "vmid": vmid, "username": username, "role": "PVEVMUser"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 def revoke_vm_access(vmid: int, username: str):
-    return proxmox.access.acl.delete(
-        path = f"/vms/{vmid}",
-        users=[f"{username}@LDAP"]
-    )
+    """Revoke user access from a specific VM"""
+    try:
+        result = proxmox.access.acl.put(
+            path=f"/vms/{vmid}",
+            users=[f"{username}@LDAP"],
+            roles=["PVEVMUser"],
+            delete=1
+        )
+        return {"success": True, "vmid": vmid, "username": username}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 def list_lxc():
     all_lxcs = []

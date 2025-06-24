@@ -60,13 +60,6 @@ export default function LandingPage() {
           >
             Go to login
           </Button>
-          <Button
-            variant="grey"
-            onClick={testNavigation}
-            className="text-sm px-4 py-2"
-          >
-            Test Navigation (Debug)
-          </Button>
         </div>
       </div>
     </main>
