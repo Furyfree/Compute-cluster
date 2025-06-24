@@ -64,7 +64,7 @@ async def provision_worker(req: ProvisionRequest):
     print(f"Provisioned VM {vmid} with IP {ip} on node {node_to_check}")
     await guac_service.create_ssh_connection(
         name=name,
-        ip=ip,
+        hostname=ip,
         username=req.username,
         password=req.password,
         max_connections=2,
