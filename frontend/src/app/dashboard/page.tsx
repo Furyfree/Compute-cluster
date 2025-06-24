@@ -166,6 +166,7 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     removeAuthToken();
+    console.log("Token fjernet");
     router.push("/login");
   };
 
