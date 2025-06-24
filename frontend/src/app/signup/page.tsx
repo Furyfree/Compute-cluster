@@ -92,7 +92,7 @@ export default function SignupPage() {
       <div className="mt-8 text-center">
         <button
           onClick={handleBackToLogin}
-          className="text-dtu-blue hover:text-dtu-navyBlue font-medium text-sm transition-colors"
+          className="text-dtu-blue dark:text-dtu-yellow hover:text-dtu-navyBlue dark:hover:text-dtu-orange font-medium text-sm transition-colors"
         >
           Already have an account? Sign in
         </button>

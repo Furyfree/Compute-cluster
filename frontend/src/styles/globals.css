@@ -17,5 +17,5 @@
 }
 
 body {
-    @apply bg-white text-black dark:bg-black dark:text-white font-sans antialiased;
+    @apply bg-dtu-white text-dtu-black dark:bg-dtu-black dark:text-dtu-white font-sans antialiased;
 }
