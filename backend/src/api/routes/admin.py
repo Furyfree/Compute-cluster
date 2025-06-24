@@ -117,7 +117,7 @@ def admin_delete_user(username: str):
     }
 
 @router.post("/admin/vms/{vmid}/grant")
-def grant_user_access(vmid: int, payload: dict, current_user=Depends(get_current_user)):
+def grant_user_access(vmid: int, payload: dict, current_user=Depends(get_admin_user)):
     if not current_user["is_admin"]:
         raise HTTPException(status_code=403)
     username = payload.get("username")
@@ -126,7 +126,7 @@ def grant_user_access(vmid: int, payload: dict, current_user=Depends(get_current
     return proxmox_service.grant_vm_access(vmid, username)
 
 @router.post("/admin/vms/{vmid}/revoke")
-def revoke_user_access(vmid: int, payload: dict, current_user=Depends(get_current_user)):
+def revoke_user_access(vmid: int, payload: dict, current_user=Depends(get_admin_user)):
     if not current_user["is_admin"]:
         raise HTTPException(status_code=403)
     username = payload.get("username")
