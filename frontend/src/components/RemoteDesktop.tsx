@@ -33,7 +33,7 @@ export default function RemoteDesktop({
         throw new Error("No authentication token found");
       }
 
-      const consoleUrl = `http://127.0.0.1:8000/proxmox/nodes/vms/console/${resource.name}`;
+      const consoleUrl = `http://127.0.0.1:8000/guacamole/connections/url/${resource.name}`;
       console.log("Console API URL:", consoleUrl);
 
       const response = await fetch(consoleUrl, {
