@@ -299,9 +299,6 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
     const fetchIP = async () => {
       if (!node || !vmid) return;
 
-      console.log(
-        `[useResourceIP] Fetching IP for ${type} ${vmid} on node ${node}`,
-      );
       setLoading(true);
       setError(null);
       try {
@@ -310,22 +307,22 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
             ? await getVMIP(node, vmid)
             : await getContainerIP(node, vmid);
 
-        console.log(`[useResourceIP] Raw response:`, rawResponse);
-        console.log(`[useResourceIP] Response status:`, rawResponse.status);
-
         const rawIp = await rawResponse;
-        console.log(`[useResourceIP] Raw text response:`, rawIp);
-        console.log(`[useResourceIP] Raw IP type:`, typeof rawIp);
-
         // Trim whitespace and remove quotes if present
         const ip = rawIp.trim().replace(/^"(.*)"$/, "$1");
-        console.log(`[useResourceIP] Processed IP:`, ip);
 
         setIp(ip || null);
       } catch (err: unknown) {
-        console.error(`[useResourceIP] Error fetching IP:`, err);
-        const message =
-          err instanceof Error ? err.message : "Failed to fetch IP";
+        let message = "Failed to fetch IP";
+        if (err instanceof Error) {
+          if (err.message.includes("No QEMU guest agent configured")) {
+            message = "Guest agent not configured";
+          } else if (err.message.includes("500")) {
+            message = "Server error";
+          } else {
+            message = err.message;
+          }
+        }
         setError(message);
         setIp(null);
       } finally {
@@ -339,9 +336,6 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
   const refetchIP = useCallback(async () => {
     if (!node || !vmid) return;
 
-    console.log(
-      `[useResourceIP] Refetching IP for ${type} ${vmid} on node ${node}`,
-    );
     setLoading(true);
     setError(null);
     try {
@@ -350,19 +344,22 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
           ? await getVMIP(node, vmid)
           : await getContainerIP(node, vmid);
 
-      console.log(`[useResourceIP] Refetch raw response:`, rawResponse);
-
       const rawIp = await rawResponse;
-      console.log(`[useResourceIP] Refetch raw text response:`, rawIp);
-
       // Trim whitespace and remove quotes if present
       const ip = rawIp.trim().replace(/^"(.*)"$/, "$1");
-      console.log(`[useResourceIP] Refetch processed IP:`, ip);
 
       setIp(ip || null);
     } catch (err: unknown) {
-      console.error(`[useResourceIP] Error refetching IP:`, err);
-      const message = err instanceof Error ? err.message : "Failed to fetch IP";
+      let message = "Failed to fetch IP";
+      if (err instanceof Error) {
+        if (err.message.includes("No QEMU guest agent configured")) {
+          message = "Guest agent not configured";
+        } else if (err.message.includes("500")) {
+          message = "Server error";
+        } else {
+          message = err.message;
+        }
+      }
       setError(message);
       setIp(null);
     } finally {
