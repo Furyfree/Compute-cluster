@@ -119,6 +119,14 @@ def get_user_info(username: str):
 
         user_entry = conn.entries[0]
 
+        # Map gid_number back to group name
+        gid_number = user_entry.gidNumber.value if hasattr(user_entry, "gidNumber") else ""
+        group = "user"  # default group
+        for group_name, gid in GROUP_GID_MAPPING.items():
+            if str(gid_number) == gid:
+                group = group_name
+                break
+
         return {
             "username": user_entry.uid.value if hasattr(user_entry, "uid") else "",
             "name": user_entry.cn.value if hasattr(user_entry, "cn") else "",
@@ -127,8 +135,9 @@ def get_user_info(username: str):
             "email": user_entry.mail.value if hasattr(user_entry, "mail") else "",
             "home_directory": user_entry.homeDirectory.value if hasattr(user_entry, "homeDirectory") else "",
             "uid_number": user_entry.uidNumber.value if hasattr(user_entry, "uidNumber") else "",
-            "gid_number": user_entry.gidNumber.value if hasattr(user_entry, "gidNumber") else "",
-            "is_admin": str(user_entry.gidNumber.value) == GROUP_GID_MAPPING["admin"] if hasattr(user_entry, "gidNumber") else False
+            "gid_number": gid_number,
+            "group": group,
+            "is_admin": str(gid_number) == GROUP_GID_MAPPING["admin"] if gid_number else False
         }
 
 @sync_ldap_after
