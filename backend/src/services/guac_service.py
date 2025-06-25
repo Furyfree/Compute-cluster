@@ -210,7 +210,7 @@ def get_guac_connection_by_name(name: str):
 
     for conn in connections:
         if conn.get("name") == name:
-            print(f"Found connection: {conn}")
+            print(f"Found connection: {conn}") #debugging line
             return conn
 
     return None
@@ -227,4 +227,5 @@ def get_connection_url_by_name(name: str) -> str:
     token_data = get_guac_token()
     auth_token = token_data["authToken"]
 
-    return f"{GUAC_EMBED}/#/client/{connection_id}?token={auth_token}"
+    #return f"{GUAC_EMBED}/#/client/{connection_id}?token={auth_token}"
+    return connection
