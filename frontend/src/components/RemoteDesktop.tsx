@@ -40,7 +40,7 @@ export default function RemoteDesktop({
         // Try 1: Exact VM name match
         try {
           response = await getConnectionUrlByName(resource.name);
-          setConnectionUrl(response.url || "");
+          setConnectionUrl(response || "");
           return;
         } catch (err: any) {
           lastError = err;
@@ -49,7 +49,7 @@ export default function RemoteDesktop({
         // Try 2: VM ID match
         try {
           response = await getConnectionUrlByName(resource.vmid.toString());
-          setConnectionUrl(response.url || "");
+          setConnectionUrl(response || "");
           return;
         } catch (err: any) {
           lastError = err;
@@ -66,7 +66,7 @@ export default function RemoteDesktop({
         for (const pattern of namingPatterns) {
           try {
             response = await getConnectionUrlByName(pattern);
-            setConnectionUrl(response.url || "");
+            setConnectionUrl(response || "");
             return;
           } catch (err: any) {
             lastError = err;
