@@ -158,8 +158,8 @@ def get_vm_console_url(vm_name: str):
             status_code=500,
             content={"message": "Failed to retrieve Proxmox authentication cookie"}
         )
-    Response = RedirectResponse(url=novnc_url)
-    Response.set_cookie(
+    res = RedirectResponse(url=novnc_url)
+    res.set_cookie(
         key="PVEAuthCookie",
         value=PVEauthCookie,
         path="/",
@@ -169,4 +169,4 @@ def get_vm_console_url(vm_name: str):
         samesite='None'
     )
 
-    return Response
+    return res
