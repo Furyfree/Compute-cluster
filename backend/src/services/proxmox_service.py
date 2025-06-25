@@ -392,9 +392,8 @@ def get_vm_console_url(vm_name: str):
         return {"error": "VM not found"}
     vm_id = vm_info[0]
     node = vm_info[1]
-    response = proxmox.nodes(node).qemu(vm_id).vncproxy.post(websocket=1)
-    ticket = response['ticket']
-    port = response['port']
+    vnc_response = proxmox.nodes(node).qemu(vm_id).vncproxy.post(websocket=1)
+    ticket = vnc_response['ticket']
     novnc_url = (
     f"https://localhost:8006/?"
     f"console=kvm&novnc=1&vmid={vm_id}&node={node}&resize=scale&"
@@ -402,4 +401,10 @@ def get_vm_console_url(vm_name: str):
     )
     return novnc_url
 
-    
+def get_access_ticket() -> str:
+    cached = proxmox._session.cookies.get("PVEAuthCookie")
+    if cached:
+        return cached
+
+    data = proxmox.access.ticket.post(username=get_required_env("PROXMOX_USERNAME"), password=get_required_env("PROXMOX_PASSWORD"))['ticket']
+    return data
