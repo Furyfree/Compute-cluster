@@ -227,8 +227,8 @@ export default function AdminDashboardPage() {
       const provisionData: ProvisionVMRequest = {
         username: provisionForm.username,
         password: provisionForm.password,
+        ssh_key: "",
         os: provisionForm.os,
-        ...(provisionForm.ssh_key && { ssh_key: provisionForm.ssh_key }),
       };
 
       const response = await provisionVM(provisionData);

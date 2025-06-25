@@ -183,7 +183,7 @@ export interface OSTemplatesResponse {
 export interface ProvisionVMRequest {
   username: string;
   password: string;
-  ssh_key?: string;
+  ssh_key: string;
   os: string;
 }
 
