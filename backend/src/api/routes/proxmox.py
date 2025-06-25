@@ -152,7 +152,7 @@ def get_vm_console_url(vm_name: str):
             status_code=404,
             content={"message": "No console available for this VM"}
         )
-    PVEauthCookie = proxmox_service.get_access_ticket()
+    PVEauthCookie = proxmox_service.get_access_cookie()
     if not PVEauthCookie:
         return Response.JSONResponse(
             status_code=500,

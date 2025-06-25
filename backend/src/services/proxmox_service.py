@@ -401,7 +401,7 @@ def get_vm_console_url(vm_name: str):
     )
     return novnc_url
 
-def get_access_ticket() -> str:
+def get_access_cookie() -> str:
     cached = proxmox._session.cookies.get("PVEAuthCookie")
     if cached:
         return cached
