@@ -221,6 +221,8 @@ def get_connection_url_by_name(name: str) -> str:
         raise ValueError(f"Connection with name '{name}' not found")
 
     connection_id = connection["identifier"]
+    print(f"Connection ID for '{name}': {connection_id}") #debugging line
+
     token_data = get_guac_token()
     auth_token = token_data["authToken"]
 
