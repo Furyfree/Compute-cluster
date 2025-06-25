@@ -76,14 +76,18 @@ def admin_create_user(user_data: AdminCreateUserRequest):
     }
 
 @router.patch("/{username}/change/username", dependencies=[Depends(get_admin_user)])
-def admin_change_username(username: str, username_data: UpdateUsernameRequest):
+def admin_change_username(username: str, username_data: UpdateUsernameRequest, current_user: dict = Depends(get_admin_user)):
     """Admin change any user's username"""
     ldap_result = ldap_service.change_username(username, username_data.new_username)
+
+    # Check if admin is changing their own username
+    is_self_change = current_user["username"] == username
 
     return {
         "success": ldap_result.get("success", True) if isinstance(ldap_result, dict) else True,
         "ldap_result": ldap_result,
-        "message": f"Username changed by admin from {username} to {username_data.new_username}"
+        "message": f"Username changed by admin from {username} to {username_data.new_username}",
+        "requires_logout": is_self_change
     }
 
 @router.patch("/{username}/change/password", dependencies=[Depends(get_admin_user)])
