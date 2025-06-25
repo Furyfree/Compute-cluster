@@ -66,6 +66,11 @@ def change_my_username(username_data: UpdateUsernameRequest, current_user: dict 
 def change_my_password(password_data: ChangePasswordRequest, current_user: dict = Depends(get_current_user)):
     """Change own password"""
     username = current_user["username"]
+
+    # Verify old password first
+    if not ldap_service.authenticate_user(username, password_data.old_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
     ldap_result = ldap_service.change_password(username, password_data.new_password)
 
     return {
