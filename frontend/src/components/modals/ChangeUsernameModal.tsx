@@ -39,10 +39,7 @@ export default function ChangeUsernameModal({
     setError(null);
 
     try {
-      console.log("[ChangeUsername] Starting username change...");
       await changeMyUsername(newUsername);
-      console.log("[ChangeUsername] Username change successful");
-
       onUsernameChanged(newUsername);
       setNewUsername("");
 
@@ -51,13 +48,10 @@ export default function ChangeUsernameModal({
       );
 
       // Force logout immediately after username change to refresh the JWT token
-      console.log("[ChangeUsername] Scheduling logout in 1 second");
       setTimeout(() => {
-        console.log("[ChangeUsername] Executing logout");
         performLogout();
       }, 1000);
     } catch (err: any) {
-      console.error("[ChangeUsername] Error changing username:", err);
       setError(err.message || "Failed to change username");
     } finally {
       setLoading(false);

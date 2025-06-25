@@ -206,15 +206,10 @@ export default function AdminDashboardPage() {
 
       // Check if admin changed their own username
       if (result.requires_logout) {
-        console.log(
-          "[AdminDashboard] Admin changed own username, logout required",
-        );
         alert(
           "Username updated successfully! You will be logged out for security reasons.",
         );
-        console.log("[AdminDashboard] Scheduling logout in 1 second");
         setTimeout(() => {
-          console.log("[AdminDashboard] Executing admin logout");
           performLogout();
         }, 1000);
       } else {
