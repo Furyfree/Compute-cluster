@@ -210,6 +210,7 @@ def get_guac_connection_by_name(name: str):
 
     for conn in connections:
         if conn.get("name") == name:
+            print(f"Found connection: {conn}")
             return conn
 
     return None
