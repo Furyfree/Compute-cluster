@@ -313,7 +313,7 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
         console.log(`[useResourceIP] Raw response:`, rawResponse);
         console.log(`[useResourceIP] Response status:`, rawResponse.status);
 
-        const rawIp = await rawResponse.text();
+        const rawIp = await rawResponse;
         console.log(`[useResourceIP] Raw text response:`, rawIp);
         console.log(`[useResourceIP] Raw IP type:`, typeof rawIp);
 
@@ -352,7 +352,7 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
 
       console.log(`[useResourceIP] Refetch raw response:`, rawResponse);
 
-      const rawIp = await rawResponse.text();
+      const rawIp = await rawResponse;
       console.log(`[useResourceIP] Refetch raw text response:`, rawIp);
 
       // Trim whitespace and remove quotes if present
