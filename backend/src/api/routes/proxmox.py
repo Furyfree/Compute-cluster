@@ -18,12 +18,6 @@ def node_performance(node: str):
     """Returns CPU, loadavg, memory, and disk usage for a node"""
     return proxmox_service.get_node_performance(node)
 
-@router.post(
-    "/nodes/{node}/provision",
-    summary="Provision a new VM from OS template",
-    dependencies=[Depends(get_current_user)]
-)
-
 @router.get("/nodes/{node}/performance/full", summary="Get full node performance metrics", dependencies=[Depends(get_current_user)])
 def node_performance_full(node: str):
     """Returns full performance metrics for a node"""
