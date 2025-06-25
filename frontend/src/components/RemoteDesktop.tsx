@@ -85,7 +85,7 @@ export default function RemoteDesktop({
       </div>
 
       <div className="text-center py-8">
-        <div className="text-6xl mb-4">🖥️</div>
+        <div className="text-6xl mb-4"></div>
 
         {!resource ? (
           <div className="text-gray-500 dark:text-gray-400">
