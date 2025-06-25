@@ -8,6 +8,7 @@ import { useRequireAuth } from "@/hooks/useAuthGuard";
 import { useProxmoxResources, useResourceIP } from "@/hooks/useProxmox";
 import { getCurrentUserInfo } from "@/lib/api/users";
 import { removeAuthToken } from "@/lib/api/auth";
+import { adminDeleteVM, adminDeleteContainer } from "@/lib/api/admin";
 import { ProxmoxResource } from "@/types/proxmox";
 import RemoteDesktop from "@/components/RemoteDesktop";
 import { performLogout, forceNavigate } from "@/lib/navigation";
@@ -116,10 +117,10 @@ export default function DashboardPage() {
           case "delete":
             if (
               confirm(
-                `Are you sure you want to delete ${selectedResource.name}?`,
+                `Are you sure you want to delete ${selectedResource.name}? This action cannot be undone.`,
               )
             ) {
-              result = await deleteVM(
+              result = await adminDeleteVM(
                 selectedResource.node,
                 selectedResource.vmid,
               );
@@ -149,10 +150,10 @@ export default function DashboardPage() {
           case "delete":
             if (
               confirm(
-                `Are you sure you want to delete ${selectedResource.name}?`,
+                `Are you sure you want to delete ${selectedResource.name}? This action cannot be undone.`,
               )
             ) {
-              result = await deleteContainer(
+              result = await adminDeleteContainer(
                 selectedResource.node,
                 selectedResource.vmid,
               );
@@ -411,6 +412,16 @@ export default function DashboardPage() {
                 >
                   {actionLoading === "start" ? "Starting..." : "Start"}
                 </Button>
+                {currentUser?.is_admin && (
+                  <Button
+                    variant="red"
+                    onClick={() => handleResourceAction("delete")}
+                    disabled={actionLoading === "delete"}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {actionLoading === "delete" ? "Deleting..." : "Delete"}
+                  </Button>
+                )}
               </div>
             </>
           ) : (

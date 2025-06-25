@@ -149,6 +149,22 @@ export async function provisionVM(provisionData: ProvisionVMRequest) {
   }
 }
 
+// Admin-only VM/Container deletion
+export async function adminDeleteVM(node: string, vmid: number) {
+  return authenticatedFetch(`/proxmox/vms/${node}/${vmid}/delete`, {
+    method: "DELETE",
+  });
+}
+
+export async function adminDeleteContainer(node: string, containerId: number) {
+  return authenticatedFetch(
+    `/proxmox/containers/${node}/${containerId}/delete`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
 // Types
 export interface AdminCreateUserRequest {
   first_name: string;

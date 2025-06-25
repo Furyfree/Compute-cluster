@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import APIRouter, Depends
-from src.api.auth_deps import get_current_user
+from src.api.auth_deps import get_current_user, get_admin_user
 from src.services import proxmox_service
 from src.models.models import ProvisionRequest
 from src.models.enums import SupportedOS
@@ -62,7 +62,7 @@ def restart_virtual_machine(node: str, vm_id: int):
     """Restart a virtual machine on the specified node"""
     return proxmox_service.reboot_vm(node, vm_id)
 
-@router.delete("/vms/{node}/{vm_id}/delete", dependencies=[Depends(get_current_user)], summary="Delete VM")
+@router.delete("/vms/{node}/{vm_id}/delete", dependencies=[Depends(get_admin_user)], summary="Delete VM")
 def delete_virtual_machine(node: str, vm_id: int):
     """Delete a virtual machine on the specified node"""
     return proxmox_service.delete_vm(node, vm_id)
@@ -94,7 +94,7 @@ def restart_lxc_container(node: str, container_id: int):
     """Restart an LXC container on the specified node"""
     return proxmox_service.reboot_lxc(node, container_id)
 
-@router.delete("/containers/{node}/{container_id}/delete", dependencies=[Depends(get_current_user)], summary="Delete Container")
+@router.delete("/containers/{node}/{container_id}/delete", dependencies=[Depends(get_admin_user)], summary="Delete Container")
 def delete_lxc_container(node: str, container_id: int):
     """Delete an LXC container on the specified node"""
     return proxmox_service.delete_lxc(node, container_id)
