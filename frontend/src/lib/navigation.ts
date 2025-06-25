@@ -42,18 +42,32 @@ export function performLogout() {
   console.log("[Auth] Performing logout...");
 
   if (typeof window !== "undefined") {
-    // Clear any stored tokens
-    localStorage.removeItem("token");
-    localStorage.removeItem("expires_at");
-    console.log("[Auth] Cleared tokens from localStorage");
+    try {
+      // Clear any stored tokens
+      localStorage.removeItem("token");
+      localStorage.removeItem("expires_at");
+      console.log("[Auth] Cleared tokens from localStorage");
 
-    // Clear session storage
-    sessionStorage.clear();
-    console.log("[Auth] Cleared sessionStorage");
+      // Clear session storage
+      sessionStorage.clear();
+      console.log("[Auth] Cleared sessionStorage");
 
-    // Navigate to login
-    console.log("[Auth] Redirecting to login page");
-    navigateTo("/login");
+      // Navigate to login with force replace for more reliability
+      console.log("[Auth] Redirecting to login page");
+
+      // Use immediate redirect without delay for better reliability
+      window.location.replace("/login");
+
+      // Fallback in case replace doesn't work
+      setTimeout(() => {
+        console.log("[Auth] Fallback redirect triggered");
+        window.location.href = "/login";
+      }, 100);
+    } catch (error) {
+      console.error("[Auth] Error during logout:", error);
+      // Emergency fallback
+      window.location.href = "/login";
+    }
   } else {
     console.warn("[Auth] Cannot perform logout - window not available");
   }
