@@ -11,6 +11,8 @@ import { removeAuthToken } from "@/lib/api/auth";
 import { ProxmoxResource } from "@/types/proxmox";
 import RemoteDesktop from "@/components/RemoteDesktop";
 import { performLogout, forceNavigate } from "@/lib/navigation";
+import ChangeUsernameModal from "@/components/modals/ChangeUsernameModal";
+import ChangePasswordModal from "@/components/modals/ChangePasswordModal";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -30,6 +32,8 @@ export default function DashboardPage() {
     useState<ProxmoxResource | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showChangeUsernameModal, setShowChangeUsernameModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // Get IP for selected resource
   const {
@@ -201,6 +205,10 @@ export default function DashboardPage() {
     }
   };
 
+  const handleUsernameChanged = (newUsername: string) => {
+    setCurrentUser((prev: any) => ({ ...prev, username: newUsername }));
+  };
+
   // Show loading screen while checking authentication
   if (authLoading) {
     return (
@@ -247,6 +255,18 @@ export default function DashboardPage() {
             </div>
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
               <div className="py-1">
+                <button
+                  onClick={() => setShowChangeUsernameModal(true)}
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 w-full text-left"
+                >
+                  Change Username
+                </button>
+                <button
+                  onClick={() => setShowChangePasswordModal(true)}
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 w-full text-left"
+                >
+                  Change Password
+                </button>
                 <button
                   onClick={handleLogout}
                   onMouseDown={(e) => {
@@ -405,6 +425,18 @@ export default function DashboardPage() {
           )}
         </main>
       </div>
+
+      {/* Modals */}
+      <ChangeUsernameModal
+        isOpen={showChangeUsernameModal}
+        onClose={() => setShowChangeUsernameModal(false)}
+        currentUsername={currentUser?.username || ""}
+        onUsernameChanged={handleUsernameChanged}
+      />
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
     </div>
   );
 }

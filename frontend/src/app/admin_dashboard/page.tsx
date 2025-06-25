@@ -26,6 +26,9 @@ import {
 } from "@/lib/api/admin";
 import { removeAuthToken } from "@/lib/api/auth";
 import { forceNavigate } from "@/lib/navigation";
+import { getCurrentUserInfo } from "@/lib/api/users";
+import ChangeUsernameModal from "@/components/modals/ChangeUsernameModal";
+import ChangePasswordModal from "@/components/modals/ChangePasswordModal";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -36,6 +39,9 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"users" | "create">("users");
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [showChangeUsernameModal, setShowChangeUsernameModal] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // VM management state
   const [userVMs, setUserVMs] = useState<VM[]>([]);
@@ -263,6 +269,26 @@ export default function AdminDashboardPage() {
     forceNavigate("/dashboard");
   };
 
+  const handleUsernameChanged = (newUsername: string) => {
+    setCurrentUser((prev: any) => ({ ...prev, username: newUsername }));
+  };
+
+  // Fetch current user info
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userInfo = await getCurrentUserInfo();
+        setCurrentUser(userInfo.user || userInfo);
+      } catch (err) {
+        console.error("Failed to fetch user info:", err);
+      }
+    };
+
+    if (isAdmin) {
+      fetchUserInfo();
+    }
+  }, [isAdmin]);
+
   // Fetch users on component mount
   useEffect(() => {
     if (isAdmin) {
@@ -312,10 +338,22 @@ export default function AdminDashboardPage() {
           </Button>
           <div className="relative group">
             <div className="bg-dtu-grey dark:bg-zinc-800 px-4 py-2 rounded text-sm cursor-pointer">
-              Admin ▾
+              {currentUser?.username || "Admin"} ▾
             </div>
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-800 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
               <div className="py-1">
+                <button
+                  onClick={() => setShowChangeUsernameModal(true)}
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 w-full text-left"
+                >
+                  Change Username
+                </button>
+                <button
+                  onClick={() => setShowChangePasswordModal(true)}
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 w-full text-left"
+                >
+                  Change Password
+                </button>
                 <button
                   onClick={handleLogout}
                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700 w-full text-left"
@@ -775,6 +813,18 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      <ChangeUsernameModal
+        isOpen={showChangeUsernameModal}
+        onClose={() => setShowChangeUsernameModal(false)}
+        currentUsername={currentUser?.username || ""}
+        onUsernameChanged={handleUsernameChanged}
+      />
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
     </div>
   );
 }
