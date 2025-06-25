@@ -7,6 +7,9 @@ import src.util.proxmox_util as proxmox_util
 import src.services.load_balance_service as load_balance_service
 import time
 from typing import Dict
+import requests
+
+session = requests.Session()
 
 proxmox = ProxmoxAPI(
     get_required_env("PROXMOX_HOST"),
@@ -402,9 +405,8 @@ def get_vm_console_url(vm_name: str):
     return novnc_url
 
 def get_access_cookie() -> str:
-    cached = proxmox._session.cookies.get("PVEAuthCookie")
-    if cached:
-        return cached
-
-    data = proxmox.access.ticket.post(username=get_required_env("PROXMOX_USERNAME"), password=get_required_env("PROXMOX_PASSWORD"))['ticket']
-    return data
+    cookie = session.cookies.get("PVEAuthCookie")
+    if cookie:
+        return cookie
+    if not cookie:
+        return {"error": "No PVEAuthCookie found in session cookies."}
