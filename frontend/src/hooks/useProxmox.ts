@@ -295,6 +295,23 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isValidIP = (ipString: string): boolean => {
+    // Check if it's an error message
+    if (
+      ipString.includes("Error") ||
+      ipString.includes("500") ||
+      ipString.includes("Internal Server Error") ||
+      ipString.includes("No QEMU guest agent") ||
+      ipString.includes("retrieving IP")
+    ) {
+      return false;
+    }
+
+    // Basic IP validation (IPv4)
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    return ipRegex.test(ipString);
+  };
+
   useEffect(() => {
     const fetchIP = async () => {
       if (!node || !vmid) return;
@@ -309,21 +326,16 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
 
         const rawIp = await rawResponse;
         // Trim whitespace and remove quotes if present
-        const ip = rawIp.trim().replace(/^"(.*)"$/, "$1");
+        const processedIp = rawIp.trim().replace(/^"(.*)"$/, "$1");
 
-        setIp(ip || null);
-      } catch (err: unknown) {
-        let message = "Failed to fetch IP";
-        if (err instanceof Error) {
-          if (err.message.includes("No QEMU guest agent configured")) {
-            message = "Guest agent not configured";
-          } else if (err.message.includes("500")) {
-            message = "Server error";
-          } else {
-            message = err.message;
-          }
+        // Check if the response is a valid IP or an error message
+        if (isValidIP(processedIp)) {
+          setIp(processedIp);
+        } else {
+          setIp(null);
         }
-        setError(message);
+      } catch (err: unknown) {
+        setError("Failed to fetch IP");
         setIp(null);
       } finally {
         setLoading(false);
@@ -346,21 +358,16 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
 
       const rawIp = await rawResponse;
       // Trim whitespace and remove quotes if present
-      const ip = rawIp.trim().replace(/^"(.*)"$/, "$1");
+      const processedIp = rawIp.trim().replace(/^"(.*)"$/, "$1");
 
-      setIp(ip || null);
-    } catch (err: unknown) {
-      let message = "Failed to fetch IP";
-      if (err instanceof Error) {
-        if (err.message.includes("No QEMU guest agent configured")) {
-          message = "Guest agent not configured";
-        } else if (err.message.includes("500")) {
-          message = "Server error";
-        } else {
-          message = err.message;
-        }
+      // Check if the response is a valid IP or an error message
+      if (isValidIP(processedIp)) {
+        setIp(processedIp);
+      } else {
+        setIp(null);
       }
-      setError(message);
+    } catch (err: unknown) {
+      setError("Failed to fetch IP");
       setIp(null);
     } finally {
       setLoading(false);
