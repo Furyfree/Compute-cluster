@@ -26,7 +26,7 @@ def get_connections():
     """Get all connections"""
     headers = get_formatted_token()
     res = httpx.get(
-        f"{GUAC_URL}/api/session/data/postgresql/connections",
+        f"{GUAC_EMBED}/api/session/data/postgresql/connections",
         headers=headers
     )
     res.raise_for_status()
