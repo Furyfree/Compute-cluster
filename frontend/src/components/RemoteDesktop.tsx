@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Button from "@/components/Button";
+import { getAuthToken } from "@/lib/api/auth";
 import { ProxmoxResource } from "@/types/proxmox";
 
 interface RemoteDesktopProps {
@@ -21,27 +22,52 @@ export default function RemoteDesktop({
 
   const isResourceRunning = resource?.status === "running";
 
-  // Set console URL when resource changes
+  // Fetch console URL when resource changes
   useEffect(() => {
-    if (!resource || !isResourceRunning) {
-      setConnectionUrl("");
+    const fetchConsoleUrl = async () => {
+      if (!resource || !isResourceRunning) {
+        setConnectionUrl("");
+        setError(null);
+        return;
+      }
+
+      setLoading(true);
       setError(null);
-      return;
-    }
 
-    setLoading(true);
-    setError(null);
+      try {
+        const token = getAuthToken();
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
 
-    try {
-      // Construct console URL directly using VM name
-      const consoleUrl = `http://127.0.0.1:8000/nodes/vms/console/${resource.name}`;
-      setConnectionUrl(consoleUrl);
-    } catch (err: any) {
-      setError(err.message || "Failed to create console URL");
-      setConnectionUrl("");
-    } finally {
-      setLoading(false);
-    }
+        const response = await fetch(
+          `http://127.0.0.1:8000/nodes/vms/console/${resource.name}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response
+            .json()
+            .catch(() => ({ detail: "Unknown error" }));
+          throw new Error(errorData.detail || `HTTP ${response.status}`);
+        }
+
+        const consoleUrl = await response.text();
+        setConnectionUrl(consoleUrl);
+      } catch (err: any) {
+        setError(err.message || "Failed to get console URL");
+        setConnectionUrl("");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConsoleUrl();
   }, [resource, isResourceRunning]);
 
   const openConnection = () => {
