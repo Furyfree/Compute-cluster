@@ -200,11 +200,10 @@ def delete_connection(connection_id: str):
 
 def get_guac_connection_by_name(name: str):
     connections = get_connections()
-    for connection in connections:
-        if connection["name"] == name:
-            connection_id = connection["identifier"]
-            return connection_id
-    return None
+    for conn in connections:
+        if conn.get("name") == name:
+            return conn["identifier"]
+    raise ValueError(f"No connection found with name '{name}'")
 
 def get_connection_url_by_name(name: str) -> str:
     """Get direct connection URL for embedding, based on connection name"""
@@ -213,7 +212,6 @@ def get_connection_url_by_name(name: str) -> str:
         raise ValueError(f"Connection with name '{name}' not found")
 
     print(f"Connection ID for '{name}': {connection_id}") #debugging line
-
     token_data = get_guac_token()
     auth_token = token_data["authToken"]
 
