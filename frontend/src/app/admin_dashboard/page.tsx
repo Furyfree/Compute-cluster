@@ -61,7 +61,6 @@ export default function AdminDashboardPage() {
   const [provisionForm, setProvisionForm] = useState({
     username: "",
     password: "",
-    ssh_key: "",
     os: "",
   });
   const [provisionLoading, setProvisionLoading] = useState(false);
@@ -236,7 +235,6 @@ export default function AdminDashboardPage() {
       setProvisionForm({
         username: "",
         password: "",
-        ssh_key: "",
         os: osTemplates[0]?.value || "",
       });
     } catch (err: any) {
@@ -665,22 +663,6 @@ export default function AdminDashboardPage() {
                   required
                   placeholder="VM login password"
                 />
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    SSH Key (Optional)
-                  </label>
-                  <textarea
-                    value={provisionForm.ssh_key}
-                    onChange={(e) =>
-                      setProvisionForm({
-                        ...provisionForm,
-                        ssh_key: e.target.value,
-                      })
-                    }
-                    className="w-full p-2 border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 rounded-md h-24 resize-none"
-                    placeholder="Paste your SSH public key here (optional)"
-                  />
-                </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Operating System

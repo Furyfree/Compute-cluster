@@ -108,10 +108,45 @@ export async function getOSTemplates() {
 }
 
 export async function provisionVM(provisionData: ProvisionVMRequest) {
-  return authenticatedFetch("/proxmox/provision", {
-    method: "POST",
-    body: JSON.stringify(provisionData),
-  });
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  // Use longer timeout for VM provisioning (5 minutes)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/proxmox/provision`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(provisionData),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: "Unknown error" }));
+      throw new Error(errorData.detail || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error(
+        "VM provisioning timed out. Please check the VM status manually.",
+      );
+    }
+    throw error;
+  }
 }
 
 // Types
