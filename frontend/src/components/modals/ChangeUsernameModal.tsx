@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Button from "@/components/Button";
 import { changeMyUsername } from "@/lib/api/users";
+import { performLogout } from "@/lib/navigation";
 
 interface ChangeUsernameModalProps {
   isOpen: boolean;
@@ -42,7 +43,14 @@ export default function ChangeUsernameModal({
       onUsernameChanged(newUsername);
       setNewUsername("");
       onClose();
-      alert("Username changed successfully!");
+      alert(
+        "Username changed successfully! You will be logged out for security reasons.",
+      );
+
+      // Force logout after username change to refresh the JWT token
+      setTimeout(() => {
+        performLogout();
+      }, 2000);
     } catch (err: any) {
       setError(err.message || "Failed to change username");
     } finally {

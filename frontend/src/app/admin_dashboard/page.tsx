@@ -29,6 +29,7 @@ import { forceNavigate } from "@/lib/navigation";
 import { getCurrentUserInfo } from "@/lib/api/users";
 import ChangeUsernameModal from "@/components/modals/ChangeUsernameModal";
 import ChangePasswordModal from "@/components/modals/ChangePasswordModal";
+import { performLogout } from "@/lib/navigation";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -196,10 +197,24 @@ export default function AdminDashboardPage() {
     if (!selectedUser || !editForm.username) return;
 
     try {
-      await adminChangeUsername(selectedUser.username, editForm.username);
+      const result = await adminChangeUsername(
+        selectedUser.username,
+        editForm.username,
+      );
       await fetchUsers();
       setSelectedUser({ ...selectedUser, username: editForm.username });
-      alert("Username updated successfully!");
+
+      // Check if admin changed their own username
+      if (result.requires_logout) {
+        alert(
+          "Username updated successfully! You will be logged out for security reasons.",
+        );
+        setTimeout(() => {
+          performLogout();
+        }, 2000);
+      } else {
+        alert("Username updated successfully!");
+      }
     } catch (err: any) {
       alert(`Failed to update username: ${err.message}`);
     }

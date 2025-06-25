@@ -48,7 +48,7 @@ export async function adminCreateUser(userData: AdminCreateUserRequest) {
 export async function adminChangeUsername(
   username: string,
   newUsername: string,
-) {
+): Promise<AdminChangeUsernameResponse> {
   return authenticatedFetch(`/admin/${username}/change/username`, {
     method: "PATCH",
     body: JSON.stringify({ new_username: newUsername }),
@@ -151,4 +151,10 @@ export interface VM {
 export interface VMAccessResponse {
   success: boolean;
   message: string;
+}
+
+export interface AdminChangeUsernameResponse {
+  success: boolean;
+  message: string;
+  requires_logout: boolean;
 }
