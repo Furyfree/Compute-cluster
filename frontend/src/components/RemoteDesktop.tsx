@@ -34,8 +34,47 @@ export default function RemoteDesktop({
       setError(null);
 
       try {
-        const response = await getConnectionUrlByName(resource.name);
-        setConnectionUrl(response.url || "");
+        let response;
+        let lastError;
+
+        // Try 1: Exact VM name match
+        try {
+          response = await getConnectionUrlByName(resource.name);
+          setConnectionUrl(response.url || "");
+          return;
+        } catch (err: any) {
+          lastError = err;
+        }
+
+        // Try 2: VM ID match
+        try {
+          response = await getConnectionUrlByName(resource.vmid.toString());
+          setConnectionUrl(response.url || "");
+          return;
+        } catch (err: any) {
+          lastError = err;
+        }
+
+        // Try 3: Common naming patterns
+        const namingPatterns = [
+          `${resource.name.toLowerCase()}-${resource.vmid}`,
+          `ubuntuserver-${resource.vmid}`,
+          `vm-${resource.vmid}`,
+          resource.name.toLowerCase(),
+        ];
+
+        for (const pattern of namingPatterns) {
+          try {
+            response = await getConnectionUrlByName(pattern);
+            setConnectionUrl(response.url || "");
+            return;
+          } catch (err: any) {
+            lastError = err;
+          }
+        }
+
+        // If all attempts failed, set error
+        throw lastError;
       } catch (err: any) {
         setError(err.message || "Failed to get connection URL");
         setConnectionUrl("");
