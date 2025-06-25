@@ -197,3 +197,11 @@ def delete_connection(connection_id: str):
         }
     res.raise_for_status()
     return {"success": True, "message": f"Connection {connection_id} deleted successfully"}
+
+def get_guac_connection_by_name(name: str):
+    """Get a Guacamole connection by name"""
+    connections = get_connections()
+    for conn in connections:
+        if conn["name"] == name:
+            return conn
+    return None
