@@ -35,7 +35,6 @@ export default function DashboardPage() {
   const {
     ip,
     loading: ipLoading,
-    error: ipError,
     refetch: refetchIP,
   } = useResourceIP(
     selectedResource?.node || "",
@@ -347,13 +346,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2">
                   <div>
                     <strong>IP:</strong>{" "}
-                    {ipLoading ? (
-                      "Loading..."
-                    ) : ipError ? (
-                      <span className="text-red-500 text-sm">{ipError}</span>
-                    ) : (
-                      ip || "N/A"
-                    )}
+                    {ipLoading ? "Loading..." : ip || "N/A"}
                   </div>
                   <button
                     onClick={refetchIP}
