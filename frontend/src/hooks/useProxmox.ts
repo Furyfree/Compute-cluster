@@ -312,12 +312,6 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
 
         console.log(`[useResourceIP] Raw response:`, rawResponse);
         console.log(`[useResourceIP] Response status:`, rawResponse.status);
-        console.log(`[useResourceIP] Response headers:`, rawResponse.headers);
-
-        // Try both text and json to see what we get
-        const responseClone = rawResponse.clone();
-        const textResponse = await responseClone.text();
-        console.log(`[useResourceIP] Text response:`, textResponse);
 
         const ip = await rawResponse.json();
         console.log(`[useResourceIP] JSON response:`, ip);
@@ -353,9 +347,6 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
           : await getContainerIP(node, vmid);
 
       console.log(`[useResourceIP] Refetch raw response:`, rawResponse);
-      const responseClone = rawResponse.clone();
-      const textResponse = await responseClone.text();
-      console.log(`[useResourceIP] Refetch text response:`, textResponse);
 
       const ip = await rawResponse.json();
       console.log(`[useResourceIP] Refetch JSON response:`, ip);
