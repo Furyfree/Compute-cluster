@@ -199,7 +199,13 @@ def delete_connection(connection_id: str):
     return {"success": True, "message": f"Connection {connection_id} deleted successfully"}
 
 def get_guac_connection_by_name(name: str):
-    connections = get_connections()
+    headers = get_formatted_token()
+    res = httpx.get(
+        f"{GUAC_URL}/api/session/data/postgresql/connections",
+        headers=headers
+    )
+    res.raise_for_status()
+    connections = list(res.json().values())
     for conn in connections:
         if conn.get("name") == name:
             return conn["identifier"]
