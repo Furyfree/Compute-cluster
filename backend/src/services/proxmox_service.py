@@ -397,7 +397,7 @@ def get_vm_console_url(vm_name: str):
     port = response['port']
     novnc_url = (
     f"https://localhost:8006/?"
-    f"console=kvm&novnc=1&vmid={vmid}&node={node}&resize=scale&"
+    f"console=kvm&novnc=1&vmid={vm_id}&node={node}&resize=scale&"
     f"ticket={ticket}"
     )
     return novnc_url
