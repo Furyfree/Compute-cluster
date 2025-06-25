@@ -385,3 +385,21 @@ def manual_load_balance():
         return {"status": "success", "message": "Load balancing completed."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+def get_vm_console_url(vm_name: str):
+    vm_info = get_vmid_and_node_by_name(vm_name)
+    if not vm_info:
+        return {"error": "VM not found"}
+    vm_id = vm_info[0]
+    node = vm_info[1]
+    response = proxmox.nodes(node).qemu(vm_id).vncproxy.post(websocket=1)
+    ticket = response['ticket']
+    port = response['port']
+    novnc_url = (
+    f"https://localhost:8006/?"
+    f"console=kvm&novnc=1&vmid={vmid}&node={node}&resize=scale&"
+    f"ticket={ticket}"
+    )
+    return novnc_url
+
+    

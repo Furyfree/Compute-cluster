@@ -141,3 +141,8 @@ def get_os_templates():
 @router.post("/provision", dependencies=[Depends(get_current_user)], summary="Provision VM from OS Template")
 def provision_vm(req: ProvisionRequest):
     return asyncio.run(provision_worker.provision_worker(req))
+
+@router.get("/nodes/vms/console/{vm_name}", dependencies=[Depends(get_current_user)], summary="Get VM Console URL")
+def get_vm_console_url(vm_name: str):
+    """Get the console URL for a VM"""
+    return proxmox_service.get_vm_console_url(vm_name)
