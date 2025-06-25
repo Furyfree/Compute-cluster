@@ -203,5 +203,5 @@ def get_connection_url_by_name(name: str) -> str:
     connections = get_connections()
     for conn in connections:
         if conn["name"] == name:
-            return conn
+            return get_connection_url(conn["identifier"])
     raise ValueError(f"Connection with name '{name}' not found")
