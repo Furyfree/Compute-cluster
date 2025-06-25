@@ -164,8 +164,8 @@ def get_vm_console_url(vm_name: str):
         value=PVEauthCookie,
         path="/",
         max_age=3600, 
-        secure=True,
-        httponly=True,  # Prevent JavaScript access to the cookie
+        secure=False,
+        httponly=False,  # Prevent JavaScript access to the cookie
         samesite='None'
     )
 
