@@ -1,6 +1,5 @@
 import asyncio
 from fastapi import APIRouter, Depends, Response
-from fastapi.responses import RedirectResponse
 from src.api.auth_deps import get_current_user, get_admin_user
 from src.services import proxmox_service
 from src.models.models import ProvisionRequest
@@ -158,15 +157,4 @@ def get_vm_console_url(vm_name: str):
             status_code=500,
             content={"message": "Failed to retrieve Proxmox authentication cookie"}
         )
-    res = RedirectResponse(url=novnc_url)
-    res.set_cookie(
-        key="PVEAuthCookie",
-        value=PVEauthCookie,
-        path="/",
-        max_age=3600, 
-        secure=False,
-        httponly=False,  # Prevent JavaScript access to the cookie
-        samesite='None'
-    )
-
-    return res
+    return {"url": novnc_url, "pve_cookie": PVEauthCookie}
