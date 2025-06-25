@@ -199,33 +199,22 @@ def delete_connection(connection_id: str):
     return {"success": True, "message": f"Connection {connection_id} deleted successfully"}
 
 def get_guac_connection_by_name(name: str):
-    """Search for a Guacamole connection by its name and return the full connection object"""
-    headers = get_formatted_token()
-    res = httpx.get(
-        f"{GUAC_EMBED}/api/session/data/postgresql/connections",
-        headers=headers
-    )
-    res.raise_for_status()
-    connections = list(res.json().values())
-
-    for conn in connections:
-        if conn.get("name") == name:
-            print(f"Found connection: {conn}") #debugging line
-            return conn
-
+    connections = get_connections()
+    for connection in connections:
+        if connection["name"] == name:
+            connection_id = connection["identifier"]
+            return connection_id
     return None
 
 def get_connection_url_by_name(name: str) -> str:
     """Get direct connection URL for embedding, based on connection name"""
-    connection = get_guac_connection_by_name(name)
-    if not connection:
+    connection_id = get_guac_connection_by_name(name)
+    if not connection_id:
         raise ValueError(f"Connection with name '{name}' not found")
 
-    connection_id = connection["identifier"]
     print(f"Connection ID for '{name}': {connection_id}") #debugging line
 
     token_data = get_guac_token()
     auth_token = token_data["authToken"]
 
-    #return f"{GUAC_EMBED}/#/client/{connection_id}?token={auth_token}"
-    return connection
+    return f"{GUAC_EMBED}/#/client/{connection_id}?token={auth_token}"
