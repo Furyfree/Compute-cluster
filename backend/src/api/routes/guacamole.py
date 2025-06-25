@@ -84,7 +84,7 @@ def delete_guacamole_connection(connection_id: str):
     result = guac_service.delete_connection(connection_id)
     return result
 
-@router.get("/connections/url/{name}", dependencies=[Depends(get_current_user)], summary="Get Connection URL by Name")
+@router.get("/connections/{name}/url", dependencies=[Depends(get_current_user)], summary="Get Connection URL by Name")
 def search_connections(name: str):
     """Get connection URL by name"""
     return guac_service.get_connection_url_by_name(name)
