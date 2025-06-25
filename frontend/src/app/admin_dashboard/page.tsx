@@ -97,8 +97,14 @@ export default function AdminDashboardPage() {
       console.error("Failed to fetch user details:", err);
     }
 
-    // Fetch user's VMs
-    await fetchUserVMs(user.username);
+    // Fetch user's VMs only for non-admin users
+    if (!user.is_admin) {
+      await fetchUserVMs(user.username);
+    } else {
+      // Clear VM data for admin users
+      setUserVMs([]);
+      setVmLoading(false);
+    }
   };
 
   // Fetch user's VMs
@@ -568,67 +574,99 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              {/* VM Management Section */}
-              <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold">
-                    VM Access Management
-                  </h3>
-                  <Button onClick={handleShowAddVMModal} variant="blue">
-                    Add VM Access
-                  </Button>
-                </div>
+              {/* VM Management Section - Only show for non-admin users */}
+              {selectedUser && !selectedUser.is_admin && (
+                <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold">
+                      VM Access Management
+                    </h3>
+                    <Button onClick={handleShowAddVMModal} variant="blue">
+                      Add VM Access
+                    </Button>
+                  </div>
 
-                {vmLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-dtu-corporate-red"></div>
-                  </div>
-                ) : userVMs.length > 0 ? (
-                  <div className="space-y-3">
-                    {userVMs.map((vm) => (
-                      <div
-                        key={vm.vmid}
-                        className="flex items-center justify-between p-4 border border-gray-200 dark:border-zinc-700 rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <div>
-                              <h4 className="font-medium">
-                                VM {vm.vmid} - {vm.name}
-                              </h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Node: {vm.node} | Status: {vm.status}
-                              </p>
-                            </div>
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                vm.status === "running"
-                                  ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
-                                  : vm.status === "stopped"
-                                    ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
-                                    : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                              }`}
-                            >
-                              {vm.status}
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          variant="red"
-                          size="sm"
-                          onClick={() => handleRevokeVMAccess(vm.vmid)}
+                  {vmLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-dtu-corporate-red"></div>
+                    </div>
+                  ) : userVMs.length > 0 ? (
+                    <div className="space-y-3">
+                      {userVMs.map((vm) => (
+                        <div
+                          key={vm.vmid}
+                          className="flex items-center justify-between p-4 border border-gray-200 dark:border-zinc-700 rounded-lg"
                         >
-                          Remove Access
-                        </Button>
-                      </div>
-                    ))}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <div>
+                                <h4 className="font-medium">
+                                  VM {vm.vmid} - {vm.name}
+                                </h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  Node: {vm.node} | Status: {vm.status}
+                                </p>
+                              </div>
+                              <span
+                                className={`px-2 py-1 text-xs rounded-full ${
+                                  vm.status === "running"
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                    : vm.status === "stopped"
+                                      ? "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+                                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                                }`}
+                              >
+                                {vm.status}
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="red"
+                            size="sm"
+                            onClick={() => handleRevokeVMAccess(vm.vmid)}
+                          >
+                            Remove Access
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No VM access granted to this user</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Admin VM Access Notice */}
+              {selectedUser && selectedUser.is_admin && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
+                  <div className="flex items-center gap-3">
+                    <svg
+                      className="w-5 h-5 text-blue-600 dark:text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                        Admin Access
+                      </h3>
+                      <p className="text-blue-700 dark:text-blue-300">
+                        This user has admin privileges and automatically has
+                        access to all VMs.
+                      </p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No VM access granted to this user</p>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Edit User Form */}
               <div className="bg-white dark:bg-zinc-800 rounded-lg p-6">
@@ -741,7 +779,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Add VM Access Modal */}
-      {showAddVMModal && (
+      {showAddVMModal && selectedUser && !selectedUser.is_admin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
