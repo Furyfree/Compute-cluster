@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
         // Add delay before refresh for operations that might need time
         const refreshDelay = ["delete", "restart"].includes(action)
-          ? 2000
+          ? 5000
           : 500;
         setTimeout(() => {
           window.location.reload();
