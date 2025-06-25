@@ -198,7 +198,7 @@ def delete_connection(connection_id: str):
     res.raise_for_status()
     return {"success": True, "message": f"Connection {connection_id} deleted successfully"}
 
-def get_connection_url_by_name(name: str) -> str:
+def get_connection_url_by_name(name: str):
     """Get direct connection URL for embedding, based on connection name"""
     connections = get_connections()
     for conn in connections:
