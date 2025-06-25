@@ -32,7 +32,11 @@ export default function DashboardPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Get IP for selected resource
-  const { ip, loading: ipLoading } = useResourceIP(
+  const {
+    ip,
+    loading: ipLoading,
+    refetch: refetchIP,
+  } = useResourceIP(
     selectedResource?.node || "",
     selectedResource?.vmid || 0,
     selectedResource?.type || "vm",
@@ -339,8 +343,19 @@ export default function DashboardPage() {
                     {selectedResource.status}
                   </span>
                 </div>
-                <div>
-                  <strong>IP:</strong> {ipLoading ? "Loading..." : ip || "N/A"}
+                <div className="flex items-center gap-2">
+                  <div>
+                    <strong>IP:</strong>{" "}
+                    {ipLoading ? "Loading..." : ip || "N/A"}
+                  </div>
+                  <button
+                    onClick={refetchIP}
+                    disabled={ipLoading}
+                    className="text-xs bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600 px-2 py-1 rounded disabled:opacity-50"
+                    title="Refresh IP"
+                  >
+                    ↻
+                  </button>
                 </div>
               </div>
 
