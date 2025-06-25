@@ -149,20 +149,93 @@ export async function provisionVM(provisionData: ProvisionVMRequest) {
   }
 }
 
-// Admin-only VM/Container deletion
+// Admin-only VM/Container deletion with longer timeout
 export async function adminDeleteVM(node: string, vmid: number) {
-  return authenticatedFetch(`/proxmox/vms/${node}/${vmid}/delete`, {
-    method: "DELETE",
-  });
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  // Use longer timeout for VM deletion (3 minutes)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 180000);
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/proxmox/vms/${node}/${vmid}/delete`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      },
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: "Unknown error" }));
+      throw new Error(errorData.detail || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error(
+        "VM deletion timed out. The action may still be processing in the background.",
+      );
+    }
+    throw error;
+  }
 }
 
 export async function adminDeleteContainer(node: string, containerId: number) {
-  return authenticatedFetch(
-    `/proxmox/containers/${node}/${containerId}/delete`,
-    {
-      method: "DELETE",
-    },
-  );
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  // Use longer timeout for container deletion (3 minutes)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 180000);
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/proxmox/containers/${node}/${containerId}/delete`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      },
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: "Unknown error" }));
+      throw new Error(errorData.detail || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error(
+        "Container deletion timed out. The action may still be processing in the background.",
+      );
+    }
+    throw error;
+  }
 }
 
 // Types

@@ -163,12 +163,26 @@ export default function DashboardPage() {
       }
 
       if (result) {
-        alert(`${action} completed successfully`);
-        // Refresh the page to get updated data
-        window.location.reload();
+        // Show success message with context about potential delays
+        const successMessage =
+          action === "delete"
+            ? `${action} initiated successfully. The resource may take a moment to be fully removed.`
+            : `${action} completed successfully`;
+        alert(successMessage);
+
+        // Add delay before refresh for operations that might need time
+        const refreshDelay = ["delete", "restart"].includes(action)
+          ? 2000
+          : 500;
+        setTimeout(() => {
+          window.location.reload();
+        }, refreshDelay);
       }
     } catch (err: any) {
-      alert(`Failed to ${action} resource: ${err.message}`);
+      const errorMessage = err.message.includes("timed out")
+        ? `${action} operation timed out, but may still be processing. Please refresh the page in a moment to check the status.`
+        : `Failed to ${action} resource: ${err.message}`;
+      alert(errorMessage);
     } finally {
       setActionLoading(null);
     }
@@ -386,7 +400,7 @@ export default function DashboardPage() {
                   variant="red"
                   onClick={() => handleResourceAction("stop")}
                   disabled={
-                    actionLoading === "stop" ||
+                    actionLoading !== null ||
                     selectedResource.status !== "running"
                   }
                 >
@@ -396,17 +410,19 @@ export default function DashboardPage() {
                   variant="orange"
                   onClick={() => handleResourceAction("restart")}
                   disabled={
-                    actionLoading === "restart" ||
+                    actionLoading !== null ||
                     selectedResource.status !== "running"
                   }
                 >
-                  {actionLoading === "restart" ? "Restarting..." : "Restart"}
+                  {actionLoading === "restart"
+                    ? "Restarting (may take time)..."
+                    : "Restart"}
                 </Button>
                 <Button
                   variant="green"
                   onClick={() => handleResourceAction("start")}
                   disabled={
-                    actionLoading === "start" ||
+                    actionLoading !== null ||
                     selectedResource.status === "running"
                   }
                 >
@@ -416,13 +432,28 @@ export default function DashboardPage() {
                   <Button
                     variant="red"
                     onClick={() => handleResourceAction("delete")}
-                    disabled={actionLoading === "delete"}
+                    disabled={actionLoading !== null}
                     className="bg-red-600 hover:bg-red-700"
                   >
-                    {actionLoading === "delete" ? "Deleting..." : "Delete"}
+                    {actionLoading === "delete"
+                      ? "Deleting (this may take several minutes)..."
+                      : "Delete"}
                   </Button>
                 )}
               </div>
+
+              {actionLoading && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-dtu-corporate-red"></div>
+                  <span>
+                    {actionLoading === "delete"
+                      ? "Deleting resource... This may take several minutes."
+                      : actionLoading === "restart"
+                        ? "Restarting resource... This may take a moment."
+                        : `Processing ${actionLoading} operation...`}
+                  </span>
+                </div>
+              )}
             </>
           ) : (
             <div className="h-full flex items-center justify-center text-gray-500">

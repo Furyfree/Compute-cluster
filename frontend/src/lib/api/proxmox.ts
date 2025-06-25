@@ -28,6 +28,52 @@ async function authenticatedFetch(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
+// Helper function for VM/Container actions with longer timeout
+async function authenticatedFetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs: number = 120000,
+) {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: "Unknown error" }));
+      throw new Error(errorData.detail || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error(
+        "Operation timed out. The action may still be processing in the background.",
+      );
+    }
+    throw error;
+  }
+}
+
 // VM Management
 export async function getVMs() {
   return authenticatedFetch("/proxmox/vms");
@@ -38,27 +84,31 @@ export async function getVMIP(node: string, vmId: number) {
 }
 
 export async function startVM(node: string, vmId: number) {
-  return authenticatedFetch(`/proxmox/vms/${node}/${vmId}/start`, {
+  return authenticatedFetchWithTimeout(`/proxmox/vms/${node}/${vmId}/start`, {
     method: "POST",
   });
 }
 
 export async function stopVM(node: string, vmId: number) {
-  return authenticatedFetch(`/proxmox/vms/${node}/${vmId}/stop`, {
+  return authenticatedFetchWithTimeout(`/proxmox/vms/${node}/${vmId}/stop`, {
     method: "POST",
   });
 }
 
 export async function restartVM(node: string, vmId: number) {
-  return authenticatedFetch(`/proxmox/vms/${node}/${vmId}/restart`, {
+  return authenticatedFetchWithTimeout(`/proxmox/vms/${node}/${vmId}/restart`, {
     method: "POST",
   });
 }
 
 export async function deleteVM(node: string, vmId: number) {
-  return authenticatedFetch(`/proxmox/vms/${node}/${vmId}/delete`, {
-    method: "DELETE",
-  });
+  return authenticatedFetchWithTimeout(
+    `/proxmox/vms/${node}/${vmId}/delete`,
+    {
+      method: "DELETE",
+    },
+    180000,
+  ); // 3 minutes for delete operations
 }
 
 // Container Management
@@ -73,7 +123,7 @@ export async function getContainerIP(node: string, containerId: number) {
 }
 
 export async function startContainer(node: string, containerId: number) {
-  return authenticatedFetch(
+  return authenticatedFetchWithTimeout(
     `/proxmox/containers/${node}/${containerId}/start`,
     {
       method: "POST",
@@ -82,13 +132,16 @@ export async function startContainer(node: string, containerId: number) {
 }
 
 export async function stopContainer(node: string, containerId: number) {
-  return authenticatedFetch(`/proxmox/containers/${node}/${containerId}/stop`, {
-    method: "POST",
-  });
+  return authenticatedFetchWithTimeout(
+    `/proxmox/containers/${node}/${containerId}/stop`,
+    {
+      method: "POST",
+    },
+  );
 }
 
 export async function restartContainer(node: string, containerId: number) {
-  return authenticatedFetch(
+  return authenticatedFetchWithTimeout(
     `/proxmox/containers/${node}/${containerId}/restart`,
     {
       method: "POST",
@@ -97,11 +150,12 @@ export async function restartContainer(node: string, containerId: number) {
 }
 
 export async function deleteContainer(node: string, containerId: number) {
-  return authenticatedFetch(
+  return authenticatedFetchWithTimeout(
     `/proxmox/containers/${node}/${containerId}/delete`,
     {
       method: "DELETE",
     },
+    180000, // 3 minutes for delete operations
   );
 }
 
