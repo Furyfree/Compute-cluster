@@ -102,6 +102,18 @@ export async function adminGetAllVMs() {
   return response;
 }
 
+// VM Provisioning
+export async function getOSTemplates() {
+  return authenticatedFetch("/proxmox/os-templates");
+}
+
+export async function provisionVM(provisionData: ProvisionVMRequest) {
+  return authenticatedFetch("/proxmox/provision", {
+    method: "POST",
+    body: JSON.stringify(provisionData),
+  });
+}
+
 // Types
 export interface AdminCreateUserRequest {
   first_name: string;
@@ -157,4 +169,26 @@ export interface AdminChangeUsernameResponse {
   success: boolean;
   message: string;
   requires_logout: boolean;
+}
+
+export interface OSTemplate {
+  value: string;
+  label: string;
+}
+
+export interface OSTemplatesResponse {
+  templates: OSTemplate[];
+}
+
+export interface ProvisionVMRequest {
+  username: string;
+  password: string;
+  ssh_key?: string;
+  os: string;
+}
+
+export interface ProvisionVMResponse {
+  vmid: number;
+  ip: string | null;
+  node: string;
 }

@@ -18,11 +18,16 @@ import {
   adminGrantVMAccess,
   adminRevokeVMAccess,
   adminGetAllVMs,
+  getOSTemplates,
+  provisionVM,
   AdminUser,
   UserGroup,
   AdminCreateUserRequest,
   VM,
   AdminUserVMsResponse,
+  OSTemplate,
+  ProvisionVMRequest,
+  ProvisionVMResponse,
 } from "@/lib/api/admin";
 import { removeAuthToken } from "@/lib/api/auth";
 import { forceNavigate } from "@/lib/navigation";
@@ -39,7 +44,9 @@ export default function AdminDashboardPage() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"users" | "create">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "create" | "provision">(
+    "users",
+  );
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showChangeUsernameModal, setShowChangeUsernameModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -48,6 +55,18 @@ export default function AdminDashboardPage() {
   const [userVMs, setUserVMs] = useState<VM[]>([]);
   const [allVMs, setAllVMs] = useState<VM[]>([]);
   const [vmLoading, setVmLoading] = useState(false);
+
+  // Provision VM state
+  const [osTemplates, setOSTemplates] = useState<OSTemplate[]>([]);
+  const [provisionForm, setProvisionForm] = useState({
+    username: "",
+    password: "",
+    ssh_key: "",
+    os: "",
+  });
+  const [provisionLoading, setProvisionLoading] = useState(false);
+  const [provisionSuccess, setProvisionSuccess] =
+    useState<ProvisionVMResponse | null>(null);
   const [showAddVMModal, setShowAddVMModal] = useState(false);
 
   // Create user form state
@@ -190,11 +209,40 @@ export default function AdminDashboardPage() {
       });
       setActiveTab("users");
       await fetchUsers();
-      alert("User created successfully!");
     } catch (err: any) {
       setError(err.message || "Failed to create user");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle provision VM
+  const handleProvisionVM = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProvisionLoading(true);
+    setError(null);
+    setProvisionSuccess(null);
+
+    try {
+      const provisionData: ProvisionVMRequest = {
+        username: provisionForm.username,
+        password: provisionForm.password,
+        os: provisionForm.os,
+        ...(provisionForm.ssh_key && { ssh_key: provisionForm.ssh_key }),
+      };
+
+      const response = await provisionVM(provisionData);
+      setProvisionSuccess(response);
+      setProvisionForm({
+        username: "",
+        password: "",
+        ssh_key: "",
+        os: osTemplates[0]?.value || "",
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to provision VM");
+    } finally {
+      setProvisionLoading(false);
     }
   };
 
@@ -310,10 +358,37 @@ export default function AdminDashboardPage() {
     }
   }, [isAdmin]);
 
-  // Fetch users on component mount
+  // Fetch current user info
+  const fetchCurrentUser = async () => {
+    try {
+      const userInfo = await getCurrentUserInfo();
+      setCurrentUser(userInfo);
+    } catch (err: any) {
+      console.error("Failed to fetch current user:", err);
+    }
+  };
+
+  // Fetch OS templates
+  const fetchOSTemplates = async () => {
+    try {
+      const response = await getOSTemplates();
+      setOSTemplates(response.templates);
+      if (response.templates.length > 0) {
+        setProvisionForm((prev) => ({
+          ...prev,
+          os: response.templates[0].value,
+        }));
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch OS templates");
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
+      fetchCurrentUser();
+      fetchOSTemplates();
     }
   }, [isAdmin]);
 
@@ -412,6 +487,16 @@ export default function AdminDashboardPage() {
             >
               Create User
             </button>
+            <button
+              onClick={() => setActiveTab("provision")}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === "provision"
+                  ? "bg-white dark:bg-zinc-700 text-dtu-black dark:text-white"
+                  : "text-gray-600 dark:text-gray-400 hover:text-dtu-black dark:hover:text-white"
+              }`}
+            >
+              Provision VM
+            </button>
           </div>
 
           {activeTab === "users" ? (
@@ -462,7 +547,7 @@ export default function AdminDashboardPage() {
                 </div>
               )}
             </>
-          ) : (
+          ) : activeTab === "create" ? (
             <>
               <h2 className="text-lg font-semibold mb-4">Create New User</h2>
               <form onSubmit={handleCreateUser} className="space-y-4">
@@ -514,20 +599,113 @@ export default function AdminDashboardPage() {
                         group: e.target.value as UserGroup,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-dtu-black dark:text-white"
+                    className="w-full p-2 border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 rounded-md"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="test">Test</option>
                   </select>
                 </div>
-                {error && (
-                  <div className="text-red-500 text-sm p-2 bg-red-50 dark:bg-red-900/20 rounded">
-                    {error}
-                  </div>
-                )}
                 <Button type="submit" disabled={loading} className="w-full">
                   {loading ? "Creating..." : "Create User"}
+                </Button>
+              </form>
+            </>
+          ) : (
+            <>
+              <h2 className="text-lg font-semibold mb-4">Provision VM</h2>
+
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-md">
+                  <p className="text-red-700 dark:text-red-400 text-sm">
+                    {error}
+                  </p>
+                </div>
+              )}
+
+              {provisionSuccess && (
+                <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/20 border border-green-300 dark:border-green-800 rounded-md">
+                  <p className="text-green-700 dark:text-green-400 text-sm font-medium">
+                    VM Provisioned Successfully!
+                  </p>
+                  <p className="text-green-600 dark:text-green-500 text-sm">
+                    VM ID: {provisionSuccess.vmid}
+                    <br />
+                    Node: {provisionSuccess.node}
+                    <br />
+                    {provisionSuccess.ip && `IP: ${provisionSuccess.ip}`}
+                  </p>
+                </div>
+              )}
+
+              <form onSubmit={handleProvisionVM} className="space-y-4">
+                <Input
+                  type="text"
+                  label="Username"
+                  value={provisionForm.username}
+                  onChange={(e) =>
+                    setProvisionForm({
+                      ...provisionForm,
+                      username: e.target.value,
+                    })
+                  }
+                  required
+                  placeholder="VM login username"
+                />
+                <Input
+                  type="password"
+                  label="Password"
+                  value={provisionForm.password}
+                  onChange={(e) =>
+                    setProvisionForm({
+                      ...provisionForm,
+                      password: e.target.value,
+                    })
+                  }
+                  required
+                  placeholder="VM login password"
+                />
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    SSH Key (Optional)
+                  </label>
+                  <textarea
+                    value={provisionForm.ssh_key}
+                    onChange={(e) =>
+                      setProvisionForm({
+                        ...provisionForm,
+                        ssh_key: e.target.value,
+                      })
+                    }
+                    className="w-full p-2 border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 rounded-md h-24 resize-none"
+                    placeholder="Paste your SSH public key here (optional)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Operating System
+                  </label>
+                  <select
+                    value={provisionForm.os}
+                    onChange={(e) =>
+                      setProvisionForm({ ...provisionForm, os: e.target.value })
+                    }
+                    className="w-full p-2 border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 rounded-md"
+                    required
+                  >
+                    {osTemplates.map((template) => (
+                      <option key={template.value} value={template.value}>
+                        {template.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button
+                  type="submit"
+                  disabled={provisionLoading}
+                  className="w-full"
+                >
+                  {provisionLoading ? "Provisioning..." : "Provision VM"}
                 </Button>
               </form>
             </>

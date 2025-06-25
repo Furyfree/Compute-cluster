@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from src.api.auth_deps import get_current_user
 from src.services import proxmox_service
 from src.models.models import ProvisionRequest
+from src.models.enums import SupportedOS
 import src.util.provision_worker as provision_worker
 
 router = APIRouter(prefix="/proxmox", tags=["Proxmox"])
@@ -126,6 +127,16 @@ def list_groups():
 def get_user_groups(userid: str):
     """Get all groups a user belongs to"""
     return proxmox_service.get_user_groups(userid)
+
+@router.get("/os-templates", dependencies=[Depends(get_current_user)], summary="Get available OS templates")
+def get_os_templates():
+    """Get list of available OS templates for VM provisioning"""
+    return {
+        "templates": [
+            {"value": os.value, "label": os.value}
+            for os in SupportedOS
+        ]
+    }
 
 @router.post("/provision", dependencies=[Depends(get_current_user)], summary="Provision VM from OS Template")
 def provision_vm(req: ProvisionRequest):
