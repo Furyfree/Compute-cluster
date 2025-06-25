@@ -202,7 +202,7 @@ def get_guac_connection_by_name(name: str):
     """Search for a Guacamole connection by its name and return the full connection object"""
     headers = get_formatted_token()
     res = httpx.get(
-        f"{GUAC_URL}/api/session/data/postgresql/connections",
+        f"{GUAC_EMBED}/api/session/data/postgresql/connections",
         headers=headers
     )
     res.raise_for_status()
