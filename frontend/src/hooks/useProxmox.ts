@@ -299,6 +299,9 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
     const fetchIP = async () => {
       if (!node || !vmid) return;
 
+      console.log(
+        `[useResourceIP] Fetching IP for ${type} ${vmid} on node ${node}`,
+      );
       setLoading(true);
       setError(null);
       try {
@@ -306,10 +309,23 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
           type === "vm"
             ? await getVMIP(node, vmid)
             : await getContainerIP(node, vmid);
+
+        console.log(`[useResourceIP] Raw response:`, rawResponse);
+        console.log(`[useResourceIP] Response status:`, rawResponse.status);
+        console.log(`[useResourceIP] Response headers:`, rawResponse.headers);
+
+        // Try both text and json to see what we get
+        const responseClone = rawResponse.clone();
+        const textResponse = await responseClone.text();
+        console.log(`[useResourceIP] Text response:`, textResponse);
+
         const ip = await rawResponse.json();
+        console.log(`[useResourceIP] JSON response:`, ip);
+        console.log(`[useResourceIP] IP type:`, typeof ip);
 
         setIp(ip || null);
       } catch (err: unknown) {
+        console.error(`[useResourceIP] Error fetching IP:`, err);
         const message =
           err instanceof Error ? err.message : "Failed to fetch IP";
         setError(message);
@@ -325,6 +341,9 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
   const refetchIP = useCallback(async () => {
     if (!node || !vmid) return;
 
+    console.log(
+      `[useResourceIP] Refetching IP for ${type} ${vmid} on node ${node}`,
+    );
     setLoading(true);
     setError(null);
     try {
@@ -332,10 +351,18 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
         type === "vm"
           ? await getVMIP(node, vmid)
           : await getContainerIP(node, vmid);
+
+      console.log(`[useResourceIP] Refetch raw response:`, rawResponse);
+      const responseClone = rawResponse.clone();
+      const textResponse = await responseClone.text();
+      console.log(`[useResourceIP] Refetch text response:`, textResponse);
+
       const ip = await rawResponse.json();
+      console.log(`[useResourceIP] Refetch JSON response:`, ip);
 
       setIp(ip || null);
     } catch (err: unknown) {
+      console.error(`[useResourceIP] Error refetching IP:`, err);
       const message = err instanceof Error ? err.message : "Failed to fetch IP";
       setError(message);
       setIp(null);
