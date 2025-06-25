@@ -306,7 +306,7 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
           type === "vm"
             ? await getVMIP(node, vmid)
             : await getContainerIP(node, vmid);
-        const ip = await rawResponse.text();
+        const ip = await rawResponse.json();
 
         setIp(ip || null);
       } catch (err: unknown) {
@@ -332,7 +332,7 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
         type === "vm"
           ? await getVMIP(node, vmid)
           : await getContainerIP(node, vmid);
-      const ip = await rawResponse.text();
+      const ip = await rawResponse.json();
 
       setIp(ip || null);
     } catch (err: unknown) {
