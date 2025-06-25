@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from src.models.enums import SupportedOS
 
 class ProvisionRequest(BaseModel):
