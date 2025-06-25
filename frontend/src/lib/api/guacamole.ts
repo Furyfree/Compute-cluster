@@ -45,6 +45,10 @@ export async function getConnectionUrl(connectionId: string) {
   return authenticatedFetch(`/guacamole/connections/${connectionId}/url`);
 }
 
+export async function getConnectionUrlByName(name: string) {
+  return authenticatedFetch(`/guacamole/connections/${name}/url`);
+}
+
 export async function createSSHConnection(
   connectionData: CreateSSHConnectionRequest,
 ) {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/components/Button";
-import { useGuacamole } from "@/hooks/useGuacamole";
+import { getConnectionUrlByName } from "@/lib/api/guacamole";
 import { ProxmoxResource } from "@/types/proxmox";
 
 interface RemoteDesktopProps {
@@ -14,29 +14,93 @@ export default function RemoteDesktop({
   resource,
   className,
 }: RemoteDesktopProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [connectionUrl, setConnectionUrl] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isWindowOpen, setIsWindowOpen] = useState(false);
+  const [windowRef, setWindowRef] = useState<Window | null>(null);
 
-  const {
-    connectionUrl,
-    loading: guacamoleLoading,
-    error: guacamoleError,
-    openRemoteDesktop,
-    isWindowOpen,
-    closeConnection,
-    focusConnection,
-  } = useGuacamole(resource?.vmid, resource?.name);
+  const isResourceRunning = resource?.status === "running";
 
-  const handleDirectGuacamole = () => {
-    window.open("http://compute-cluster-guacamole:8080/guacamole", "_blank");
-  };
+  // Fetch connection URL when resource changes
+  useEffect(() => {
+    const fetchConnectionUrl = async () => {
+      if (!resource || !isResourceRunning) {
+        setConnectionUrl("");
+        return;
+      }
 
-  const handleNewTab = () => {
-    if (connectionUrl) {
-      window.open(connectionUrl, "_blank", "noopener,noreferrer");
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await getConnectionUrlByName(resource.name);
+        setConnectionUrl(response.url || "");
+      } catch (err: any) {
+        setError(err.message || "Failed to get connection URL");
+        setConnectionUrl("");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConnectionUrl();
+  }, [resource, isResourceRunning]);
+
+  const openConnection = () => {
+    if (!connectionUrl) return;
+
+    const windowFeatures = [
+      "width=1200",
+      "height=800",
+      "left=100",
+      "top=100",
+      "resizable=yes",
+      "scrollbars=yes",
+      "status=yes",
+      "menubar=no",
+      "toolbar=no",
+      "location=no",
+    ].join(",");
+
+    const newWindow = window.open(
+      connectionUrl,
+      `connection_${resource?.name?.replace(/\s+/g, "_")}`,
+      windowFeatures,
+    );
+
+    if (newWindow) {
+      setWindowRef(newWindow);
+      setIsWindowOpen(true);
+
+      // Monitor if window is closed
+      const checkClosed = setInterval(() => {
+        if (newWindow.closed) {
+          setIsWindowOpen(false);
+          setWindowRef(null);
+          clearInterval(checkClosed);
+        }
+      }, 1000);
+
+      setTimeout(() => {
+        clearInterval(checkClosed);
+      }, 3600000);
     }
   };
 
-  const isResourceRunning = resource?.status === "running";
+  const closeConnection = () => {
+    if (windowRef && !windowRef.closed) {
+      windowRef.close();
+      setIsWindowOpen(false);
+      setWindowRef(null);
+    }
+  };
+
+  const focusConnection = () => {
+    if (windowRef && !windowRef.closed) {
+      windowRef.focus();
+    }
+  };
 
   return (
     <div
@@ -88,131 +152,63 @@ export default function RemoteDesktop({
               Start the machine first, then try connecting
             </p>
           </div>
-        ) : guacamoleLoading ? (
+        ) : loading ? (
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-dtu-corporate-red mr-2"></div>
             <span className="text-gray-600 dark:text-gray-400">
               Preparing connection to {resource.name}...
             </span>
           </div>
-        ) : guacamoleError ? (
+        ) : error ? (
           <div className="space-y-4">
             <p className="text-red-600 dark:text-red-400 mb-4">
               ❌ Connection Error
             </p>
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-              {guacamoleError}
+              {error}
             </p>
-            <div className="flex gap-2 justify-center">
-              <Button
-                variant="grey"
-                onClick={handleDirectGuacamole}
-                className="text-sm"
-              >
-                Open Guacamole Directly
-              </Button>
-              <Button
-                variant="grey"
-                onClick={() => window.location.reload()}
-                className="text-sm"
-              >
-                Refresh Page
-              </Button>
-            </div>
           </div>
         ) : connectionUrl ? (
           <div className="space-y-4">
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Access remote desktop for <strong>{resource.name}</strong>
+              Remote desktop ready for <strong>{resource.name}</strong>
             </p>
 
             <div className="space-y-3">
               <Button
                 variant="green"
-                onClick={openRemoteDesktop}
+                onClick={openConnection}
                 className="text-lg px-8 py-4"
               >
-                {isWindowOpen ? "Open Another Window" : "Open Remote Desktop"}
+                {isWindowOpen ? "Open Another Connection" : "Open Connection"}
               </Button>
 
               {isWindowOpen && (
                 <p className="text-green-600 dark:text-green-400 text-sm">
-                  Remote desktop window is active
+                  Connection window is active
                 </p>
-              )}
-            </div>
-
-            {/* Advanced Options */}
-            <div className="mt-6">
-              <button
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-              >
-                {showAdvanced ? "▼" : "▶"} Advanced Options
-              </button>
-
-              {showAdvanced && (
-                <div className="mt-3 p-4 bg-gray-50 dark:bg-zinc-700 rounded-lg space-y-3">
-                  <div className="flex gap-2 justify-center flex-wrap">
-                    <Button
-                      variant="grey"
-                      onClick={handleNewTab}
-                      className="text-sm"
-                    >
-                      Open in New Tab
-                    </Button>
-                    <Button
-                      variant="grey"
-                      onClick={handleDirectGuacamole}
-                      className="text-sm"
-                    >
-                      Guacamole Homepage
-                    </Button>
-                  </div>
-
-                  <div className="text-xs text-gray-500 dark:text-gray-400 text-left">
-                    <p className="mb-1">
-                      <strong>Connection Details:</strong>
-                    </p>
-                    <p>
-                      Resource: {resource.name} (ID: {resource.vmid})
-                    </p>
-                    <p>Node: {resource.node}</p>
-                    <p>
-                      Type:{" "}
-                      {resource.type === "vm" ? "Virtual Machine" : "Container"}
-                    </p>
-                  </div>
-                </div>
               )}
             </div>
           </div>
         ) : (
           <div className="space-y-4">
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              No remote desktop connection configured
+              No remote desktop connection available
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              This resource doesnt have a remote desktop connection set up yet.
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              This resource doesn't have a remote desktop connection configured.
             </p>
-            <Button
-              variant="grey"
-              onClick={handleDirectGuacamole}
-              className="text-sm"
-            >
-              Access Guacamole Directly
-            </Button>
           </div>
         )}
 
-        <div className="mt-8 pt-4 border-t border-gray-200 dark:border-zinc-600">
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            💡 Tip: Remote desktop opens in a popup window for better
-            performance.
-            <br />
-            If blocked, please allow popups for this site.
-          </p>
-        </div>
+        {connectionUrl && (
+          <div className="mt-8 pt-4 border-t border-gray-200 dark:border-zinc-600">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              💡 Remote desktop opens in a popup window. Please allow popups if
+              blocked.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
