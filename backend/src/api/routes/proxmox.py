@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import APIRouter, Depends, response
+from fastapi import APIRouter, Depends, Response
 from fastapi.responses import RedirectResponse
 from src.api.auth_deps import get_current_user, get_admin_user
 from src.services import proxmox_service
@@ -148,18 +148,18 @@ def get_vm_console_url(vm_name: str):
     """Get the console URL for a VM"""
     novnc_url = proxmox_service.get_vm_console_url(vm_name)
     if not novnc_url:
-        return response.JSONResponse(
+        return Response.JSONResponse(
             status_code=404,
             content={"message": "No console available for this VM"}
         )
     PVEauthCookie = proxmox_service.get_pve_auth_cookie()
     if not PVEauthCookie:
-        return response.JSONResponse(
+        return Response.JSONResponse(
             status_code=500,
             content={"message": "Failed to retrieve Proxmox authentication cookie"}
         )
-    response = RedirectResponse(url=novnc_url)
-    response.set_cookie(
+    Response = RedirectResponse(url=novnc_url)
+    Response.set_cookie(
         key="PVEAuthCookie",
         value=PVEauthCookie,
         path="/",
@@ -169,4 +169,4 @@ def get_vm_console_url(vm_name: str):
         samesite='None'
     )
 
-    return response
+    return Response
