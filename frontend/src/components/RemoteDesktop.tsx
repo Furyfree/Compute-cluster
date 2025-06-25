@@ -35,20 +35,22 @@ export default function RemoteDesktop({
       setError(null);
 
       try {
+        console.log("Fetching console for VM:", resource.name);
+
         const token = getAuthToken();
         if (!token) {
           throw new Error("No authentication token found");
         }
 
-        const response = await fetch(
-          `http://127.0.0.1:8000/nodes/vms/console/${resource.name}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+        const consoleUrl = `http://127.0.0.1:8000/nodes/vms/console/${resource.name}`;
+        console.log("Console API URL:", consoleUrl);
+
+        const response = await fetch(consoleUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-        );
+        });
 
         if (!response.ok) {
           const errorData = await response
@@ -57,8 +59,23 @@ export default function RemoteDesktop({
           throw new Error(errorData.detail || `HTTP ${response.status}`);
         }
 
-        const consoleUrl = await response.text();
-        setConnectionUrl(consoleUrl);
+        const responseData = await response.json();
+        console.log("Console API response:", responseData);
+
+        // Handle error response from backend
+        if (responseData.error) {
+          console.error("Backend error:", responseData.error);
+          throw new Error(responseData.error);
+        }
+
+        // If response is just a URL string, use it directly
+        const finalUrl =
+          typeof responseData === "string"
+            ? responseData
+            : responseData.url || responseData;
+
+        console.log("Final console URL:", finalUrl);
+        setConnectionUrl(finalUrl);
       } catch (err: any) {
         setError(err.message || "Failed to get console URL");
         setConnectionUrl("");
