@@ -118,8 +118,8 @@ def stop_vm(node, vmid):
 def reboot_vm(node, vmid):
     return proxmox.nodes(node).qemu(vmid).status.reboot.post()
 
-def delete_vm(node, vmid, purge = True):
-    return proxmox.nodes(node).qemu(vmid).delete(purge=purge)
+def delete_vm(node, vmid, purge: bool = True):
+    return proxmox.nodes(node).qemu(vmid).delete(purge=int(purge))
 
 def start_lxc(node, containerid):
     return proxmox.nodes(node).lxc(containerid).status.start.post()
@@ -130,8 +130,8 @@ def stop_lxc(node, containerid):
 def reboot_lxc(node, containerid):
     return proxmox.nodes(node).lxc(containerid).status.reboot.post()
 
-def delete_lxc(node, containerid, purge = True):
-    return proxmox.nodes(node).lxc(containerid).delete(purge=purge)
+def delete_lxc(node, containerid, purge: bool = True):
+    return proxmox.nodes(node).lxc(containerid).delete(purge=int(purge))
 
 def get_vmid_and_node_by_name(name: str) -> tuple[int, str] | None:
     for vm in proxmox.cluster.resources.get(type="vm"):
