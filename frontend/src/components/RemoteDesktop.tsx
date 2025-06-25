@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Button from "@/components/Button";
-import { getConnectionUrlByName } from "@/lib/api/guacamole";
 import { ProxmoxResource } from "@/types/proxmox";
 
 interface RemoteDesktopProps {
@@ -22,68 +21,27 @@ export default function RemoteDesktop({
 
   const isResourceRunning = resource?.status === "running";
 
-  // Fetch connection URL when resource changes
+  // Set console URL when resource changes
   useEffect(() => {
-    const fetchConnectionUrl = async () => {
-      if (!resource || !isResourceRunning) {
-        setConnectionUrl("");
-        return;
-      }
-
-      setLoading(true);
+    if (!resource || !isResourceRunning) {
+      setConnectionUrl("");
       setError(null);
+      return;
+    }
 
-      try {
-        let response;
-        let lastError;
+    setLoading(true);
+    setError(null);
 
-        // Try 1: Exact VM name match
-        try {
-          response = await getConnectionUrlByName(resource.name);
-          setConnectionUrl(response || "");
-          return;
-        } catch (err: any) {
-          lastError = err;
-        }
-
-        // Try 2: VM ID match
-        try {
-          response = await getConnectionUrlByName(resource.vmid.toString());
-          setConnectionUrl(response || "");
-          return;
-        } catch (err: any) {
-          lastError = err;
-        }
-
-        // Try 3: Common naming patterns
-        const namingPatterns = [
-          `${resource.name.toLowerCase()}-${resource.vmid}`,
-          `ubuntuserver-${resource.vmid}`,
-          `vm-${resource.vmid}`,
-          resource.name.toLowerCase(),
-        ];
-
-        for (const pattern of namingPatterns) {
-          try {
-            response = await getConnectionUrlByName(pattern);
-            setConnectionUrl(response || "");
-            return;
-          } catch (err: any) {
-            lastError = err;
-          }
-        }
-
-        // If all attempts failed, set error
-        throw lastError;
-      } catch (err: any) {
-        setError(err.message || "Failed to get connection URL");
-        setConnectionUrl("");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchConnectionUrl();
+    try {
+      // Construct console URL directly using VM name
+      const consoleUrl = `http://127.0.0.1:8000/nodes/vms/console/${resource.name}`;
+      setConnectionUrl(consoleUrl);
+    } catch (err: any) {
+      setError(err.message || "Failed to create console URL");
+      setConnectionUrl("");
+    } finally {
+      setLoading(false);
+    }
   }, [resource, isResourceRunning]);
 
   const openConnection = () => {
