@@ -10,7 +10,7 @@ GUAC_EMBED = get_required_env("GUACAMOLE_URL_EMBED")
 def get_guac_token():
     """"Get guacamole token for user"""
     res = httpx.post(
-        f"{GUAC_EMBED}/api/tokens",
+        f"{GUAC_URL}/api/tokens",
         data={"username": GUAC_USER, "password": GUAC_PASS},
         headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
@@ -26,7 +26,7 @@ def get_connections():
     """Get all connections"""
     headers = get_formatted_token()
     res = httpx.get(
-        f"{GUAC_EMBED}/api/session/data/postgresql/connections",
+        f"{GUAC_URL}/api/session/data/postgresql/connections",
         headers=headers
     )
     res.raise_for_status()
@@ -36,7 +36,7 @@ def get_connection(connection_id: str):
     """Get specific connection details"""
     headers = get_formatted_token()
     res = httpx.get(
-        f"{GUAC_EMBED}/api/session/data/postgresql/connections/{connection_id}",
+        f"{GUAC_URL}/api/session/data/postgresql/connections/{connection_id}",
         headers=headers
     )
     res.raise_for_status()
@@ -78,7 +78,7 @@ def create_ssh_connection(
         }
     }
     res = httpx.post(
-        f"{GUAC_EMBED}/api/session/data/postgresql/connections",
+        f"{GUAC_URL}/api/session/data/postgresql/connections",
         headers=headers,
         json=connection_data
     )
@@ -121,7 +121,7 @@ def create_vnc_connection(
     }
 
     res = httpx.post(
-        f"{GUAC_EMBED}/api/session/data/postgresql/connections",
+        f"{GUAC_URL}/api/session/data/postgresql/connections",
         headers=headers,
         json=connection_data
     )
@@ -166,7 +166,7 @@ def create_rdp_connection(
     }
 
     res = httpx.post(
-        f"{GUAC_EMBED}/api/session/data/postgresql/connections",
+        f"{GUAC_URL}/api/session/data/postgresql/connections",
         headers=headers,
         json=connection_data
     )
@@ -186,7 +186,7 @@ def delete_connection(connection_id: str):
     headers = get_formatted_token()
 
     res = httpx.delete(
-        f"{GUAC_EMBED}/api/session/data/postgresql/connections/{connection_id}",
+        f"{GUAC_URL}/api/session/data/postgresql/connections/{connection_id}",
         headers=headers
     )
 
