@@ -112,7 +112,7 @@ export default function RemoteDesktop({
 
               {!isResourceRunning && (
                 <p className="text-yellow-600 dark:text-yellow-400 text-sm">
-                  ⚠️ {resource.name} is currently {resource.status}
+                  {resource.name} is currently {resource.status}
                 </p>
               )}
 
@@ -125,7 +125,7 @@ export default function RemoteDesktop({
 
             <div className="mt-8 pt-4 border-t border-gray-200 dark:border-zinc-600">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                💡 Remote desktop opens in a new tab. Please allow popups if
+                Remote desktop opens in a new tab. Please allow popups if
                 blocked.
               </p>
             </div>
