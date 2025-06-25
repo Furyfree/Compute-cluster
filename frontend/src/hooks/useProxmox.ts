@@ -313,9 +313,13 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
         console.log(`[useResourceIP] Raw response:`, rawResponse);
         console.log(`[useResourceIP] Response status:`, rawResponse.status);
 
-        const ip = await rawResponse.json();
-        console.log(`[useResourceIP] JSON response:`, ip);
-        console.log(`[useResourceIP] IP type:`, typeof ip);
+        const rawIp = await rawResponse.text();
+        console.log(`[useResourceIP] Raw text response:`, rawIp);
+        console.log(`[useResourceIP] Raw IP type:`, typeof rawIp);
+
+        // Trim whitespace and remove quotes if present
+        const ip = rawIp.trim().replace(/^"(.*)"$/, "$1");
+        console.log(`[useResourceIP] Processed IP:`, ip);
 
         setIp(ip || null);
       } catch (err: unknown) {
@@ -348,8 +352,12 @@ export function useResourceIP(node: string, vmid: number, type: "vm" | "lxc") {
 
       console.log(`[useResourceIP] Refetch raw response:`, rawResponse);
 
-      const ip = await rawResponse.json();
-      console.log(`[useResourceIP] Refetch JSON response:`, ip);
+      const rawIp = await rawResponse.text();
+      console.log(`[useResourceIP] Refetch raw text response:`, rawIp);
+
+      // Trim whitespace and remove quotes if present
+      const ip = rawIp.trim().replace(/^"(.*)"$/, "$1");
+      console.log(`[useResourceIP] Refetch processed IP:`, ip);
 
       setIp(ip || null);
     } catch (err: unknown) {
