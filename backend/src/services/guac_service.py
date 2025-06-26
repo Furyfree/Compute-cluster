@@ -1,6 +1,6 @@
 import httpx
 from src.util.env import get_required_env
-
+import base64
 GUAC_URL = get_required_env("GUACAMOLE_URL")
 GUAC_USER = get_required_env("GUACAMOLE_USERNAME")
 GUAC_PASS = get_required_env("GUACAMOLE_PASSWORD")
@@ -203,8 +203,13 @@ def get_connection_url_by_name(name: str):
     connections = get_connections()
     for conn in connections:
         if conn["name"] == name:
-            return get_connection_url(conn["identifier"])
+            coded_id = encode_guac_identifier(conn["identifier"])
+            return get_connection_url(conn["coded_id"])
     return {
         "error": "Connection not found",
         "message": f"No connection found with name '{name}'"
     }
+def encode_guac_identifier(id_str, type_str="c", datasource="postgresql"):
+    raw = f"{id_str}\0{type_str}\0{datasource}"
+    encoded = base64.b64encode(raw.encode("utf-8"))
+    return encoded.decode("utf-8")
