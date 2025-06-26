@@ -34,6 +34,11 @@ def load_balance_nodes():
     """Rebalance VMs across nodes based on current load"""
     return proxmox_service.manual_load_balance()
 
+@router.get("/nodes/perf", summary="Get performance metrics for all nodes", dependencies=[Depends(get_current_user)])
+def get_all_nodes_performance():
+    """Get performance metrics for all Proxmox nodes"""
+    return proxmox_service.get_all_node_metrics()
+
 # VM endpoints
 @router.get("/vms", summary="List VMs user has access to")
 def get_vms(current_user=Depends(get_current_user)):
