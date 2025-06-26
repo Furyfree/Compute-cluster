@@ -62,7 +62,11 @@ def select_idle_target(metrics: dict, exclude_node: str) -> str | None:
     # Sort by lowest CPU, then MEM, then IO delay
     sorted_nodes = sorted(
         candidates.items(),
-        key=lambda item: (item[1]["CPU"], item[1]["Memory"], item[1]["IO_delay"])
+        key=lambda item: (
+            item[1].get("CPU", 100),
+            item[1].get("Memory", 100),
+            item[1].get("IO_Delay", 100)
+        )
     )
     return sorted_nodes[0][0]
 
