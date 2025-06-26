@@ -63,6 +63,7 @@ services:
     environment:
       GUACD_HOSTNAME: guacd
       GUACD_PORT: 4822
+      log-level: debug
 
       POSTGRESQL_DATABASE: mydb
       POSTGRESQL_HOSTNAME: db
