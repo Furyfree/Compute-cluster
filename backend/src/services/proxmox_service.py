@@ -352,7 +352,7 @@ def get_all_node_metrics():  # NO endpoint, used internally
         node_name = node['node']
         status = proxmox.nodes(node_name).status.get()
         metrics[node_name] = {
-            "CPU usage": status["cpu"] * 100,
+            "CPU": status["cpu"] * 100,
             "Memory": (status["memory"]["used"] / status["memory"]["total"]) * 100,
             "IO_Delay": status["wait"] * 100
         }
