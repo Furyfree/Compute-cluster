@@ -351,7 +351,7 @@ def get_all_node_metrics(): #NO endpoint, used internally
     for node in proxmox.nodes.get():
         node_name = node['node']
         status = proxmox.nodes(node_name).status.get()
-        metrics[node_name]
+        metrics[node_name] = status
     return metrics
 
 def get_running_vms_by_node(node): #NO endpoint, used internally
