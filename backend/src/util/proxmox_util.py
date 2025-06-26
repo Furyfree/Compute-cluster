@@ -41,9 +41,9 @@ def parse_smart_attributes(smart_data):
         "UDMA_CRC_Error_Count": attributes.get("UDMA_CRC_Error_Count", {}).get("raw"),
     }
 
-CPU_THRESHOLD = 0.8
-MEM_THRESHOLD = 0.9
-IO_DELAY_THRESHOLD = 35.0
+CPU_THRESHOLD = 80  # Percentage
+MEM_THRESHOLD = 80 # Percentage
+IO_DELAY_THRESHOLD = 80 # percentage
 
 def is_overloaded(node_metrics: dict) -> bool:
     return (
