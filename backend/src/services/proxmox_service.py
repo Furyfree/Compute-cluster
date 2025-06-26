@@ -346,12 +346,16 @@ def cloud_init_vm(node: str, vmid: int, req: ProvisionRequest):
         return {"error": f"Failed to configure cloud-init: {str(e)}"}
 
 # Load Balancer: Raw node metrics for load decisions
-def get_all_node_metrics(): #NO endpoint, used internally
+def get_all_node_metrics():  # NO endpoint, used internally
     metrics = {}
     for node in proxmox.nodes.get():
         node_name = node['node']
         status = proxmox.nodes(node_name).status.get()
-        metrics[node_name] = status
+        metrics[node_name] = {
+            "CPU usage": status["cpu"] * 100,
+            "Memory": (status["memory"]["used"] / status["memory"]["total"]) * 100,
+            "IO_Delay": status["wait"] * 100
+        }
     return metrics
 
 def get_running_vms_by_node(node): #NO endpoint, used internally

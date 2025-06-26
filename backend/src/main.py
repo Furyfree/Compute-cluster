@@ -32,7 +32,7 @@ async def start_load_balance_service():
         print("Rebalance cycle complete. Waiting for next cycle...")
         await asyncio.sleep(900)  # every 15 minutes
 
-#@app.on_event("startup")
+@app.on_event("startup")
 async def startup_event():
     print("Starting load balance service...")
     asyncio.create_task(start_load_balance_service())
