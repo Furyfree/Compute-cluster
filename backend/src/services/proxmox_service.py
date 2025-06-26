@@ -351,12 +351,7 @@ def get_all_node_metrics(): #NO endpoint, used internally
     for node in proxmox.nodes.get():
         node_name = node['node']
         status = proxmox.nodes(node_name).status.get()
-        metrics[node_name] = {
-            "cpu": status.get("cpu", 0.0),  # float (0.0 to 1.0)
-            "mem": status.get("mem", 0) / status.get("maxmem", 1),
-            "disk": status.get("disk", 0) / status.get("maxdisk", 1),
-            "io_delay": status.get("iodelay", 0.0),
-        }
+        metrics[node_name]
     return metrics
 
 def get_running_vms_by_node(node): #NO endpoint, used internally
