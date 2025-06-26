@@ -204,7 +204,7 @@ def get_connection_url_by_name(name: str):
     for conn in connections:
         if conn["name"] == name:
             coded_id = encode_guac_identifier(conn["identifier"])
-            return get_connection_url(conn["coded_id"])
+            return get_connection_url(coded_id)
     return {
         "error": "Connection not found",
         "message": f"No connection found with name '{name}'"
