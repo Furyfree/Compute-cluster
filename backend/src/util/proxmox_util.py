@@ -47,9 +47,9 @@ IO_DELAY_THRESHOLD = 35.0
 
 def is_overloaded(node_metrics: dict) -> bool:
     return (
-        node_metrics.get("cpu", 0) > CPU_THRESHOLD or
-        node_metrics.get("mem", 0) > MEM_THRESHOLD or
-        node_metrics.get("io_delay", 0) > IO_DELAY_THRESHOLD
+        node_metrics.get("CPU", 0) > CPU_THRESHOLD or
+        node_metrics.get("Memory", 0) > MEM_THRESHOLD or
+        node_metrics.get("IO_delay", 0) > IO_DELAY_THRESHOLD
     )
 
 def select_idle_target(metrics: dict, exclude_node: str) -> str | None:
