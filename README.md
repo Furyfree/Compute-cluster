@@ -10,7 +10,7 @@ This system allows students to access and manage virtual machines and LXC contai
 
 - **Backend**: FastAPI (Python 3.12)
 - **Frontend**: Next.js 15 + React 19 + TypeScript
-- **Database**: PostgreSQL 16 (stores Guacamole connections and VM metadata from Proxmox API)
+- **Database**: PostgreSQL 16 (stores Guacamole connections)
 - **Authentication**: LDAP + JWT tokens
 - **Virtualization**: Proxmox VE cluster (5 nodes)
 - **Remote Access**: Apache Guacamole
@@ -174,7 +174,7 @@ When you run the script, it will:
    1) app - Backend + Frontend only (default)
    2) guacamole - Database + Guacamole only
    3) full - All services
-   
+
    Choose profile [1-3, default: 1]:
    ```
 
